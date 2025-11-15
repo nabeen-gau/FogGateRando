@@ -5,6 +5,7 @@ using SoulsFormats;
 using static SoulsFormats.PARAM;
 using static SoulsFormats.PARAMDEF;
 
+using FogWallNS;
 
 String check_backup(String name)
 {
@@ -636,30 +637,40 @@ Vector3 pos_offs_event_loc = new Vector3(
 
 String[] map_names = { "m10_02_00_00", "m10_10_00_00"};
 
+List<FogWall> fog_wall_list = new List<FogWall>
+{
+    new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
+    new FogWall("TB_tut1_exit",  "o00_0500_0001", 10020605),
+    new FogWall("TB_tut3_exit",  "o00_0500_0002", 10020610),
+    new FogWall("TB_tut2_entry", "o00_0500_0003", 10020615),
+    new FogWall("TB_tut3_entry", "o00_0500_0004", 10020620),
+    new FogWall("TB_tut2_exit",  "o00_0500_0004", 10020625),
+};
+
 int count = 0;
-Dictionary<String, Dictionary<string, int>> fog_wall_dict = new Dictionary<string, Dictionary<string, int>> {
+Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>> {
      {
         map_names[count++],
-        new Dictionary<string, int> {
-            {"TB_tut1_entry", 10020600},
-            {"TB_tut1_exit", 10020605},
-            {"TB_tut3_exit", 10020610},
-            {"TB_tut2_entry", 10020615},
-            {"TB_tut3_entry", 10020620},
-            {"TB_tut2_exit", 10020625},
-        } 
-     },
+        new List<FogWall> {
+            new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
+            new FogWall("TB_tut1_exit",  "o00_0500_0001", 10020605),
+            new FogWall("TB_tut3_exit",  "o00_0500_0002", 10020610),
+            new FogWall("TB_tut2_entry", "o00_0500_0003", 10020615),
+            new FogWall("TB_tut3_entry", "o00_0500_0004", 10020620),
+            new FogWall("TB_tut2_exit",  "o00_0500_0004", 10020625),
+        }
+    },
      {
         map_names[count++],
-        new Dictionary<string, int> {
-            {"FOFG_last_giant", 10100600},
-            {"FOFG_pursuer_entry", 10100610},
-            {"FOFG_pursuer_exit", 10100611},
-            {"FOFG_balcony_to_last_giant", 10100630},
-            {"FOFG_fire_pit_to_outside", 10100631},
-            {"FOFG_first_fog_wall", 10100632},
-            {"FOFG_PVP_majula_to_forest", 10100633},
-            {"FOFG_PVP_to_pursuer", 10100640},
+        new List<FogWall> {
+            new FogWall("FOFG_last_giant",            "o00_0500_0000", 10100600, boss: true),
+            new FogWall("FOFG_pursuer_entry",         "o00_0500_0002", 10100610, boss: true),
+            new FogWall("FOFG_pursuer_exit",          "o00_0500_0003", 10100611, boss: true, boss_exit: true),
+            new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0004", 10100630),
+            new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0005", 10100631),
+            new FogWall("FOFG_first_fog_wall",        "o00_0501_0001", 10100632),
+            new FogWall("FOFG_PVP_majula_to_forest",  "o00_0501_0002", 10100633, pvp: true),
+            new FogWall("FOFG_PVP_to_pursuer",        "o00_0501_0003", 10100640, pvp: true),
         }
      }
 };
@@ -709,9 +720,6 @@ for (int _i = 0; _i < 1; _i++)
     int warp_point_begin = warp_point_begin_list[map_name];
 
     int n_fog_walls = fog_wall_dict[map_name].Count;
-    String fog_wall_id_prefix = "o00_0500_";
-    int disable_fog_wall_check_increment = 5;
-    
 
     String map_path               = Path.Join(mod_folder, "map", map_name, map_name + ".msb");
     String param_event_loc_path   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
@@ -767,18 +775,17 @@ for (int _i = 0; _i < 1; _i++)
 
     // get all the fog walls in the map and create a list of their
     // postion, rotation and draw groups
-    int fog_wall_start = 0;
     List<Vector3> pos_fog_walls = new List<Vector3>();
     List<Vector3> rot_fog_walls = new List<Vector3>();
-    List<uint> draw_groups            = new List<uint>();
-    for (int i=0; i<n_fog_walls; i++)
+    List<uint> draw_groups      = new List<uint>();
+
+    foreach (var fw in fog_wall_dict[map_name])
     {
-        String fog_wall_id = fog_wall_id_prefix + format_int_to_str(fog_wall_start, 4);
         MSB2.Part.Object? fog_wall = null;
-        for (int j=0; j<map.Parts.Objects.Count; j++)
+        for (int j = 0; j < map.Parts.Objects.Count; j++)
         {
             MSB2.Part.Object obj = map.Parts.Objects[j];
-            if (obj.Name == fog_wall_id)
+            if (obj.Name == fw.map_name)
             {
                 fog_wall = obj;
                 break;
@@ -786,23 +793,21 @@ for (int _i = 0; _i < 1; _i++)
         }
         if (fog_wall == null)
         {
-            Console.WriteLine($"[ERROR] failed to find fog_wall_id: {fog_wall_id}");
+            Console.WriteLine($"[ERROR] failed to find fog_wall_id: {fw.name}");
             Debug.Assert(false);
         }
         pos_fog_walls.Add(fog_wall.Position);
         rot_fog_walls.Add(fog_wall.Rotation);
         draw_groups.Add(fog_wall.DrawGroups[0]);
-
-        fog_wall_start++;
     }
 
     // disable fog gates
-    foreach (KeyValuePair<string, int> entry in fog_wall_dict[map_name])
+    foreach (var entry in fog_wall_dict[map_name])
     {
         for (int i = 0; i < obj_inst_param.Rows.Count; i++)
         {
             var row = obj_inst_param.Rows[i];
-            if (row.ID == entry.Value)
+            if (row.ID == entry.instance_id)
             {
                 var new_row = new Row(
                     row.ID,

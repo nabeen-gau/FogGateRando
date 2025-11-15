@@ -33,9 +33,16 @@ PARAM load_map_param(String path)
     return p;
 }
 
-PARAMDEF get_obj_inst_def_paramdef_ex(
-    PARAM param, int map_obj_inst_type, UInt16 unk04, byte default_state, 
-    byte unk09, UInt32 unk10)
+Field new_field(PARAMDEF.DefType display_type, String display_name, object default_value)
+{
+    Field f = new Field();
+    f.DisplayName = display_name;
+    f.DisplayType = display_type;
+    f.Default = default_value;
+    return f;
+} 
+
+PARAMDEF new_paramdef(PARAM param)
 {
     PARAMDEF pd = new PARAMDEF();
     pd.ParamType = param.ParamType;
@@ -43,196 +50,36 @@ PARAMDEF get_obj_inst_def_paramdef_ex(
     pd.BigEndian = param.BigEndian;
     pd.Unicode = true;
     pd.FormatVersion = 104;
+    return pd;
+}
 
-    Field f = new Field();
-    f.DisplayName = "header ID";
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Param ID";
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Object Bullet";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk02";
-    f.Default = 1.0;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk03";
-    f.Default = -1.0;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Map Obj Instance Type";
-    f.Default = map_obj_inst_type;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk04";
-    f.Default = unk04;
-    f.DisplayType = PARAMDEF.DefType.u16;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk05";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk06";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk07";
-    f.Default = 7;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk08";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Default State";
-    f.Default = default_state;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk09";
-    f.Default = unk09;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk10";
-    f.Default = unk10;
-    f.DisplayType = PARAMDEF.DefType.u32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Itemlot ID";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
+PARAMDEF get_obj_inst_def_paramdef_ex(
+    PARAM param, int map_obj_inst_type, UInt16 unk04, byte default_state, 
+    byte unk09, UInt32 unk10)
+{
+    PARAMDEF pd = new_paramdef(param);
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "header ID", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Param ID", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Object Bullet", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "Unk02", 1.0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "Unk03", -1.0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Map Obj Instance Type", map_obj_inst_type));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk04", unk04));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk05", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk06", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk07", 7));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk08", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Default State", default_state));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk09", unk09));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk10", unk10));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Itemlot ID", 0));
     return pd;
 }
 
 PARAMDEF get_obj_inst_def_paramdef(PARAM param)
 {
-    PARAMDEF pd = new PARAMDEF();
-    pd.ParamType = param.ParamType;
-    pd.DataVersion = 7;
-    pd.BigEndian = param.BigEndian;
-    pd.Unicode = true;
-    pd.FormatVersion = 104;
 
-    Field f = new Field();
-    f.DisplayName = "header ID";
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Param ID";
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Object Bullet";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk02";
-    f.Default = 1.0;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk03";
-    f.Default = -1.0;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Map Obj Instance Type";
-    f.Default = 100;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk04";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u16;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk05";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk06";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk07";
-    f.Default = 7;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk08";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Default State";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk09";
-    f.Default = 50;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk10";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Itemlot ID";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    return pd;
+    return get_obj_inst_def_paramdef_ex(param, 100, 0, 255, 50, 255);
 }
 
 PARAMDEF get_obj_inst_def_paramdef_fogwall(PARAM param)
@@ -242,73 +89,17 @@ PARAMDEF get_obj_inst_def_paramdef_fogwall(PARAM param)
 
 PARAMDEF get_event_param_def_paramdef_ex(PARAM param, int event_id, int flag_id)
 {
-    PARAMDEF pd = new PARAMDEF();
-    pd.ParamType = param.ParamType;
-    pd.DataVersion = 7;
-    pd.BigEndian = param.BigEndian;
-    pd.Unicode = true;
-    pd.FormatVersion = 104;
-
-    Field f = new Field();
-    f.DisplayName = "Event ID";
-    f.Default = event_id;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Flag ID";
-    f.Default = flag_id;
-    f.DisplayType = PARAMDEF.DefType.s32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk08";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk09";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0A";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0B";
-    f.Default = 2;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0C";
-    f.Default = 1;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0D";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0E";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk0F";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
+    PARAMDEF pd = new_paramdef(param);
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Event ID", event_id));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Flag ID", flag_id));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk08", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk09", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0A", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0B", 2));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0C", 1));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0D", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0E", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8,  "Unk0F", 0));
     return pd;
 }
 
@@ -319,109 +110,23 @@ PARAMDEF get_event_param_def_paramdef(PARAM param)
 
 PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 rotation)
 {
-    PARAMDEF pd = new PARAMDEF();
-    pd.ParamType = param.ParamType;
-    pd.DataVersion = 7;
-    pd.BigEndian = param.BigEndian;
-    pd.Unicode = true;
-    pd.FormatVersion = 104;
-
-    Field f = new Field();
-    f.DisplayName = "pos_x";
-    f.DisplayType = PARAMDEF.DefType.f32;
-    f.Default = position.X;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "pos_y";
-    f.Default = position.Y;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "pos_z";
-    f.Default = position.Z;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "rot_x";
-    f.Default = rotation.X;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "rot_y";
-    f.Default = rotation.Y;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "rot_z";
-    f.Default = rotation.Z;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Region Type";
-    f.Default = 1;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk19";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk1A";
-    f.Default = 255;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk1B";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u8;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "scale_x";
-    f.Default = 0.5f;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "scale_y";
-    f.Default = 1.0f;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "scale_z";
-    f.Default = 1.0f;
-    f.DisplayType = PARAMDEF.DefType.f32;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk28";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u16;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk2A";
-    f.Default = 2560;
-    f.DisplayType = PARAMDEF.DefType.u16;
-    pd.Fields.Add(f);
-
-    f = new Field();
-    f.DisplayName = "Unk2C";
-    f.Default = 0;
-    f.DisplayType = PARAMDEF.DefType.u32;
-    pd.Fields.Add(f);
-
+    PARAMDEF pd = new_paramdef(param);
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_x", position.X));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_y", position.Y));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_z", position.Z));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_x", rotation.X));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_y", rotation.Y));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_z", rotation.Z));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Region Type", 1));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk19", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1A", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1B", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_x", 0.5f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_y", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk28", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", 2560));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk2C", 0));
     return pd;
 }
 

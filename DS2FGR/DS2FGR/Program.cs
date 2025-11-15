@@ -708,8 +708,7 @@ for (int _i = 0; _i < 1; _i++)
     int event_param_begin = esd_script_begin;
     int warp_point_begin = warp_point_begin_list[map_name];
 
-    int n_fog_walls = 6;
-    int fog_wall_start_id = 10020600;
+    int n_fog_walls = fog_wall_dict[map_name].Count;
     String fog_wall_id_prefix = "o00_0500_";
     int disable_fog_wall_check_increment = 5;
     
@@ -798,35 +797,23 @@ for (int _i = 0; _i < 1; _i++)
     }
 
     // disable fog gates
-    int update_count = 0;
-    for (int j=0; j<n_fog_walls; j++)
+    foreach (KeyValuePair<string, int> entry in fog_wall_dict[map_name])
     {
-        for (int i =0; i<obj_inst_param.Rows.Count; i++)
+        for (int i = 0; i < obj_inst_param.Rows.Count; i++)
         {
             var row = obj_inst_param.Rows[i];
-            if (row.ID == fog_wall_start_id)
+            if (row.ID == entry.Value)
             {
                 var new_row = new Row(
-                    fog_wall_start_id,
-                    $"objinstance_{fog_wall_start_id}",
+                    row.ID,
+                    $"objinstance_{row.ID}",
                     get_obj_inst_def_paramdef_fogwall(obj_inst_param)
                 );
                 // TODO: this may cause errors
                 // new_row.DataOffset = row.DataOffset;
                 obj_inst_param.Rows.Remove(row);
                 obj_inst_param.Rows.Insert(i, new_row);
-                fog_wall_start_id += disable_fog_wall_check_increment;
-                j++;
-                update_count++;
-                if (update_count >= n_fog_walls)
-                {
-                    break;
-                }
             }
-        }
-        if (update_count == n_fog_walls)
-        {
-            break;
         }
     }
 

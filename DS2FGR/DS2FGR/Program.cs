@@ -340,10 +340,14 @@ Vector3 pos_offs_event_loc = new Vector3(
     132.339386f + 127.624603f
 );
 
-String[] map_names = { "m10_02_00_00", "m10_10_00_00"};
-
-List<FogWall> fog_wall_list = new List<FogWall>
+Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
+    { MapName.ThingsBetwixt,           "m10_02_00_00"},
+    { MapName.ForestOfTheFallenGiants, "m10_10_00_00"},
+};
+
+Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
+fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
     new FogWall("TB_tut1_exit",  "o00_0500_0001", 10020605),
     new FogWall("TB_tut3_exit",  "o00_0500_0002", 10020610),
@@ -351,33 +355,15 @@ List<FogWall> fog_wall_list = new List<FogWall>
     new FogWall("TB_tut3_entry", "o00_0500_0004", 10020620),
     new FogWall("TB_tut2_exit",  "o00_0500_0004", 10020625),
 };
-
-int count = 0;
-Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>> {
-     {
-        map_names[count++],
-        new List<FogWall> {
-            new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
-            new FogWall("TB_tut1_exit",  "o00_0500_0001", 10020605),
-            new FogWall("TB_tut3_exit",  "o00_0500_0002", 10020610),
-            new FogWall("TB_tut2_entry", "o00_0500_0003", 10020615),
-            new FogWall("TB_tut3_entry", "o00_0500_0004", 10020620),
-            new FogWall("TB_tut2_exit",  "o00_0500_0004", 10020625),
-        }
-    },
-     {
-        map_names[count++],
-        new List<FogWall> {
-            new FogWall("FOFG_last_giant",            "o00_0500_0000", 10100600, boss: true),
-            new FogWall("FOFG_pursuer_entry",         "o00_0500_0002", 10100610, boss: true),
-            new FogWall("FOFG_pursuer_exit",          "o00_0500_0003", 10100611, boss: true, boss_exit: true),
-            new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0004", 10100630),
-            new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0005", 10100631),
-            new FogWall("FOFG_first_fog_wall",        "o00_0501_0001", 10100632),
-            new FogWall("FOFG_PVP_majula_to_forest",  "o00_0501_0002", 10100633, pvp: true),
-            new FogWall("FOFG_PVP_to_pursuer",        "o00_0501_0003", 10100640, pvp: true),
-        }
-     }
+fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
+    new FogWall("FOFG_last_giant",            "o00_0500_0000", 10100600, boss: true),
+    new FogWall("FOFG_pursuer_entry",         "o00_0500_0002", 10100610, boss: true),
+    new FogWall("FOFG_pursuer_exit",          "o00_0500_0003", 10100611, boss: true, boss_exit: true),
+    new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0004", 10100630),
+    new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0005", 10100631),
+    new FogWall("FOFG_first_fog_wall",        "o00_0501_0001", 10100632),
+    new FogWall("FOFG_PVP_majula_to_forest",  "o00_0501_0002", 10100633, pvp: true),
+    new FogWall("FOFG_PVP_to_pursuer",        "o00_0501_0003", 10100640, pvp: true),
 };
 
 // object id postpended to o02_1050_ for creating the new warp object
@@ -402,11 +388,6 @@ Dictionary<string, int> warp_point_begin_list = new Dictionary<string, int> {
     { "m10_10_00_00", 1017 }
 };
 
-Dictionary<string, int> obj_inst_insert_loc_list = new Dictionary<string, int> {
-    { "m10_02_00_00", 57 },
-    { "m10_10_00_00", 1017 }
-};
-
 String ezstate_path = Path.Join(mod_folder, "ezstate");
 int warp_obj_idx = -1;
 int warp_obj_inst_idx = -1;
@@ -414,9 +395,9 @@ MSB2.Part.Object? warp_obj = null;
 PARAM.Row? warp_obj_inst = null;
 
 //for (int _i = 0; _i < map_names.Length; _i++)
-for (int _i = 0; _i < 1; _i++)
-    {
-    String map_name = map_names[_i];
+for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
+{
+    String map_name = map_names[(MapName)_i];
 
     int warp_obj_begin = warp_object_begin_list[map_name];
     int esd_script_begin = esd_script_begin_list[map_name];

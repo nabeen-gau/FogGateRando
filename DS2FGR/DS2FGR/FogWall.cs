@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace FogWallNS
 {
 	public class FogWall
@@ -8,8 +10,8 @@ namespace FogWallNS
 		bool boss;
 		bool pvp;
 		bool boss_exit;
-		public float? y_offset;
-		public FogWall(String name, String map_name, bool boss = false, bool pvp = false, bool boss_exit = false)
+		public Vector3? offset;
+        public FogWall(String name, String map_name, bool boss = false, bool pvp = false, bool boss_exit = false)
 		{
 			this.name = name;
 			this.map_name = map_name;
@@ -17,7 +19,7 @@ namespace FogWallNS
 			this.boss = boss;
 			this.pvp = pvp;
 			this.boss_exit = boss_exit;
-			this.y_offset = null;
+			this.offset = null;
 		}
 	};
 
@@ -36,8 +38,9 @@ namespace FogWallNS
 		TheGutterBlackGulch,
 		DragonAerieDragonShrine,
 		MajulaShadedWoods,
+		HeidesToNoMansWharf,
 		HeidesTowerofFlame,
-		ShadedWoodsShrineofWinter,
+        ShadedWoodsShrineofWinter,
 		DoorsofPharros,
 		GraveofSaints,
 		MemoryofVammarOrroandJeigh,

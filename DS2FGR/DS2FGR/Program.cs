@@ -377,13 +377,6 @@ Dictionary<String, int> warp_object_begin_list = new Dictionary<String, int> {
     { map_names[MapName.BrightstoneCoveTseldora], 1000 },
 };
 
-// esd script begin index
-Dictionary<string, int> esd_script_begin_list = new Dictionary<string, int> {
-    { map_names[MapName.ThingsBetwixt],           1201 },
-    { map_names[MapName.ForestOfTheFallenGiants], 1001 },
-    { map_names[MapName.BrightstoneCoveTseldora], 1001 },
-};
-
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
 foreach(var mn in map_names)
 {
@@ -402,8 +395,6 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
     String map_name = map_names[(MapName)_i];
 
     int warp_obj_begin = warp_object_begin_list[map_name];
-    int esd_script_begin = esd_script_begin_list[map_name];
-    int event_param_begin = esd_script_begin;
 
     int n_fog_walls = fog_wall_dict[map_name].Count;
 
@@ -600,6 +591,28 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
         }
     }
     Debug.Assert(event_loc_insert_loc >= 0);
+
+    // cacluate esd_script_begin
+    int esd_script_begin = -1;
+    for (int i=0; i<param_event.Rows.Count; i++)
+    {
+        var row = param_event.Rows[i];
+        if (param_event.Rows.Count == 0) esd_script_begin = row.ID + 1;
+        else if (i + 1 == param_event.Rows.Count) esd_script_begin = row.ID + 1;
+        else if (i + 1 < param_event.Rows.Count)
+        {
+            var next_row = param_event.Rows[i + 1];
+            if (next_row.ID - row.ID > n_warp_points)
+            {
+                esd_script_begin = row.ID + 1;
+                break;
+            }
+        }
+        else Debug.Assert(false); //unreachable
+    }
+    Debug.Assert(esd_script_begin >= 0);
+    int event_param_begin = esd_script_begin;
+
 
     Vector3 pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
 

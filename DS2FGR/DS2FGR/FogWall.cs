@@ -22,8 +22,32 @@ namespace FogWallNS
 	enum MapName
 	{
 		ThingsBetwixt = 0,
+		Majula,
 		ForestOfTheFallenGiants,
 		BrightstoneCoveTseldora,
+		AldiasKeep,
+		TheLostBastilleBelfryLuna,
+		HarvestValleyEarthenPeak,
+		NomansWharf,
+		IronKeepBelfrySol,
+		HuntsmanCopseUndeadPurgatory,
+		TheGutterBlackGulch,
+		DragonAerieDragonShrine,
+		MajulaShadedWoods,
+		HeidesTowerofFlame,
+		ShadedWoodsShrineofWinter,
+		DoorsofPharros,
+		GraveofSaints,
+		MemoryofVammarOrroandJeigh,
+		ShrineofAmana,
+		DrangleicCastleThroneofWant,
+		UndeadCrypt,
+		DragonMemories,
+		DarkChasmofOld,
+		ShulvaSanctumCity,
+		BrumeTower,
+		FrozenEleumLoyce,
+		MemoryoftheKing
 	}
 
 }

@@ -337,9 +337,13 @@ int warp_obj_inst_id = 10021101;
 
 Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
-    { MapName.ThingsBetwixt,           "m10_02_00_00"},
-    { MapName.ForestOfTheFallenGiants, "m10_10_00_00"},
-    { MapName.BrightstoneCoveTseldora, "m10_14_00_00"},
+    { MapName.ThingsBetwixt,             "m10_02_00_00"},
+    { MapName.ForestOfTheFallenGiants,   "m10_10_00_00"},
+    { MapName.BrightstoneCoveTseldora,   "m10_14_00_00"},
+    { MapName.AldiasKeep,                "m10_15_00_00"},
+    { MapName.TheLostBastilleBelfryLuna, "m10_16_00_00"},
+    { MapName.HarvestValleyEarthenPeak,  "m10_17_00_00"},
+    { MapName.NomansWharf,               "m10_18_00_00"},
 };
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
@@ -368,6 +372,43 @@ fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
     new FogWall("BCT_freya_exit",         "o00_0501_0001", boss: true, boss_exit: true),
     new FogWall("BCT_freya_entry",        "o00_0502_0000", boss: true),
 };
+fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
+    new FogWall("BCT_guardian_drag_entry", "o00_0501_0000", boss: true),
+    new FogWall("BCT_guardian_drag_exit",  "o00_0501_0001", boss: true, boss_exit: true),
+    new FogWall("AK_entry",                "o00_0501_0002", pvp: true),
+};
+fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
+    new FogWall("LB_gargoyles_entry",   "o00_0500_0000", boss: true),
+    new FogWall("LB_sentinels_exit",    "o00_0500_0001", boss: true, boss_exit: true),
+    new FogWall("LB_to_sinners_rise",   "o00_0500_0005"),
+    new FogWall("LB_gargoyles_exit",    "o00_0500_0006", boss: true, boss_exit: true),
+    new FogWall("LB_sentinels_hidden1", "o00_0500_0007", boss: true, boss_exit: true),
+    new FogWall("LB_sentinels_hidden2", "o00_0500_0008", boss: true, boss_exit: true),
+    new FogWall("LB_sentinels_hidden3", "o00_0500_0009", boss: true, boss_exit: true),
+    new FogWall("LB_sentinels_hidden4", "o00_0500_0010", boss: true, boss_exit: true),
+    new FogWall("LB_sentinels_upper",   "o00_0500_0011", boss: true),
+    new FogWall("LB_from_wharf",        "o00_0500_0012", pvp: true),
+    new FogWall("LB_to_belfry",         "o00_0500_0013", pvp: true),
+    new FogWall("LB_sentinels_entry",   "o00_0501_0000", boss: true),
+    new FogWall("LB_lost_sinner_entry", "o00_0501_0002", boss: true),
+    new FogWall("LB_lost_sinner_exit",  "o00_0501_0003", boss: true, boss_exit: true),
+};
+fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
+    new FogWall("EP_covetous_entry",   "o00_0500_0000", boss: true),
+    new FogWall("EP_mid_bonfire",      "o00_0500_0001"),
+    new FogWall("EP_mytha_entry",      "o00_0500_0002", boss: true),
+    new FogWall("EP_covetous_exit",    "o00_0500_0003", boss: true, boss_exit: true),
+    new FogWall("EP_mytha_exit",       "o00_0501_0000", boss: true, boss_exit: true),
+    new FogWall("EP_from_skele_lords", "o00_0501_0001", pvp: true),
+};
+fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
+    new FogWall("NMW_sentry_exit",  "o00_0500_0000", boss: true, boss_exit: true),
+    new FogWall("NMW_sentry_entry", "o00_0500_0001", boss: true),
+    new FogWall("NMW_from_heides",  "o00_0501_0000", pvp: true),
+};
+
+
+
 
 // object id postpended to o02_1050_ for creating the new warp object
 //Dictionary<String, int> warp_object_begin_list = new Dictionary<String, int> { 
@@ -389,9 +430,9 @@ MSB2.Part.Object? warp_obj = null;
 MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
 
-for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
+foreach (var pair in map_names)
 {
-    String map_name = map_names[(MapName)_i];
+    String map_name = pair.Value;
 
     // hardcoded to 1000
     //int warp_obj_begin = warp_object_begin_list[map_name];
@@ -644,7 +685,7 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
         for (int j=0; j<obj.DrawGroups.Length; j++)
         {
             obj.DrawGroups[j] = 0;
-            obj.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+            //obj.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
         }
         for (int j=0; j<obj.DispGroups.Length; j++)
         {
@@ -662,7 +703,7 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
         for (int j = 0; j < obj.DrawGroups.Length; j++)
         {
             obj2.DrawGroups[j] = 0;
-            obj2.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+            //obj2.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
         }
         for (int j = 0; j < obj2.DispGroups.Length; j++)
         {

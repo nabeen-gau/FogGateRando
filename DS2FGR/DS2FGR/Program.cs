@@ -342,23 +342,6 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.BrightstoneCoveTseldora, "m10_14_00_00"},
 };
 
-//Dictionary<String, Vector3> pos_offs_event_locs = new Dictionary<String, Vector3>();
-//pos_offs_event_locs[map_names[MapName.ThingsBetwixt]] = new Vector3(
-//    354.177948f + 143.81485f,
-//    -5.39768f - 24.411251f,
-//    132.339386f + 127.624603f
-//);
-//pos_offs_event_locs[map_names[MapName.ForestOfTheFallenGiants]] = new Vector3(
-//    -92.767761f - 115.234161f,
-//    40.606827f - 50.518635f,
-//    143.311371f - 10.292664f
-//);
-//pos_offs_event_locs[map_names[MapName.BrightstoneCoveTseldora]] = new Vector3(
-//    628.525085f + 3.126953f,
-//    -116.178986f + 22.221207f,
-//    51.958515f + 35.234276f
-//);
-
 Dictionary < String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
 fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
@@ -407,12 +390,6 @@ Dictionary<string, int> warp_obj_inst_begin_list = new Dictionary<string, int> {
     { map_names[MapName.BrightstoneCoveTseldora], 10140709 },
 };
 
-Dictionary<string, int> warp_point_begin_list = new Dictionary<string, int> {
-    { map_names[MapName.ThingsBetwixt],           500001 },
-    { map_names[MapName.ForestOfTheFallenGiants], 1017 },
-    { map_names[MapName.BrightstoneCoveTseldora], 1010 },
-};
-
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
 foreach(var mn in map_names)
 {
@@ -426,7 +403,6 @@ MSB2.Part.Object? warp_obj = null;
 MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
 
-//for (int _i = 0; _i < map_names.Length; _i++)
 for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
 {
     String map_name = map_names[(MapName)_i];
@@ -435,7 +411,6 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
     int esd_script_begin = esd_script_begin_list[map_name];
     int warp_obj_inst_begin = warp_obj_inst_begin_list[map_name];
     int event_param_begin = esd_script_begin;
-    int warp_point_begin = warp_point_begin_list[map_name];
 
     int n_fog_walls = fog_wall_dict[map_name].Count;
 
@@ -557,6 +532,38 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
             }
         }
     }
+    // calculate warp_point_begin
+    int warp_point_begin = -1;
+    int n_warp_points = 2 * n_fog_walls;
+
+    for (int i=0; i<param_event_loc.Rows.Count; i++)
+    {
+        var row = param_event_loc.Rows[i];
+        if (i+1 < param_event_loc.Rows.Count)
+        {
+            var next_row = param_event_loc.Rows[i+1];
+            if (next_row.ID - row.ID > n_warp_points)
+            {
+                warp_point_begin = row.ID + 1;
+                break;
+            }
+        }
+        else if (param_event_loc.Rows.Count == 1)
+        {
+            warp_point_begin = row.ID + 1;
+        }
+        else if (param_event_loc.Rows.Count == i+1)
+        {
+            warp_point_begin = row.ID + 1;
+        }
+        else
+        {
+            // Unreachable
+            Debug.Assert(false);
+        }
+    }
+
+    Debug.Assert(warp_point_begin >= 0);
 
     // calculate the obj instance insert location
     int obj_inst_insert_loc = -1;

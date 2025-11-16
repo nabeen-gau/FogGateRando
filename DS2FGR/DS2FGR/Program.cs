@@ -384,12 +384,6 @@ Dictionary<string, int> esd_script_begin_list = new Dictionary<string, int> {
     { map_names[MapName.BrightstoneCoveTseldora], 1001 },
 };
 
-Dictionary<string, int> warp_obj_inst_begin_list = new Dictionary<string, int> {
-    { map_names[MapName.ThingsBetwixt],           10021122 },
-    { map_names[MapName.ForestOfTheFallenGiants], 10100712 },
-    { map_names[MapName.BrightstoneCoveTseldora], 10140709 },
-};
-
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
 foreach(var mn in map_names)
 {
@@ -409,7 +403,6 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
 
     int warp_obj_begin = warp_object_begin_list[map_name];
     int esd_script_begin = esd_script_begin_list[map_name];
-    int warp_obj_inst_begin = warp_obj_inst_begin_list[map_name];
     int event_param_begin = esd_script_begin;
 
     int n_fog_walls = fog_wall_dict[map_name].Count;
@@ -562,20 +555,37 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
             Debug.Assert(false);
         }
     }
-
     Debug.Assert(warp_point_begin >= 0);
 
+    // calculate warp_obj_inst_begin and
     // calculate the obj instance insert location
+    int warp_obj_inst_begin = -1;
     int obj_inst_insert_loc = -1;
-    for (int i =0; i<obj_inst_param.Rows.Count; i++)
+    for (int i = 0; i < obj_inst_param.Rows.Count; i++)
     {
         var row = obj_inst_param.Rows[i];
-        if (row.ID == warp_obj_inst_begin - 1)
+        if (obj_inst_param.Rows.Count == 0 || i+1 == obj_inst_param.Rows.Count)
         {
+            warp_obj_inst_begin = row.ID + 1;
             obj_inst_insert_loc = i + 1;
-            break;
+        }
+        else if (i+1 < obj_inst_param.Rows.Count)
+        {
+            var next_row = obj_inst_param.Rows[i+1];
+            if (next_row.ID - row.ID > n_warp_points)
+            {
+                warp_obj_inst_begin = row.ID + 1;
+                obj_inst_insert_loc = i + 1;
+                break;
+            }
+        }
+        else
+        {
+            // Unreachable
+            Debug.Assert(false);
         }
     }
+    Debug.Assert(warp_obj_inst_begin >= 0);
     Debug.Assert(obj_inst_insert_loc >= 0);
 
     // calculate event_loc_insert_loc

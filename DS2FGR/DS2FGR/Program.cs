@@ -337,13 +337,19 @@ int warp_obj_inst_id = 10021101;
 
 Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
-    { MapName.ThingsBetwixt,             "m10_02_00_00"},
-    { MapName.ForestOfTheFallenGiants,   "m10_10_00_00"},
-    { MapName.BrightstoneCoveTseldora,   "m10_14_00_00"},
-    { MapName.AldiasKeep,                "m10_15_00_00"},
-    { MapName.TheLostBastilleBelfryLuna, "m10_16_00_00"},
-    { MapName.HarvestValleyEarthenPeak,  "m10_17_00_00"},
-    { MapName.NomansWharf,               "m10_18_00_00"},
+    { MapName.ThingsBetwixt,                "m10_02_00_00"},
+    { MapName.Majula,                       "m10_04_00_00"},
+    { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
+    { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
+    { MapName.AldiasKeep,                   "m10_15_00_00"},
+    { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
+    { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
+    { MapName.NomansWharf,                  "m10_18_00_00"},
+    { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
+    { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
+    { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
+    { MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
+    { MapName.MajulaShadedWoods,            "m10_29_00_00"},
 };
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
@@ -355,6 +361,19 @@ fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut3_entry", "o00_0500_0004"),
     new FogWall("TB_tut2_exit",  "o00_0500_0005"),
 };
+fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
+    //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
+    //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
+    //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
+    new FogWall("Ma_to_forest",  "o00_0501_0100", pvp: true),
+    new FogWall("Ma_to_GoS",     "o00_0501_0101", pvp: true), // y_offset = 43.455 - 42.057
+    new FogWall("Ma_to_HC",      "o00_0501_0102", pvp: true),
+    new FogWall("Ma_to_Rotunda", "o00_0501_0103", pvp: true),
+    new FogWall("Ma_to_Gutter",  "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
+    new FogWall("Ma_to_SW",      "o00_0502_0103", pvp: true),
+};
+fog_wall_dict[map_names[MapName.Majula]][1].y_offset = 43.455f - 42.057f;
+fog_wall_dict[map_names[MapName.Majula]][4].y_offset = 71.218f - 69.941f;
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
     new FogWall("FOFG_last_giant",            "o00_0501_0001", boss: true),
     new FogWall("FOFG_pursuer_entry",         "o00_0501_0003", boss: true),
@@ -406,6 +425,44 @@ fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
     new FogWall("NMW_sentry_entry", "o00_0500_0001", boss: true),
     new FogWall("NMW_from_heides",  "o00_0501_0000", pvp: true),
 };
+fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
+    new FogWall("IK_smelter_entry",          "o00_0500_0000", boss: true),
+    new FogWall("IK_lava_pit_after_smelter", "o00_0500_0002"),
+    new FogWall("IK_belfry_exit",            "o00_0500_0003"),
+    new FogWall("IK_belfry_entry",           "o00_0500_0004"),
+    new FogWall("IK_OIK_entry",              "o00_0500_0005", boss: true),
+    new FogWall("IK_OIK_exit",               "o00_0500_0006", boss: true, boss_exit: true),
+    new FogWall("IK_smelter_exit",           "o00_0500_0007", boss: true, boss_exit: true),
+    new FogWall("IK_smelter_to_bonfire",     "o00_0500_0008", pvp: true),
+    new FogWall("IK_pharros_to_belfry",      "o00_0500_0010", pvp: true),
+//    new FogWall("IK_belfry_entry",           "o00_0500_0011"), // duplicate of another maybe for pvp
+    new FogWall("IK_from_EP",                "o00_0501_0000", pvp: true),
+};
+fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
+    new FogWall("HC_skelelords_entry", "o00_0501_0000", boss: true),
+    new FogWall("HC_chariot_entry",    "o00_0501_0001", boss: true),
+    new FogWall("HC_skelelords_exit",  "o00_0501_0004", boss: true, boss_exit: true),
+    new FogWall("HC_chariot_exit",     "o00_0501_0006", boss: true, boss_exit: true),
+    new FogWall("HC_from_majula",      "o00_0501_0007", pvp: true),
+};
+fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
+    new FogWall("GBG_to_gutter_mid_bonfire", "o00_0500_0000"),
+    new FogWall("GBG_rotten_exit",           "o00_0500_0001", boss: true, boss_exit: true),
+    new FogWall("GBG_gulch_entry",           "o00_0501_0000"),
+    new FogWall("GBG_from_GoS",              "o00_0501_0001", pvp: true),
+    new FogWall("GBG_rotten_entry",          "o00_0503_0100", boss: true),
+};
+fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
+    new FogWall("DA_entrance",   "o00_0501_0000"),
+    new FogWall("DA_boss_entry", "o00_0502_0000", boss: true),
+};
+fog_wall_dict[map_names[MapName.MajulaShadedWoods]] = new List<FogWall> {
+    new FogWall("MSW_entrance", "o00_0500_0100", pvp: true),
+};
+
+
+
+
 
 
 
@@ -547,7 +604,13 @@ foreach (var pair in map_names)
             Console.WriteLine($"[ERROR] failed to find fog_wall_id: {fw.name}");
             Debug.Assert(false);
         }
-        pos_fog_walls.Add(fog_wall.Position);
+        if (fw.y_offset != null)
+        {
+            pos_fog_walls.Add(new Vector3(fog_wall.Position.X, fog_wall.Position.Y + (float)fw.y_offset, fog_wall.Position.Z));
+        } else
+        {
+            pos_fog_walls.Add(fog_wall.Position);
+        }
         rot_fog_walls.Add(fog_wall.Rotation);
         draw_groups.Add(fog_wall.DrawGroups);
     }
@@ -669,8 +732,14 @@ foreach (var pair in map_names)
     Debug.Assert(esd_script_begin >= 0);
     int event_param_begin = esd_script_begin;
 
-
-    Vector3 pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
+    Vector3 pos_offs_event_loc;
+    if (map.Events.MapOffsets.Count > 0)
+    {
+        pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
+    } else
+    {
+        pos_offs_event_loc = new Vector3(0.0f);
+    }
 
     // generate the objects and events for all the fog walls in the map
     for (int i=0; i< pos_fog_walls.Count; i++)

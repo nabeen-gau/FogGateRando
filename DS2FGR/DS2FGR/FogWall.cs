@@ -8,6 +8,7 @@ namespace FogWallNS
 		bool boss;
 		bool pvp;
 		bool boss_exit;
+		public float? y_offset;
 		public FogWall(String name, String map_name, bool boss = false, bool pvp = false, bool boss_exit = false)
 		{
 			this.name = name;
@@ -16,6 +17,7 @@ namespace FogWallNS
 			this.boss = boss;
 			this.pvp = pvp;
 			this.boss_exit = boss_exit;
+			this.y_offset = null;
 		}
 	};
 

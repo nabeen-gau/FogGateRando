@@ -151,31 +151,30 @@ static int parse_map_name(string mapCode)
     return int.Parse(numericPart);
 }
 
-String get_script_helper_fns(String map_name)
+String get_script_helper_fns(String map_name, int map_num)
 {
     String map_id = map_name.Substring(0, 6);
-    int map_num = parse_map_name(map_name);
 
-    return @$"def event_{map_id}_x84():
+    return @$"def event_{map_id}_x500():
     """"""[Reproduction] Text monument""""""
     """"""State 0,1: End state""""""
     return 0
 
-def event_{map_id}_x81(z31=_, action3=_):
+def event_{map_id}_x501(z31=_, action3=_):
     """"""[Preset] Text Stone Monument
     z31: Stele OBJ instance ID
     action3: Warp point
     """"""
     """"""State 0,1: [Reproduction] Text stone monument_SubState""""""
-    assert event_{map_id}_x84()
+    assert event_{map_id}_x500()
     """"""State 3: [Condition] Text stone monument_SubState""""""
-    assert event_{map_id}_x82(z15=z31)
+    assert event_{map_id}_x502(z15=z31)
     """"""State 2: [Execution] Text stone monument_SubState""""""
-    assert event_{map_id}_x83(action3=action3, z31=z31)
+    assert event_{map_id}_x503(action3=action3, z31=z31)
     """"""State 4: End state""""""
     return 0
 
-def event_{map_id}_x82(z15=_):
+def event_{map_id}_x502(z15=_):
     """"""[Conditions] Text stone monument
     z15: Stele OBJ instance ID
     """"""
@@ -185,7 +184,7 @@ def event_{map_id}_x82(z15=_):
     """"""State 2: End state""""""
     return 0
 
-def event_{map_id}_x83(action3=_, z31=_):
+def event_{map_id}_x503(action3=_, z31=_):
     """"""[Execution] Text stele
     action3: Warp Point
     z31: Stele OBJ instance ID
@@ -209,12 +208,13 @@ def event_{map_id}_{script_id}():
     """"""Text stele_01""""""
     """"""State 0,2: [Preset] Text Stone Monument_SubState""""""
     # action:3500:""Bonfires are places of respite\nYou may also light torches on them""
-    assert event_{map_id}_x81(z31={warp_src_id}, action3={warp_dest_id})
+    assert event_{map_id}_x501(z31={warp_src_id}, action3={warp_dest_id})
     """"""State 1: Rerun""""""
     RestartMachine()
     Quit()
 ";
 }
+
 
 void write_string_to_file(String str, String file_path)
 {
@@ -332,21 +332,34 @@ String mod_folder = Path.GetFullPath(@"..\..\..\..\..\mod");
 String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark Souls II");
 
 String warp_obj_name = "o02_1050_0000";
+String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
-
-Vector3 pos_offs_event_loc = new Vector3(
-    354.177948f + 143.81485f,
-    -5.39768f - 24.411251f,
-    132.339386f + 127.624603f
-);
 
 Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
     { MapName.ThingsBetwixt,           "m10_02_00_00"},
     { MapName.ForestOfTheFallenGiants, "m10_10_00_00"},
+    { MapName.BrightstoneCoveTseldora, "m10_14_00_00"},
 };
 
-Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
+//Dictionary<String, Vector3> pos_offs_event_locs = new Dictionary<String, Vector3>();
+//pos_offs_event_locs[map_names[MapName.ThingsBetwixt]] = new Vector3(
+//    354.177948f + 143.81485f,
+//    -5.39768f - 24.411251f,
+//    132.339386f + 127.624603f
+//);
+//pos_offs_event_locs[map_names[MapName.ForestOfTheFallenGiants]] = new Vector3(
+//    -92.767761f - 115.234161f,
+//    40.606827f - 50.518635f,
+//    143.311371f - 10.292664f
+//);
+//pos_offs_event_locs[map_names[MapName.BrightstoneCoveTseldora]] = new Vector3(
+//    628.525085f + 3.126953f,
+//    -116.178986f + 22.221207f,
+//    51.958515f + 35.234276f
+//);
+
+Dictionary < String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
 fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut1_entry", "o00_0500_0000", 10020600),
     new FogWall("TB_tut1_exit",  "o00_0500_0001", 10020605),
@@ -356,46 +369,65 @@ fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut2_exit",  "o00_0500_0004", 10020625),
 };
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall("FOFG_last_giant",            "o00_0500_0000", 10100600, boss: true),
-    new FogWall("FOFG_pursuer_entry",         "o00_0500_0002", 10100610, boss: true),
-    new FogWall("FOFG_pursuer_exit",          "o00_0500_0003", 10100611, boss: true, boss_exit: true),
-    new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0004", 10100630),
-    new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0005", 10100631),
-    new FogWall("FOFG_first_fog_wall",        "o00_0501_0001", 10100632),
+    new FogWall("FOFG_last_giant",            "o00_0501_0001", 10100600, boss: true),
+    new FogWall("FOFG_pursuer_entry",         "o00_0501_0003", 10100610, boss: true),
+    new FogWall("FOFG_pursuer_exit",          "o00_0500_0004", 10100611, boss: true, boss_exit: true),
+    new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0000", 10100630),
+    new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0003", 10100631),
+    new FogWall("FOFG_first_fog_wall",        "o00_0500_0002", 10100632),
     new FogWall("FOFG_PVP_majula_to_forest",  "o00_0501_0002", 10100633, pvp: true),
-    new FogWall("FOFG_PVP_to_pursuer",        "o00_0501_0003", 10100640, pvp: true),
+    new FogWall("FOFG_PVP_to_pursuer",        "o00_0500_0005", 10100640, pvp: true),
 };
+fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
+    new FogWall("BCT_congregation_entry", "o00_0500_0000", 10140603, boss: true),
+    new FogWall("BCT_congregation_exit",  "o00_0500_0001", 10140600, boss: true, boss_exit: true),
+    new FogWall("BCT_area_entry",         "o00_0500_0002", 10140604, pvp: true),
+    new FogWall("BCT_freya_exit",         "o00_0501_0001", 10140601, boss: true, boss_exit: true),
+    new FogWall("BCT_freya_entry",        "o00_0502_0000", 10140602, boss: true),
+};
+
 
 // object id postpended to o02_1050_ for creating the new warp object
 Dictionary<String, int> warp_object_begin_list = new Dictionary<String, int> { 
-    { "m10_02_00_00", 1000 },
-    { "m10_10_00_00", 1000} 
+    { map_names[MapName.ThingsBetwixt],           1000 },
+    { map_names[MapName.ForestOfTheFallenGiants], 1000 },
+    { map_names[MapName.BrightstoneCoveTseldora], 1000 },
 };
 
 // esd script begin index
 Dictionary<string, int> esd_script_begin_list = new Dictionary<string, int> {
-    { "m10_02_00_00", 1201 },
-    { "m10_10_00_00", 1001 }
+    { map_names[MapName.ThingsBetwixt],           1201 },
+    { map_names[MapName.ForestOfTheFallenGiants], 1001 },
+    { map_names[MapName.BrightstoneCoveTseldora], 1001 },
 };
 
 Dictionary<string, int> warp_obj_inst_begin_list = new Dictionary<string, int> {
-    { "m10_02_00_00", 10021122 },
-    { "m10_10_00_00", 10100712 }
+    { map_names[MapName.ThingsBetwixt],           10021122 },
+    { map_names[MapName.ForestOfTheFallenGiants], 10100712 },
+    { map_names[MapName.BrightstoneCoveTseldora], 10140709 },
 };
 
 Dictionary<string, int> warp_point_begin_list = new Dictionary<string, int> {
-    { "m10_02_00_00", 500001 },
-    { "m10_10_00_00", 1017 }
+    { map_names[MapName.ThingsBetwixt],           500001 },
+    { map_names[MapName.ForestOfTheFallenGiants], 1017 },
+    { map_names[MapName.BrightstoneCoveTseldora], 1010 },
 };
+
+Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
+foreach(var mn in map_names)
+{
+    warp_map_id[mn.Value] = parse_map_name(mn.Value);
+}
 
 String ezstate_path = Path.Join(mod_folder, "ezstate");
 int warp_obj_idx = -1;
 int warp_obj_inst_idx = -1;
 MSB2.Part.Object? warp_obj = null;
+MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
 
 //for (int _i = 0; _i < map_names.Length; _i++)
-for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
+for (int _i = (int)MapName.ThingsBetwixt; _i < map_names.Count; _i++)
 {
     String map_name = map_names[(MapName)_i];
 
@@ -425,11 +457,22 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
     String path = check_backup(esd_script_path);
     String esd_script = read_string_from_file(path);
     esd_script += "##Generated by DS2SFogGateRando##\n";
-    esd_script += get_script_helper_fns(map_name);
+    esd_script += get_script_helper_fns(map_name, warp_map_id[map_name]);
 
     // do this only for things betwixt: m10_02_00_00
-    if (map_name == "m10_02_00_00")
+    if (map_name == map_names[MapName.ThingsBetwixt])
     {
+        // get the model out of the map
+        for (int i=0; i<map.Models.Objects.Count; i++)
+        {
+            var model = map.Models.Objects[i];
+            if (model.Name == warp_obj_model_name)
+            {
+                warp_model = model.DeepCopy();
+                break;
+            }
+        }
+
         // get the object to be used for warping
         for (int i = 0; i < map.Parts.Objects.Count; i++)
         {
@@ -451,9 +494,16 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
                 break;
             }
         }
+    } 
+    else // for maps other than Things Betwixt
+    {
+        // add warp_model to the map model list
+        Debug.Assert(warp_model != null);
+        map.Models.Add(warp_model);
     }
 
     // check if the object was found
+    Debug.Assert(warp_model != null);
     Debug.Assert(warp_obj_idx >= 0);
     Debug.Assert(warp_obj_inst_idx >= 0);
     Debug.Assert(warp_obj != null);
@@ -461,9 +511,9 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
 
     // get all the fog walls in the map and create a list of their
     // postion, rotation and draw groups
-    List<Vector3> pos_fog_walls = new List<Vector3>();
-    List<Vector3> rot_fog_walls = new List<Vector3>();
-    List<uint> draw_groups      = new List<uint>();
+    List<Vector3> pos_fog_walls  = new List<Vector3>();
+    List<Vector3> rot_fog_walls  = new List<Vector3>();
+    List<uint[]> draw_groups = new List<uint[]>();
 
     foreach (var fw in fog_wall_dict[map_name])
     {
@@ -484,7 +534,7 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
         }
         pos_fog_walls.Add(fog_wall.Position);
         rot_fog_walls.Add(fog_wall.Rotation);
-        draw_groups.Add(fog_wall.DrawGroups[0]);
+        draw_groups.Add(fog_wall.DrawGroups);
     }
 
     // disable fog gates
@@ -534,6 +584,8 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
     }
     Debug.Assert(event_loc_insert_loc >= 0);
 
+    Vector3 pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
+
     // generate the objects and events for all the fog walls in the map
     for (int i=0; i< pos_fog_walls.Count; i++)
     {
@@ -544,9 +596,15 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
         obj.Rotation = rot_fog_walls[i];
         obj.Name = "o02_1050_" + format_int_to_str(warp_obj_begin, 4);
         obj.MapObjectInstanceParamID = warp_obj_inst_begin;
-        obj.DrawGroups[0] = 0;
-        //obj.DrawGroups[0] = draw_groups[i]; // this makes the dummy object visible
-        obj.DispGroups[0] = draw_groups[i];
+        for (int j=0; j<obj.DrawGroups.Length; j++)
+        {
+            obj.DrawGroups[j] = 0;
+            obj.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+        }
+        for (int j=0; j<obj.DispGroups.Length; j++)
+        {
+            obj.DispGroups[j] = draw_groups[i][j];
+        }
         map.Parts.Objects.Add(obj);
 
         // create and add new map peice in behind of the fog door
@@ -554,11 +612,17 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
         Debug.Assert(obj2 != null);
         obj2.Position = pos_fog_walls[i];
         obj2.Rotation = vector3_flip_y(rot_fog_walls[i]);
-        obj2.Name = "o02_1050_" + format_int_to_str(warp_obj_begin, 4);
+        obj2.Name = "o02_1050_" + format_int_to_str(warp_obj_begin+1, 4);
         obj2.MapObjectInstanceParamID = warp_obj_inst_begin + 1;
-        obj2.DrawGroups[0] = 0;
-        //obj2.DrawGroups[0] = draw_groups[i]; // this makes the dummy object visible
-        obj2.DispGroups[0] = draw_groups[i];
+        for (int j = 0; j < obj.DrawGroups.Length; j++)
+        {
+            obj2.DrawGroups[j] = 0;
+            obj2.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+        }
+        for (int j = 0; j < obj2.DispGroups.Length; j++)
+        {
+            obj2.DispGroups[j] = draw_groups[i][j];
+        }
         map.Parts.Objects.Add(obj2);
 
 
@@ -609,8 +673,8 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
             warp_point_begin,
             $"eventloc_{warp_point_begin}",
             get_event_loc_def_paramdef_ex(
-                param_event_loc, 
-                vector3_move(pos_fog_walls[i] + pos_offs_event_loc, rot_fog_walls[i], -1), 
+                param_event_loc,
+                vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], -1), 
                 rot_fog_walls[i]
             )
         );
@@ -622,7 +686,7 @@ for (int _i = (int)MapName.ThingsBetwixt; _i < 1; _i++)
             $"eventloc_{warp_point_begin + 1}",
             get_event_loc_def_paramdef_ex(
                 param_event_loc,
-                vector3_move(pos_fog_walls[i] + pos_offs_event_loc, rot_fog_walls[i], 1),
+                vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], 1),
                 rot_fog_walls[i]
             )
         );

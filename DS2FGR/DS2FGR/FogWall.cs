@@ -22,7 +22,8 @@ namespace FogWallNS
 	enum MapName
 	{
 		ThingsBetwixt = 0,
-		ForestOfTheFallenGiants
+		ForestOfTheFallenGiants,
+		BrightstoneCoveTseldora,
 	}
 
 }

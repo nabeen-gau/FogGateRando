@@ -12,7 +12,12 @@ namespace FogWallNS
 		public bool cutscene;
 		public bool boss_exit;
 		public Vector3? offset;
-        public FogWall(String name, String map_name, int boss = -1, bool pvp = false, bool boss_exit = false, bool cutscene = false)
+		public int event_id; // cutscene event id
+		public BossName enum_id;
+		public int destruction_flag;
+        public FogWall(String name, String map_name, BossName boss_enum_id = BossName.None,
+			int boss = -1, int event_id = -1,
+			bool pvp = false, bool boss_exit = false, bool cutscene = false)
 		{
 			this.name = name;
 			this.map_name = map_name;
@@ -22,6 +27,9 @@ namespace FogWallNS
 			this.boss_exit = boss_exit;
 			this.offset = null;
 			this.cutscene = cutscene;
+			this.event_id = event_id;
+			this.enum_id = boss_enum_id;
+			this.destruction_flag = -1;
 		}
 	};
 
@@ -57,8 +65,9 @@ namespace FogWallNS
 		MemoryoftheKing
 	}
 
-	enum BossName
+	public enum BossName
 	{
+		None,
 		LastGiant,
 		RoyalRatVanguard,
         Pursuer,

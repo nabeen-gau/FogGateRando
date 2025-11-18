@@ -155,61 +155,57 @@ String get_script_helper_fns(String map_name, int map_num)
 {
     String map_id = map_name.Substring(0, 6);
 
-    return @$"def event_{map_id}_x500():
-    """"""[Reproduction] Text monument""""""
-    """"""State 0,1: End state""""""
+    return @$"
+def event_{map_id}_x501(warp_obj_inst_id=_, event_loc=_):
+    """"""
+    [Function] wait until interact button is pressed on `warp_obj_inst_id` and warp to `event_loc`
+    """"""
+    assert event_{map_id}_x502(warp_obj_inst_id=warp_obj_inst_id)
+    assert event_{map_id}_x503(event_loc=event_loc, warp_obj_inst_id=warp_obj_inst_id)
     return 0
 
-def event_{map_id}_x501(z31=_, action3=_):
-    """"""[Preset] Text Stone Monument
-    z31: Stele OBJ instance ID
-    action3: Warp point
+def event_{map_id}_x502(warp_obj_inst_id=_):
     """"""
-    """"""State 0,1: [Reproduction] Text stone monument_SubState""""""
-    assert event_{map_id}_x500()
-    """"""State 3: [Condition] Text stone monument_SubState""""""
-    assert event_{map_id}_x502(z15=z31)
-    """"""State 2: [Execution] Text stone monument_SubState""""""
-    assert event_{map_id}_x503(action3=action3, z31=z31)
-    """"""State 4: End state""""""
-    return 0
-
-def event_{map_id}_x502(z15=_):
-    """"""[Conditions] Text stone monument
-    z15: Stele OBJ instance ID
+    [Conditions] Wait until interact button is pressed on `warp_obj_inst_id`
     """"""
-    """"""State 0,1: Wait for decision to check""""""
-    IsObjSearched(0, z15)
+    IsObjSearched(0, warp_obj_inst_id)
     assert ConditionGroup(0)
-    """"""State 2: End state""""""
     return 0
 
-def event_{map_id}_x503(action3=_, z31=_):
-    """"""[Execution] Text stele
-    action3: Warp Point
-    z31: Stele OBJ instance ID
+def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_):
     """"""
-    """"""State 0,2: Disable key guide""""""
-    DisableObjKeyGuide(z31, 1)
+    [Execution] Warp to the given event_location
+    """"""
+    DisableObjKeyGuide(warp_obj_inst_id, 1)
     ProhibitInGameMenu(1)
     ProhibitPlayerOperation(1)
     SetPlayerInvincible(1)
-    PlayCutsceneAndWarpToMap(0, 0, {map_num}, action3, 0)
+    PlayCutsceneAndWarpToMap(0, 0, {map_num}, event_loc, 0)
     assert CutsceneWarpEnded() != 0
-    DisableObjKeyGuide(z31, 0)
+    DisableObjKeyGuide(warp_obj_inst_id, 0)
     ProhibitInGameMenu(0)
     ProhibitPlayerOperation(0)
     SetPlayerInvincible(0)
-    """"""State 3: Activate key guide""""""
-    """"""State 4: End state""""""
     return 0
 
-def event_{map_id}_x504(z1=1034000):
-    """"""State 0,1: Did you beat the boss?""""""
-    IsEventBossKill(0, z1, 0, 1)
+def event_{map_id}_x504(battle_id=_):
+    """"""Wait until the boss of given battle_id is defeated""""""
+    IsEventBossKill(0, battle_id, 0, 1)
     assert ConditionGroup(0)
-    """"""State 2: End state""""""
     return 0
+
+def event_{map_id}_x505(flag8=_):
+    """"""[Reproduction] Is boss dead?
+    flag8: Boss destruction flag
+    """"""
+    """"""State 0,1: Are you fighting the boss?""""""
+    if GetEventFlag(flag8) != 0:
+        """"""State 3: the boss is dead""""""
+        return 1
+    else:
+        """"""State 2: the boss is not dead""""""
+        return 0
+
 ";
 }
 
@@ -218,49 +214,68 @@ String generate_esd_script(String map_name, int script_id, int warp_src_id, int 
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
-    """"""Text stele_01""""""
-    """"""State 0,2: [Preset] Text Stone Monument_SubState""""""
-    # action:3500:""Bonfires are places of respite\nYou may also light torches on them""
-    assert event_{map_id}_x501(z31={warp_src_id}, action3={warp_dest_id})
-    """"""State 1: Rerun""""""
+    """"""State 0,2: [Preset] Normal fog gate event""""""
+    assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
     RestartMachine()
     Quit()
 ";
 }
 
-String generate_esd_script_boss(String map_name, int script_id, int warp_src_id, int warp_dest_id, int boss_battle_id)
+String generate_esd_script_boss(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
 {
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
-    """"""Text stele_01""""""
-    """"""State 0,2: [Preset] Text Stone Monument_SubState""""""
-    # action:3500:""Bonfires are places of respite\nYou may also light torches on them""
+    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event""""""
     DisableObjKeyGuide({warp_src_id}, 1)
-    assert event_{map_id}_x504(z1={boss_battle_id})
+    assert event_{map_id}_x504(battle_id={fw.boss})
     DisableObjKeyGuide({warp_src_id}, 0)
-    assert event_{map_id}_x501(z31={warp_src_id}, action3={warp_dest_id})
+    assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    RestartMachine()
+    Quit()
+";
+}
+
+String generate_esd_script_boss_cutscene(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
+{
+    String map_id = map_name.Substring(0, 6);
+    Debug.Assert(fw.event_id > 0);
+    Debug.Assert(fw.boss > 0);
+    Debug.Assert(fw.instance_id > 0);
+    return $@"
+def event_{map_id}_{script_id}():
+    """"""Text stele_01""""""
+    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event with cutscene""""""
+    IsObjSearched(0, {warp_src_id})
+    assert ConditionGroup(0)
+    if CompareObjStateId({fw.instance_id}, 100, 0):
+        assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    else:
+        ChangeObjState({fw.instance_id}, 100)
+        assert CompareObjStateId({fw.instance_id}, 100, 0)
+        if EventEnded({fw.event_id}) != 0:
+            assert event_{map_id}_x503(warp_obj_inst_id={fw.instance_id}, event_loc={warp_dest_id})
     """"""State 1: Rerun""""""
     RestartMachine()
     Quit()
 ";
 }
 
-String generate_esd_script_boss_cutscene(String map_name, int script_id, int warp_src_id, int warp_dest_id, int boss_battle_id, int fog_gate_id)
+// when cutscene boss is loaded you can't just simply check for it to be dead
+String generate_esd_script_boss_cutscene_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
 {
+    Debug.Assert(fw.destruction_flag > 0);
     String map_id = map_name.Substring(0, 6);
-    return $@"
+    return @$"
 def event_{map_id}_{script_id}():
-    """"""Text stele_01""""""
-    """"""State 0,2: [Preset] Text Stone Monument_SubState""""""
-    IsObjSearched(0, {warp_src_id})
-    assert ConditionGroup(0)
-    if CompareObjStateId({fog_gate_id}, 100, 0):
-        assert event_m10_10_x501(z31={warp_src_id}, action3={warp_dest_id})
-    else:
-        ChangeObjState({fog_gate_id}, 100)
-        assert CompareObjStateId({fog_gate_id}, 100, 0)
-    """"""State 1: Rerun""""""
+    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    call = event_m10_10_x505(flag8={fw.destruction_flag})
+    if call.Get() == 1:
+        DisableObjKeyGuide({warp_src_id}, 0)
+        assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    elif call.Get() == 0:
+        pass
     RestartMachine()
     Quit()
 ";
@@ -271,6 +286,7 @@ void write_string_to_file(String str, String file_path)
 {
     try
     {
+        str = str.Replace("\r\n", "\n");
         File.WriteAllText(file_path, str);
         Console.WriteLine($"[SUCCESS] {file_path} created.");
     }
@@ -311,14 +327,15 @@ static void run_external_command(string command_path, string arguments)
     process.StartInfo.CreateNoWindow = true;
     try
     {
+        Console.WriteLine($"[COMMAND] {command_path} {arguments}");
         process.Start();
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
 
-        Console.WriteLine($"[COMMAND] {command_path} {arguments}");
         if (!string.IsNullOrEmpty(error))
         {
+            Console.WriteLine("[Output]" + output);
             Console.WriteLine("[Error] " + error);
         } else
         {
@@ -393,6 +410,18 @@ Dictionary<BossName, int> boss_battle_ids = new Dictionary<BossName, int>()
     {BossName.Pursuer, 1010000 },
 };
 
+// cutscene event id: EventEnded(id)
+Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
+{
+    {BossName.LastGiant, 6510 },
+    {BossName.Pursuer, 6010 },
+};
+
+Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>()
+{
+    {BossName.LastGiant, 110000081 },
+    {BossName.Pursuer, 110000086 },
+};
 
 Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
@@ -400,7 +429,7 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.Majula,                       "m10_04_00_00"},
     { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
     //{ MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
-    { MapName.AldiasKeep,                   "m10_15_00_00"},
+    //{ MapName.AldiasKeep,                   "m10_15_00_00"},
     //{ MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
     //{ MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
     //{ MapName.NomansWharf,                  "m10_18_00_00"},
@@ -449,9 +478,9 @@ fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
 fog_wall_dict[map_names[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
 fog_wall_dict[map_names[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall("FOFG_last_giant",            "o00_0501_0001", boss: boss_battle_ids[BossName.LastGiant], cutscene: true),
-    new FogWall("FOFG_pursuer_entry",         "o00_0501_0003", boss: boss_battle_ids[BossName.Pursuer], cutscene: true), // y_offset = 10.090f - 6.001f
-    new FogWall("FOFG_pursuer_exit",          "o00_0500_0004", boss: boss_battle_ids[BossName.Pursuer], boss_exit: true, cutscene: true),
+    new FogWall("FOFG_last_giant",            "o00_0501_0001", boss_enum_id: BossName.LastGiant, cutscene: true),
+    new FogWall("FOFG_pursuer_entry",         "o00_0501_0003", boss_enum_id: BossName.Pursuer, cutscene: true), // y_offset = 10.090f - 6.001f
+    new FogWall("FOFG_pursuer_exit",          "o00_0500_0004", boss_enum_id: BossName.Pursuer, boss_exit: true, cutscene: true),
     new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0000"),
     new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0003"),
     new FogWall("FOFG_first_fog_wall",        "o00_0500_0002"),
@@ -466,11 +495,11 @@ fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]][1].offset = new Vector
 //    new FogWall("BCT_freya_exit",         "o00_0501_0001", boss: true, boss_exit: true),
 //    new FogWall("BCT_freya_entry",        "o00_0502_0000", boss: true),
 //};
-fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
-    new FogWall("BCT_guardian_drag_entry", "o00_0501_0000", boss: 1015000),
-    new FogWall("BCT_guardian_drag_exit",  "o00_0501_0001", boss: 1015000, boss_exit: true),
-    new FogWall("AK_entry",                "o00_0501_0002", pvp: true),
-};
+//fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
+//    new FogWall("BCT_guardian_drag_entry", "o00_0501_0000", boss: 1015000),
+//    new FogWall("BCT_guardian_drag_exit",  "o00_0501_0001", boss: 1015000, boss_exit: true),
+//    new FogWall("AK_entry",                "o00_0501_0002", pvp: true),
+//};
 //fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
 //    new FogWall("LB_gargoyles_entry",   "o00_0500_0000", boss: true),
 //    new FogWall("LB_sentinels_exit",    "o00_0500_0001", boss: true, boss_exit: true),
@@ -549,10 +578,10 @@ fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
 //};
 //fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
 fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
-    new FogWall("DoP_rat_exit",    "o00_0500_0000", boss: boss_battle_ids[BossName.RoyalRatVanguard], boss_exit: true),
+    new FogWall("DoP_rat_exit",    "o00_0500_0000", boss_enum_id: BossName.RoyalRatVanguard, boss_exit: true),
     new FogWall("DoP_to_rat_boss", "o00_0500_0001", pvp: true),
     new FogWall("DoP_entrance",    "o00_0500_0002", pvp: true),
-    new FogWall("DoP_rat_entry",   "o00_0501_0000", boss: boss_battle_ids[BossName.RoyalRatVanguard]),
+    new FogWall("DoP_rat_entry",   "o00_0501_0000", boss_enum_id: BossName.RoyalRatVanguard),
 };
 //fog_wall_dict[map_names[MapName.GraveofSaints]] = new List<FogWall> {
 //    new FogWall("GoS_entrance",    "o00_0500_0000", pvp: true),
@@ -639,6 +668,28 @@ fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
 //};
 //fog_wall_dict[map_names[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
 
+foreach (var kvp in fog_wall_dict)
+{
+    string map_name = kvp.Key;
+    List<FogWall> fog_walls = kvp.Value;
+
+    for (int i = 0; i < fog_walls.Count; i++)
+    {
+        var fog_wall = fog_walls[i];
+
+        if (fog_wall.enum_id != BossName.None)
+        {
+            if (fog_wall.cutscene)
+            {
+                fog_wall.event_id = boss_event_ids[fog_wall.enum_id];
+                fog_wall.destruction_flag = boss_destruction_flags[fog_wall.enum_id];
+            }
+            fog_wall.boss = boss_battle_ids[fog_wall.enum_id];
+        }
+    }
+}
+
+
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
 foreach(var mn in map_names)
 {
@@ -651,7 +702,7 @@ int warp_obj_inst_idx = -1;
 MSB2.Part.Object? warp_obj = null;
 MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
-
+String py_files_list = "";
 foreach (var pair in map_names)
 {
     String map_name = pair.Value;
@@ -751,7 +802,6 @@ foreach (var pair in map_names)
     List<Vector3> pos_fog_walls  = new List<Vector3>();
     List<Vector3> rot_fog_walls  = new List<Vector3>();
     List<uint[]> draw_groups = new List<uint[]>();
-
     foreach (var fw in fog_wall_dict[map_name])
     {
         MSB2.Part.Object? fog_wall = null;
@@ -1016,13 +1066,26 @@ foreach (var pair in map_names)
         // generate and update the esd script for infront of fogdoor
         if (fw.boss > 0 && fw.boss_exit) // add condition to prevent player from leaving
         {
-            esd_script += generate_esd_script_boss(
-                map_name,
-                esd_script_begin,
-                warp_obj_inst_begin,
-                warp_point_begin,
-                fw.boss
-            );
+            if (fw.cutscene)
+            {
+                esd_script += generate_esd_script_boss_cutscene_behind(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    fw
+                );
+            }
+            else
+            {
+                esd_script += generate_esd_script_boss(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    fw
+                );
+            }
         }
         else if (fw.boss > 0 && !fw.boss_exit && fw.cutscene)
         {
@@ -1031,8 +1094,7 @@ foreach (var pair in map_names)
                 esd_script_begin,
                 warp_obj_inst_begin,
                 warp_point_begin,
-                fw.boss,
-                fw.instance_id
+                fw
             );
         }
         else
@@ -1048,13 +1110,25 @@ foreach (var pair in map_names)
         // generate and update the esd script for behind of fogdoor
         if (fw.boss > 0 && !fw.boss_exit) // add condition to prevent player from leaving
         {
-            esd_script += generate_esd_script_boss(
-                map_name,
-                esd_script_begin + 1,
-                warp_obj_inst_begin + 1,
-                warp_point_begin + 1,
-                fw.boss
-            );
+            if (fw.cutscene) {
+                esd_script += generate_esd_script_boss_cutscene_behind(
+                    map_name,
+                    esd_script_begin + 1,
+                    warp_obj_inst_begin + 1,
+                    warp_point_begin + 1,
+                    fw
+                );
+            }
+            else
+            {
+                esd_script += generate_esd_script_boss(
+                    map_name,
+                    esd_script_begin + 1,
+                    warp_obj_inst_begin + 1,
+                    warp_point_begin + 1,
+                    fw
+                );
+            }
         }
         else
         {
@@ -1078,11 +1152,8 @@ foreach (var pair in map_names)
 
     // generate esd file from script
     write_string_to_file(esd_script, esd_script_path);
-    String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
-    String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir {mod_folder} -backup -i {esd_script_path} -writeloose {Path.Join(ezstate_path, "%e.esd")}";
-    Debug.Assert(File.Exists(esdtool_path));
-    run_external_command(esdtool_path, arguments);
-
+    py_files_list += $" {esd_script_path}";
+    
     // write the modded files
     byte[] map_bin = map.Write();
     byte[] obj_inst_param_bin = obj_inst_param.Write();
@@ -1094,7 +1165,7 @@ foreach (var pair in map_names)
         File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
         File.WriteAllBytes(param_event_path, event_param_bin);
         File.WriteAllBytes(param_event_loc_path, event_loc_bin);
-        Console.WriteLine($"[SUCCESS] {map_name} done!");
+        Console.WriteLine($"[SUCCESS] {map_name} done!\n");
     }
     catch (IOException ex)
     {
@@ -1105,3 +1176,9 @@ foreach (var pair in map_names)
         Console.WriteLine($"[ERROR] Access denied. {ex.Message}");
     }
 }
+
+// run the esdtool.exe to generate esd files from python files
+String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
+String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir {mod_folder} -backup -i{py_files_list} -writeloose {Path.Join(ezstate_path, "%e.esd")}";
+Debug.Assert(File.Exists(esdtool_path));
+run_external_command(esdtool_path, arguments);

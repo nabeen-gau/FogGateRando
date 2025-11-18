@@ -15,6 +15,7 @@ namespace FogWallNS
 		public int event_id; // cutscene event id
 		public BossName enum_id;
 		public int destruction_flag;
+		public int twin_gate_id;
         public FogWall(String name, String map_name, BossName boss_enum_id = BossName.None,
 			int boss = -1, int event_id = -1,
 			bool pvp = false, bool boss_exit = false, bool cutscene = false)
@@ -30,6 +31,7 @@ namespace FogWallNS
 			this.event_id = event_id;
 			this.enum_id = boss_enum_id;
 			this.destruction_flag = -1;
+			this.twin_gate_id = -1;
 		}
 	};
 
@@ -71,5 +73,6 @@ namespace FogWallNS
 		LastGiant,
 		RoyalRatVanguard,
         Pursuer,
+		GuardianDragon,
 	}
 }

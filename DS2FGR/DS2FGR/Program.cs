@@ -314,6 +314,30 @@ def event_{map_id}_{script_id}():
 ";
 }
 
+String generate_vendrick_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int hostility_id, FogWall fw)
+{
+    Debug.Assert(fw.destruction_flag > 0);
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    call = event_{map_id}_x505(flag8={fw.destruction_flag})
+    if call.Get() == 1:
+        DisableObjKeyGuide({warp_src_id}, 0)
+        assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    elif call.Get() == 0:
+        CompareEventFlag(0, {hostility_id}, 1)
+        if ConditionGroup(0):
+            pass
+        else:
+            DisableObjKeyGuide({warp_src_id}, 0)
+            assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    RestartMachine()
+    Quit()
+";
+}
+
 void write_string_to_file(String str, String file_path)
 {
     try
@@ -431,6 +455,7 @@ String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark 
 String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
+const int vendricks_hostility_flag = 224000088;
 
 Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<BossName, List<StringChange>>() {
     {BossName.OldIronKing, new List<StringChange>{
@@ -1283,13 +1308,27 @@ foreach (var pair in map_names)
             }
             else
             {
-                esd_script += generate_esd_script_boss_from_behind(
-                    map_name,
-                    esd_script_begin + 1,
-                    warp_obj_inst_begin + 1,
-                    warp_point_begin + 1,
-                    fw
-                );
+                if (fw.enum_id == BossName.Vendrick)
+                {
+                    esd_script += generate_vendrick_fog_gate_script(
+                        map_name,
+                        esd_script_begin + 1,
+                        warp_obj_inst_begin + 1,
+                        warp_point_begin + 1,
+                        vendricks_hostility_flag,
+                        fw
+                    );
+                }
+                else
+                {
+                    esd_script += generate_esd_script_boss_from_behind(
+                        map_name,
+                        esd_script_begin + 1,
+                        warp_obj_inst_begin + 1,
+                        warp_point_begin + 1,
+                        fw
+                    );
+                }
             }
         }
         else if (fw.destruction_flag > 0 && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play

@@ -115,4 +115,17 @@ namespace FogWallNS
 		BurntIvoryKing,
 		LudAndZallen
 	}
+
+
+	public struct StringChange
+	{
+		public String from;
+		public String to;
+
+		public StringChange(String from, String to)
+		{
+			this.from = from;
+			this.to = to;
+		}
+	}
 }

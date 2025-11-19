@@ -433,9 +433,23 @@ String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
 
+Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<BossName, List<StringChange>>() {
+    {BossName.OldIronKing, new List<StringChange>{
+        new StringChange(
+            @"CompareObjState(0, 10190610, 100, 0)
+    assert ConditionGroup(0)", ""),
+        new StringChange(
+            @"CompareObjState(0, 10190610, 100, 0)
+            assert ConditionGroup(0)", ""
+        )}
+    },
+};
+
+
 Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
 {
     {BossName.TheDukesDearFreja, 100000 },
+    {BossName.OldIronKing, 1500000 }, // not necessary
 };
 
 // cutscene event id: EventEnded(id)
@@ -1068,6 +1082,17 @@ foreach (var pair in map_names)
         if (fw.reverse)
         {
             rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
+        }
+        if (boss_script_change.Keys.Contains(fw.enum_id))
+        {
+            if (fw.destruction_flag > 0 && !fw.boss_exit)
+            {
+
+                for (int j=0; j<boss_script_change[fw.enum_id].Count; j++)
+                {
+                    esd_script = esd_script.Replace(boss_script_change[fw.enum_id][j].from, boss_script_change[fw.enum_id][j].to);
+                }
+            }
         }
         // create and add new map peice in front of the fog door
         var obj = (MSB2.Part.Object)warp_obj.DeepCopy();

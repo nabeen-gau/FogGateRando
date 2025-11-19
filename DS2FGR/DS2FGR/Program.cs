@@ -458,7 +458,7 @@ Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
     {BossName.TheLastGiant, 6510 },
     {BossName.ThePursuer, 6010 },
     {BossName.TheLostSinner, 15010 },
-    {BossName.ExecutionersChariot, 3010 },
+    {BossName.ExecutionersChariot, 9010 },
     {BossName.OldIronKing, 15010 },
     {BossName.TheDukesDearFreja, 4010 },
     {BossName.TheRotten, 5010 },
@@ -633,7 +633,7 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
     new FogWall("IronKeep_lava_pit_after_smelter", "o00_0500_0002"),
     new FogWall("IronKeep_belfry_exit",            "o00_0500_0003"),
     new FogWall("IronKeep_belfry_entry",           "o00_0500_0004"),
-    new FogWall("IronKeep_OIK_entry",              "o00_0500_0005", boss_enum_id: BossName.OldIronKing, cutscene: true), // TODO: OIK doesnot spawn
+    new FogWall("IronKeep_OIK_entry",              "o00_0500_0005", boss_enum_id: BossName.OldIronKing, cutscene: true),
     new FogWall("IronKeep_OIK_exit",               "o00_0500_0006", boss_enum_id: BossName.OldIronKing, boss_exit: true, cutscene: true),
     new FogWall("IronKeep_smelter_exit",           "o00_0500_0007", boss_enum_id: BossName.SmelterDemon, boss_exit: true),
     new FogWall("IronKeep_smelter_to_bonfire",     "o00_0500_0008", pvp: true),
@@ -642,9 +642,9 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
     new FogWall("IK_from_EarthenPeak",       "o00_0501_0000", pvp: true),
 };
 fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
-    new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_enum_id: BossName.SkeletonLords, use_second_death_check_impl: true), // TODO: can leave the fight without killing them all
+    new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_enum_id: BossName.SkeletonLords, use_second_death_check_impl: true),
     new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_enum_id: BossName.ExecutionersChariot, cutscene: true), // TODO: cutscene does not work and boss does not spawn
-    new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_enum_id: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true), // TODO: can leave the fight without killing them all
+    new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_enum_id: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
     new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_enum_id: BossName.ExecutionersChariot, boss_exit: true, cutscene: true), // TODO: can leave from the fight before defeating it
     new FogWall("HuntsmanCopse_from_majula",      "o00_0501_0007", pvp: true),
 };

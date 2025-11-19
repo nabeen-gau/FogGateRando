@@ -485,7 +485,7 @@ Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>
     {BossName.RuinSentinels,                116000081},
     {BossName.TheLostSinner,                116000086},
     {BossName.BelfryGargoyles,              116000091},
-    {BossName.SkeletonLords,                1023000}, // 123000086 check if all skeletons are dead? def event_m10_23_x140():
+    {BossName.SkeletonLords,                1023000},
     {BossName.ExecutionersChariot,          123000081},
     {BossName.CovetousDemon,                117000081},
     {BossName.MythaTheBanefulQueen,         117000091},
@@ -600,17 +600,15 @@ fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
     new FogWall("LostBastille_gargoyles_entry",   "o00_0500_0000", boss_enum_id: BossName.BelfryGargoyles),
-    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true), // TODO: can still leave during boss fight: is reversed
+    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true, reverse: true), // TODO: can still leave during boss fight: is reversed
     new FogWall("LostBastille_to_sinners_rise",   "o00_0500_0005"),
     new FogWall("LostBastille_gargoyles_exit",    "o00_0500_0006", boss_enum_id: BossName.BelfryGargoyles, boss_exit: true),
-    // TODO(ruin sentinels)(fix cannot enter from the other side from the bonfire): also i can leave from this door during boss fight? should this be allowed because to get here we must spawn inside the normal boss exit from below (technically outside the fog gate) and cannot hurt the boss as well.
-    // all other fog gates in the fight seem ok for now
     // TODO: add boss fight triggers near hidden fog gates
     new FogWall("LostBastille_sentinels_hidden1", "o00_0500_0007", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
     new FogWall("LostBastille_sentinels_hidden2", "o00_0500_0008", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
     new FogWall("LostBastille_sentinels_hidden3", "o00_0500_0009", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
     new FogWall("LostBastille_sentinels_hidden4", "o00_0500_0010", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
-    new FogWall("LostBastille_sentinels_upper",   "o00_0500_0011", boss_enum_id: BossName.RuinSentinels), 
+    new FogWall("LostBastille_sentinels_upper_exit",   "o00_0500_0011", reverse: true), 
     new FogWall("LostBastille_from_wharf",        "o00_0500_0012", pvp: true),
     new FogWall("LostBastille_to_belfry",         "o00_0500_0013", pvp: true), // TODO: cannot access when lockstone is not used but can be used from the other side
     new FogWall("LostBastille_sentinels_entry",   "o00_0501_0000", boss_enum_id: BossName.RuinSentinels),

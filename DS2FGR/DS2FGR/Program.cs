@@ -264,6 +264,7 @@ def event_{map_id}_{script_id}():
     """"""State 0,2: [Preset] Boss({fw.name}) fog gate event with cutscene""""""
     IsObjSearched(0, {warp_src_id})
     assert ConditionGroup(0)
+    DisableObjKeyGuide({warp_src_id}, 1)
     if CompareObjStateId({fog_gate_instance_id}, 100, 0):
         assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
     else:
@@ -271,6 +272,7 @@ def event_{map_id}_{script_id}():
         assert CompareObjStateId({fog_gate_instance_id}, 100, 0)
         if EventEnded({fw.event_id}) != 0:
             assert event_{map_id}_x503(warp_obj_inst_id={fw.instance_id}, event_loc={warp_dest_id})
+    DisableObjKeyGuide({warp_src_id}, 0)
     """"""State 1: Rerun""""""
     RestartMachine()
     Quit()
@@ -533,7 +535,7 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.NomansWharf,                  "m10_18_00_00"},
     { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
     { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
-    //{ MapName.TheGutterBlackGulch,          "m10_25_00_00"},
+    { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
     //{ MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
     //{ MapName.MajulaShadedWoods,            "m10_29_00_00"},
     ////{ MapName.HeidesToNoMansWharf,          "m10_30_00_00"}, // disabled (no fog gates)
@@ -600,7 +602,7 @@ fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
     new FogWall("LostBastille_gargoyles_entry",   "o00_0500_0000", boss_enum_id: BossName.BelfryGargoyles),
-    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true, reverse: true), // TODO: can still leave during boss fight: is reversed
+    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true, reverse: true),
     new FogWall("LostBastille_to_sinners_rise",   "o00_0500_0005"),
     new FogWall("LostBastille_gargoyles_exit",    "o00_0500_0006", boss_enum_id: BossName.BelfryGargoyles, boss_exit: true),
     // TODO: add boss fight triggers near hidden fog gates
@@ -643,18 +645,18 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
     new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_enum_id: BossName.SkeletonLords, use_second_death_check_impl: true),
-    new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_enum_id: BossName.ExecutionersChariot, cutscene: true), // TODO: cutscene does not work and boss does not spawn
+    new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_enum_id: BossName.ExecutionersChariot, cutscene: true),
     new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_enum_id: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
-    new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_enum_id: BossName.ExecutionersChariot, boss_exit: true, cutscene: true), // TODO: can leave from the fight before defeating it
+    new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_enum_id: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
     new FogWall("HuntsmanCopse_from_majula",      "o00_0501_0007", pvp: true),
 };
-//fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
-//    new FogWall("GBG_to_gutter_mid_bonfire", "o00_0500_0000"),
-//    new FogWall("GBG_rotten_exit",           "o00_0500_0001", boss: true, boss_exit: true),
-//    new FogWall("GBG_gulch_entry",           "o00_0501_0000"),
-//    new FogWall("GBG_from_GoS",              "o00_0501_0001", pvp: true),
-//    new FogWall("GBG_rotten_entry",          "o00_0503_0100", boss: true),
-//};
+fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
+    new FogWall("GBG_to_gutter_mid_bonfire", "o00_0500_0000"),
+    new FogWall("GBG_rotten_exit",           "o00_0500_0001", boss_enum_id: BossName.TheRotten, boss_exit: true, cutscene: true),
+    new FogWall("GBG_gulch_entry",           "o00_0501_0000"),
+    new FogWall("GBG_from_GoS",              "o00_0501_0001", pvp: true),
+    new FogWall("GBG_rotten_entry",          "o00_0503_0100", boss_enum_id: BossName.TheRotten, cutscene: true),
+};
 //fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
 //    new FogWall("DA_entrance",   "o00_0501_0000"),
 //    new FogWall("DA_boss_entry", "o00_0502_0000", boss: true),

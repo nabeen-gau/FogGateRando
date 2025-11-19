@@ -86,6 +86,10 @@ PARAMDEF get_obj_inst_def_paramdef_fogwall(PARAM param)
 {
     return get_obj_inst_def_paramdef_ex(param, 110, 6, 0, 255, 255);
 }
+PARAMDEF get_obj_inst_def_paramdef_eventloc(PARAM param)
+{
+    return get_obj_inst_def_paramdef_ex(param, 110, 6, 0, 255, 255);
+}
 
 PARAMDEF get_event_param_def_paramdef_ex(PARAM param, int event_id, int flag_id)
 {
@@ -126,6 +130,29 @@ PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 ro
     pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", 1.0f));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk28", 0));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", 2560));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk2C", 0));
+    return pd;
+}
+
+// TODO: fix this
+PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 position, Vector3 rotation)
+{
+    PARAMDEF pd = new_paramdef(param);
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_x", position.X));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_y", position.Y));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_z", position.Z));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_x", rotation.X));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_y", rotation.Y));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "rot_z", rotation.Z));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Region Type", 3));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk19", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1A", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1B", 255));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_x", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_y", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk28", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", 2567));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk2C", 0));
     return pd;
 }
@@ -269,6 +296,21 @@ def event_{map_id}_{script_id}():
 ";
 }
 
+String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
+{
+    Debug.Assert(fw.destruction_flag > 0);
+    String map_id = map_name.Substring(0, 6);
+    return @$"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    assert event_{map_id}_x504(battle_id={fw.destruction_flag})
+    DisableObjKeyGuide({warp_src_id}, 0)
+    assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    RestartMachine()
+    Quit()
+";
+}
 
 void write_string_to_file(String str, String file_path)
 {
@@ -391,33 +433,92 @@ String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
 
+Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
+{
+    {BossName.TheDukesDearFreja, 100000 },
+};
+
 // cutscene event id: EventEnded(id)
 Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
 {
-    {BossName.LastGiant, 6510 },
-    {BossName.Pursuer, 6010 },
+    {BossName.TheLastGiant, 6510 },
+    {BossName.ThePursuer, 6010 },
+    {BossName.TheLostSinner, 15010 },
+    {BossName.ExecutionersChariot, 3010 },
+    {BossName.OldIronKing, 15010 },
+    {BossName.TheDukesDearFreja, 4010 },
+    {BossName.TheRotten, 5010 },
+    {BossName.VelstadtTheRoyalAegis, 4010 },
 };
 
+//NOTES (for final battle):
+//flag2: Global flag for determining the destruction of giants = 100972
+//flag3: Other flags for queen knight AC destruction determination = 221000091
+//z10: Boss Battle ID(for consecutive battles) = 1021021
+//def event_m20_21_x123(z5=1100000, z6=1100000, z7=102, z8=1021020, z9=221020090, flag2=100972, flag3=221000091,z10 = 1021021):
+// end roll execution judgement flag = 221000094
+// noteworthy fn: def event_m20_21_x118():
+
+
+// GetEventFlag
 Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>()
 {
-    {BossName.LastGiant, 110000081 },
-    {BossName.Pursuer, 110000086 },
-    {BossName.RoyalRatVanguard, 133000081 },
-    {BossName.GuardianDragon, 115000081 },
+    {BossName.TheLastGiant,                 110000081},
+    {BossName.ThePursuer,                   110000086},
+    {BossName.Dragonrider,                  131000081},
+    {BossName.OldDragonslayer,              131000086},
+    {BossName.FlexileSentry,                118000081},
+    {BossName.RuinSentinels,                116000081},
+    {BossName.TheLostSinner,                116000086},
+    {BossName.BelfryGargoyles,              116000091},
+    {BossName.SkeletonLords,                1023000}, // 123000086 check if all skeletons are dead? def event_m10_23_x140():
+    {BossName.ExecutionersChariot,          123000081},
+    {BossName.CovetousDemon,                117000081},
+    {BossName.MythaTheBanefulQueen,         117000091},
+    {BossName.SmelterDemon,                 119000081},
+    {BossName.OldIronKing,                  119000086},
+    {BossName.ScorpionessNajka,             132000081},
+    {BossName.RoyalRatAuthority,            133000081},
+    {BossName.ProwlingMagusAndCongregation, 114000096},
+    {BossName.TheDukesDearFreja,            114000081},
+    {BossName.RoyalRatVanguard,             134000081},
+    {BossName.TheRotten,                    125000081},
+    {BossName.TwinDragonrider,              221000081}, //221000081
+    {BossName.LookingGlassKnight,           221000086}, //221000086
+    {BossName.DemonofSong,                  211000081},
+    {BossName.VelstadtTheRoyalAegis,        224000081},
+    {BossName.Vendrick,                     224000086},
+    {BossName.GuardianDragon,               115000081},
+    {BossName.AncientDragon,                127000081},
+    {BossName.GiantLord,                    210000081},
+    {BossName.ThroneWatcherAndDefender,     221000091}, // 221000091
+    {BossName.Nashandra,                    221000096}, // 221000096 (giant lord = 100972)
+    {BossName.AldiaScholarOfTheFirstSin,    221000006}, // 221000006
+    {BossName.Darklurker,                   403000081},
+    {BossName.ElanaTheSqualidQueen,         535000081},
+    {BossName.SinhTheSlumberingDragon,      535000096},
+    {BossName.Gankfight,                    535000091}, // petrochemical root = 535000091
+    {BossName.FumeKnight,                   536000081},
+    {BossName.SirAlonne,                    536000086},
+    {BossName.BlueSmelterDemon,             536000091},
+    {BossName.AavaTheKingsPet,              537000081},
+    {BossName.BurntIvoryKing,               537000086},
+    {BossName.LudAndZallen,                 537000091},
 };
+
 
 Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 {
     { MapName.ThingsBetwixt,                "m10_02_00_00"},
     { MapName.Majula,                       "m10_04_00_00"},
     { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
-    //{ MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
+    { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
     { MapName.AldiasKeep,                   "m10_15_00_00"},
-    //{ MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
-    //{ MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
-    //{ MapName.NomansWharf,                  "m10_18_00_00"},
-    //{ MapName.IronKeepBelfrySol,            "m10_19_00_00"},
-    //{ MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
+    { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
+    { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
+    { MapName.NomansWharf,                  "m10_18_00_00"},
+    { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
+    { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
     //{ MapName.TheGutterBlackGulch,          "m10_25_00_00"},
     //{ MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
     //{ MapName.MajulaShadedWoods,            "m10_29_00_00"},
@@ -451,87 +552,90 @@ fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
     //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
     //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
     //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
-    new FogWall("Ma_to_forest",  "o00_0501_0100", pvp: true),
-    new FogWall("Ma_to_GoS",     "o00_0501_0101", pvp: true), // y_offset = 43.455 - 42.057
-    new FogWall("Ma_to_HC",      "o00_0501_0102", pvp: true),
-    new FogWall("Ma_to_Rotunda", "o00_0501_0103", pvp: true),
-    new FogWall("Ma_to_Gutter",  "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
-    new FogWall("Ma_to_SW",      "o00_0502_0103", pvp: true),
+    new FogWall("Majula_to_Forest",        "o00_0501_0100", pvp: true),
+    new FogWall("Majula_to_GraveOfSaints", "o00_0501_0101", pvp: true), // y_offset = 43.455 - 42.057
+    new FogWall("Majula_to_HuntsmanCopse", "o00_0501_0102", pvp: true),
+    new FogWall("Majula_to_Rotunda",       "o00_0501_0103", pvp: true),
+    new FogWall("Majula_to_Gutter",        "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
+    new FogWall("Majula_to_ShadedWoods",   "o00_0502_0103", pvp: true),
 };
 fog_wall_dict[map_names[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
 fog_wall_dict[map_names[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall("FOFG_last_giant",            "o00_0501_0001", boss_enum_id: BossName.LastGiant, cutscene: true),
-    new FogWall("FOFG_pursuer_entry",         "o00_0501_0003", boss_enum_id: BossName.Pursuer, cutscene: true), // y_offset = 10.090f - 6.001f
-    new FogWall("FOFG_pursuer_exit",          "o00_0500_0004", boss_enum_id: BossName.Pursuer, boss_exit: true, cutscene: true),
-    new FogWall("FOFG_balcony_to_last_giant", "o00_0500_0000"),
-    new FogWall("FOFG_fire_pit_to_outside",   "o00_0500_0003"),
-    new FogWall("FOFG_first_fog_wall",        "o00_0500_0002"),
-    new FogWall("FOFG_PVP_majula_to_forest",  "o00_0501_0002", pvp: true),
-    new FogWall("FOFG_PVP_to_pursuer",        "o00_0500_0005", pvp: true),
+    new FogWall("ForestOfFG_last_giant",            "o00_0501_0001", boss_enum_id: BossName.TheLastGiant, cutscene: true),
+    new FogWall("ForestOfFG_pursuer_entry",         "o00_0501_0003", boss_enum_id: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
+    new FogWall("ForestOfFG_pursuer_exit",          "o00_0500_0004", boss_enum_id: BossName.ThePursuer, boss_exit: true, cutscene: true),
+    new FogWall("ForestOfFG_balcony_to_last_giant", "o00_0500_0000"),
+    new FogWall("ForestOfFG_fire_pit_to_outside",   "o00_0500_0003"),
+    new FogWall("ForestOfFG_first_fog_wall",        "o00_0500_0002"),
+    new FogWall("ForestOfFG_PVP_majula_to_forest",  "o00_0501_0002", pvp: true),
+    new FogWall("ForestOfFG_PVP_to_pursuer",        "o00_0500_0005", pvp: true),
 };
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
-//fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
-//    new FogWall("BCT_congregation_entry", "o00_0500_0000", boss: true),
-//    new FogWall("BCT_congregation_exit",  "o00_0500_0001", boss: true, boss_exit: true),
-//    new FogWall("BCT_area_entry",         "o00_0500_0002", pvp: true),
-//    new FogWall("BCT_freya_exit",         "o00_0501_0001", boss: true, boss_exit: true),
-//    new FogWall("BCT_freya_entry",        "o00_0502_0000", boss: true),
-//};
-fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
-    new FogWall("BCT_guardian_drag_entry", "o00_0501_0000", boss_enum_id: BossName.GuardianDragon),
-    new FogWall("BCT_guardian_drag_exit",  "o00_0501_0001", boss_enum_id: BossName.GuardianDragon, boss_exit: true),
-    new FogWall("AK_entry",                "o00_0501_0002", pvp: true),
+fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
+    new FogWall("BCTseldora_congregation_entry", "o00_0500_0000", boss_enum_id: BossName.ProwlingMagusAndCongregation),
+    new FogWall("BCTseldora_congregation_exit",  "o00_0500_0001", boss_enum_id: BossName.ProwlingMagusAndCongregation, boss_exit: true),
+    new FogWall("BCTseldora_area_entry",         "o00_0500_0002", pvp: true),
+    new FogWall("BCTseldora_freya_exit",         "o00_0501_0001", boss_enum_id: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
+    new FogWall("BCTseldora_freya_entry",        "o00_0502_0000", boss_enum_id: BossName.TheDukesDearFreja, cutscene: true),
 };
-//fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
-//    new FogWall("LB_gargoyles_entry",   "o00_0500_0000", boss: true),
-//    new FogWall("LB_sentinels_exit",    "o00_0500_0001", boss: true, boss_exit: true),
-//    new FogWall("LB_to_sinners_rise",   "o00_0500_0005"),
-//    new FogWall("LB_gargoyles_exit",    "o00_0500_0006", boss: true, boss_exit: true),
-//    new FogWall("LB_sentinels_hidden1", "o00_0500_0007", boss: true, boss_exit: true),
-//    new FogWall("LB_sentinels_hidden2", "o00_0500_0008", boss: true, boss_exit: true),
-//    new FogWall("LB_sentinels_hidden3", "o00_0500_0009", boss: true, boss_exit: true),
-//    new FogWall("LB_sentinels_hidden4", "o00_0500_0010", boss: true, boss_exit: true),
-//    new FogWall("LB_sentinels_upper",   "o00_0500_0011", boss: true),
-//    new FogWall("LB_from_wharf",        "o00_0500_0012", pvp: true),
-//    new FogWall("LB_to_belfry",         "o00_0500_0013", pvp: true),
-//    new FogWall("LB_sentinels_entry",   "o00_0501_0000", boss: true),
-//    new FogWall("LB_lost_sinner_entry", "o00_0501_0002", boss: true),
-//    new FogWall("LB_lost_sinner_exit",  "o00_0501_0003", boss: true, boss_exit: true),
-//};
-//fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
-//    new FogWall("EP_covetous_entry",   "o00_0500_0000", boss: true),
-//    new FogWall("EP_mid_bonfire",      "o00_0500_0001"),
-//    new FogWall("EP_mytha_entry",      "o00_0500_0002", boss: true),
-//    new FogWall("EP_covetous_exit",    "o00_0500_0003", boss: true, boss_exit: true),
-//    new FogWall("EP_mytha_exit",       "o00_0501_0000", boss: true, boss_exit: true),
-//    new FogWall("EP_from_skele_lords", "o00_0501_0001", pvp: true),
-//};
-//fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
-//    new FogWall("NMW_sentry_exit",  "o00_0500_0000", boss: true, boss_exit: true),
-//    new FogWall("NMW_sentry_entry", "o00_0500_0001", boss: true),
-//    new FogWall("NMW_from_heides",  "o00_0501_0000", pvp: true),
-//};
-//fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
-//    new FogWall("IK_smelter_entry",          "o00_0500_0000", boss: true),
-//    new FogWall("IK_lava_pit_after_smelter", "o00_0500_0002"),
-//    new FogWall("IK_belfry_exit",            "o00_0500_0003"),
-//    new FogWall("IK_belfry_entry",           "o00_0500_0004"),
-//    new FogWall("IK_OIK_entry",              "o00_0500_0005", boss: true),
-//    new FogWall("IK_OIK_exit",               "o00_0500_0006", boss: true, boss_exit: true),
-//    new FogWall("IK_smelter_exit",           "o00_0500_0007", boss: true, boss_exit: true),
-//    new FogWall("IK_smelter_to_bonfire",     "o00_0500_0008", pvp: true),
-//    new FogWall("IK_pharros_to_belfry",      "o00_0500_0010", pvp: true),
-////    new FogWall("IK_belfry_entry",           "o00_0500_0011"), // duplicate of another maybe for pvp
-//    new FogWall("IK_from_EP",                "o00_0501_0000", pvp: true),
-//};
-//fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
-//    new FogWall("HC_skelelords_entry", "o00_0501_0000", boss: true),
-//    new FogWall("HC_chariot_entry",    "o00_0501_0001", boss: true),
-//    new FogWall("HC_skelelords_exit",  "o00_0501_0004", boss: true, boss_exit: true),
-//    new FogWall("HC_chariot_exit",     "o00_0501_0006", boss: true, boss_exit: true),
-//    new FogWall("HC_from_majula",      "o00_0501_0007", pvp: true),
-//};
+fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
+    new FogWall("AldiasKeep_guardian_dragon_entry", "o00_0501_0000", boss_enum_id: BossName.GuardianDragon),
+    new FogWall("AldiasKeep_guardian_dragon_exit",  "o00_0501_0001", boss_enum_id: BossName.GuardianDragon, boss_exit: true),
+    new FogWall("AldiasKeep_entry",                 "o00_0501_0002", pvp: true),
+};
+fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
+    new FogWall("LostBastille_gargoyles_entry",   "o00_0500_0000", boss_enum_id: BossName.BelfryGargoyles),
+    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true), // TODO: can still leave during boss fight: is reversed
+    new FogWall("LostBastille_to_sinners_rise",   "o00_0500_0005"),
+    new FogWall("LostBastille_gargoyles_exit",    "o00_0500_0006", boss_enum_id: BossName.BelfryGargoyles, boss_exit: true),
+    // TODO(ruin sentinels)(fix cannot enter from the other side from the bonfire): also i can leave from this door during boss fight? should this be allowed because to get here we must spawn inside the normal boss exit from below (technically outside the fog gate) and cannot hurt the boss as well.
+    // all other fog gates in the fight seem ok for now
+    // TODO: add boss fight triggers near hidden fog gates
+    new FogWall("LostBastille_sentinels_hidden1", "o00_0500_0007", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
+    new FogWall("LostBastille_sentinels_hidden2", "o00_0500_0008", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
+    new FogWall("LostBastille_sentinels_hidden3", "o00_0500_0009", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
+    new FogWall("LostBastille_sentinels_hidden4", "o00_0500_0010", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
+    new FogWall("LostBastille_sentinels_upper",   "o00_0500_0011", boss_enum_id: BossName.RuinSentinels), 
+    new FogWall("LostBastille_from_wharf",        "o00_0500_0012", pvp: true),
+    new FogWall("LostBastille_to_belfry",         "o00_0500_0013", pvp: true), // TODO: cannot access when lockstone is not used but can be used from the other side
+    new FogWall("LostBastille_sentinels_entry",   "o00_0501_0000", boss_enum_id: BossName.RuinSentinels),
+    new FogWall("LostBastille_lost_sinner_entry", "o00_0501_0002", boss_enum_id: BossName.TheLostSinner, cutscene: true),
+    new FogWall("LostBastille_lost_sinner_exit",  "o00_0501_0003", boss_enum_id: BossName.TheLostSinner, boss_exit: true, cutscene: true),
+};
+fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
+    new FogWall("EarthenPeak_covetous_entry",   "o00_0500_0000", boss_enum_id: BossName.CovetousDemon),
+    new FogWall("EarthenPeak_mid_bonfire",      "o00_0500_0001"),
+    new FogWall("EarthenPeak_mytha_entry",      "o00_0500_0002", boss_enum_id: BossName.MythaTheBanefulQueen),
+    new FogWall("EarthenPeak_covetous_exit",    "o00_0500_0003", boss_enum_id: BossName.CovetousDemon, boss_exit: true),
+    new FogWall("EarthenPeak_mytha_exit",       "o00_0501_0000", boss_enum_id: BossName.MythaTheBanefulQueen, boss_exit: true),
+    new FogWall("EarthenPeak_from_skele_lords", "o00_0501_0001", pvp: true),
+};
+fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
+    new FogWall("NMWharf_sentry_exit",  "o00_0500_0000", boss_enum_id: BossName.FlexileSentry, boss_exit: true),
+    new FogWall("NMWharf_sentry_entry", "o00_0500_0001", boss_enum_id: BossName.FlexileSentry),
+    new FogWall("NMWharf_from_heides",  "o00_0501_0000", pvp: true),
+};
+fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
+    new FogWall("IronKeep_smelter_entry",          "o00_0500_0000", boss_enum_id: BossName.SmelterDemon),
+    new FogWall("IronKeep_lava_pit_after_smelter", "o00_0500_0002"),
+    new FogWall("IronKeep_belfry_exit",            "o00_0500_0003"),
+    new FogWall("IronKeep_belfry_entry",           "o00_0500_0004"),
+    new FogWall("IronKeep_OIK_entry",              "o00_0500_0005", boss_enum_id: BossName.OldIronKing, cutscene: true), // TODO: OIK doesnot spawn
+    new FogWall("IronKeep_OIK_exit",               "o00_0500_0006", boss_enum_id: BossName.OldIronKing, boss_exit: true, cutscene: true),
+    new FogWall("IronKeep_smelter_exit",           "o00_0500_0007", boss_enum_id: BossName.SmelterDemon, boss_exit: true),
+    new FogWall("IronKeep_smelter_to_bonfire",     "o00_0500_0008", pvp: true),
+    new FogWall("IronKeep_pharros_to_belfry",      "o00_0500_0010", pvp: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
+//    new FogWall("IK_belfry_entry",           "o00_0500_0011"), // duplicate of another maybe for pvp
+    new FogWall("IK_from_EarthenPeak",       "o00_0501_0000", pvp: true),
+};
+fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
+    new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_enum_id: BossName.SkeletonLords, use_second_death_check_impl: true), // TODO: can leave the fight without killing them all
+    new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_enum_id: BossName.ExecutionersChariot, cutscene: true), // TODO: cutscene does not work and boss does not spawn
+    new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_enum_id: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true), // TODO: can leave the fight without killing them all
+    new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_enum_id: BossName.ExecutionersChariot, boss_exit: true, cutscene: true), // TODO: can leave from the fight before defeating it
+    new FogWall("HuntsmanCopse_from_majula",      "o00_0501_0007", pvp: true),
+};
 //fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
 //    new FogWall("GBG_to_gutter_mid_bonfire", "o00_0500_0000"),
 //    new FogWall("GBG_rotten_exit",           "o00_0500_0001", boss: true, boss_exit: true),
@@ -561,10 +665,10 @@ fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
 //};
 //fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
 fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
-    new FogWall("DoP_rat_exit",    "o00_0500_0000", boss_enum_id: BossName.RoyalRatVanguard, boss_exit: true),
+    new FogWall("DoP_rat_exit",    "o00_0500_0000", boss_enum_id: BossName.RoyalRatAuthority, boss_exit: true),
     new FogWall("DoP_to_rat_boss", "o00_0500_0001", pvp: true),
     new FogWall("DoP_entrance",    "o00_0500_0002", pvp: true),
-    new FogWall("DoP_rat_entry",   "o00_0501_0000", boss_enum_id: BossName.RoyalRatVanguard),
+    new FogWall("DoP_rat_entry",   "o00_0501_0000", boss_enum_id: BossName.RoyalRatAuthority),
 };
 //fog_wall_dict[map_names[MapName.GraveofSaints]] = new List<FogWall> {
 //    new FogWall("GoS_entrance",    "o00_0500_0000", pvp: true),
@@ -960,6 +1064,11 @@ foreach (var pair in map_names)
     // generate the objects and events for all the fog walls in the map
     for (int i=0; i< pos_fog_walls.Count; i++)
     {
+        FogWall fw = fog_wall_dict[map_name][i];
+        if (fw.reverse)
+        {
+            rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
+        }
         // create and add new map peice in front of the fog door
         var obj = (MSB2.Part.Object)warp_obj.DeepCopy();
         Debug.Assert(obj != null);
@@ -1051,6 +1160,36 @@ foreach (var pair in map_names)
         );
         param_event_loc.Rows.Insert(event_loc_insert_loc, warp_point_row);
 
+        // adjust the boss spawn event loc to the warp point if the boss should spawn
+        if (fw.destruction_flag >= 0) // if the fog door contains the boss
+        {
+            if (boss_spawn_event_loc.Keys.Contains(fw.enum_id)) // if the spawn event loc is populated
+            {
+                if (!fw.boss_exit) // if it is the entry gate
+                {
+                    for (int j = 0; j < param_event_loc.Rows.Count; j++)
+                    {
+                        var row = param_event_loc.Rows[j];
+                        if (row.ID == boss_spawn_event_loc[fw.enum_id])
+                        {
+                            var new_row = new Row(
+                                row.ID,
+                                $"eventloc_{row.ID}",
+                                get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
+                                    vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], -1),
+                                    rot_fog_walls[i]
+                                )
+                            );
+                            param_event_loc.Rows.Remove(row);
+                            param_event_loc.Rows.Insert(j, new_row);
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+
         // create and add the new warp points infront the fog door
         var warp_point_row2 = new Row(
             warp_point_begin + 1,
@@ -1063,17 +1202,28 @@ foreach (var pair in map_names)
         );
         param_event_loc.Rows.Insert(event_loc_insert_loc + 1, warp_point_row2);
 
-        FogWall fw = fog_wall_dict[map_name][i];
         // generate and update the esd script for infront of fogdoor
         if (fw.destruction_flag > 0 && fw.boss_exit) // add condition to prevent player from leaving
         {
-            esd_script += generate_esd_script_boss_from_behind(
-                map_name,
-                esd_script_begin,
-                warp_obj_inst_begin,
-                warp_point_begin,
-                fw
-            );
+            if (fw.use_second_death_check_impl)
+            {
+                esd_script += generate_esd_script_boss_from_behind_v2(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    fw
+                );
+            } else
+            {
+                esd_script += generate_esd_script_boss_from_behind(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    fw
+                );
+            }
         }
         else if (fw.destruction_flag > 0 && !fw.boss_exit && fw.cutscene)
         {
@@ -1098,13 +1248,26 @@ foreach (var pair in map_names)
         // generate and update the esd script for behind of fogdoor
         if (fw.destruction_flag > 0 && !fw.boss_exit) // add condition to prevent player from leaving
         {
-            esd_script += generate_esd_script_boss_from_behind(
-                map_name,
-                esd_script_begin + 1,
-                warp_obj_inst_begin + 1,
-                warp_point_begin + 1,
-                fw
-            );
+            if (fw.use_second_death_check_impl)
+            {
+                esd_script += generate_esd_script_boss_from_behind_v2(
+                    map_name,
+                    esd_script_begin + 1,
+                    warp_obj_inst_begin + 1,
+                    warp_point_begin + 1,
+                    fw
+                );
+            }
+            else
+            {
+                esd_script += generate_esd_script_boss_from_behind(
+                    map_name,
+                    esd_script_begin + 1,
+                    warp_obj_inst_begin + 1,
+                    warp_point_begin + 1,
+                    fw
+                );
+            }
         }
         else if (fw.destruction_flag > 0 && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
         {

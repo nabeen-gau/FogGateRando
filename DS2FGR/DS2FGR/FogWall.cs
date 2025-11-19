@@ -16,14 +16,15 @@ namespace FogWallNS
 		public BossName enum_id;
 		public int destruction_flag;
 		public int twin_gate_id;
-        public FogWall(String name, String map_name, BossName boss_enum_id = BossName.None,
-			int boss = -1, int event_id = -1,
+		public bool use_second_death_check_impl;
+		public bool reverse;
+		public FogWall(String name, String map_name, BossName boss_enum_id = BossName.None,
+			int event_id = -1, bool use_second_death_check_impl = false, bool reverse = false,
 			bool pvp = false, bool boss_exit = false, bool cutscene = false)
 		{
 			this.name = name;
 			this.map_name = map_name;
 			this.instance_id = -1;
-			this.boss = boss;
 			this.pvp = pvp;
 			this.boss_exit = boss_exit;
 			this.offset = null;
@@ -32,6 +33,8 @@ namespace FogWallNS
 			this.enum_id = boss_enum_id;
 			this.destruction_flag = -1;
 			this.twin_gate_id = -1;
+			this.use_second_death_check_impl = use_second_death_check_impl;
+			this.reverse = reverse;
 		}
 	};
 
@@ -70,9 +73,46 @@ namespace FogWallNS
 	public enum BossName
 	{
 		None,
-		LastGiant,
+		TheLastGiant,
+        ThePursuer,
+		Dragonrider,
+		OldDragonslayer,
+		FlexileSentry,
+		RuinSentinels,
+		TheLostSinner,
+		BelfryGargoyles,
+		SkeletonLords,
+		ExecutionersChariot,
+		CovetousDemon,
+		MythaTheBanefulQueen,
+		SmelterDemon,
+		OldIronKing,
+		ScorpionessNajka,
+		RoyalRatAuthority,
+		ProwlingMagusAndCongregation,
+		TheDukesDearFreja,
 		RoyalRatVanguard,
-        Pursuer,
+		TheRotten,
+		TwinDragonrider,
+		LookingGlassKnight,
+		DemonofSong,
+		VelstadtTheRoyalAegis,
+		Vendrick,
 		GuardianDragon,
+		AncientDragon,
+		GiantLord,
+		ThroneWatcherAndDefender,
+		Nashandra,
+		AldiaScholarOfTheFirstSin,
+		Darklurker,
+		ElanaTheSqualidQueen,
+		SinhTheSlumberingDragon,
+		Gankfight,
+		FumeKnight,
+		SirAlonne,
+		BlueSmelterDemon,
+		AavaTheKingsPet,
+		BurntIvoryKing,
+		LudAndZallen
 	}
 }

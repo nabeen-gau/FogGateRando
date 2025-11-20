@@ -367,6 +367,61 @@ def event_{map_id}_{script_id}():
     return ret;
 }
 
+String generate_throne_room_entrance_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, 
+    int throne_duo_event_flag, int giant_lord_event_flag, int nashandra_cutscene_flag, FogWall fw)
+{
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Throne room entrance fog gate event""""""
+    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
+    call = event_{map_id}_x505(flag8={throne_duo_event_flag})
+    if call.Get() == 1:
+        CompareEventFlag(0, {giant_lord_event_flag}, 1)
+        if ConditionGroup(0):
+            ChangeObjState({fw.instance_id}, 100)
+            assert CompareObjStateId({fw.instance_id}, 100, 0)
+            assert EventEnded({nashandra_cutscene_flag}) != 0
+            assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+        else:
+            pass
+    elif call.Get() == 0:
+        pass
+    assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    RestartMachine()
+    Quit()
+";
+}
+String generate_throne_room_exit_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, 
+    int throne_duo_event_flag, int giant_lord_event_flag, FogWall fw)
+{
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_1010():
+    """"""State 0,2: [Preset] Throne room exit fog gate event""""""
+    # disable the prompt
+    DisableObjKeyGuide({warp_src_id}, 1)
+    # check if throne duo is dead?
+    call = event_{map_id}_x505(flag8={throne_duo_event_flag})
+    # if the throne duo is dead
+    if call.Get() == 1:
+        # check if the giant lord is dead
+        CompareEventFlag(0, {giant_lord_event_flag}, 0)
+        # if the giant lord is not dead
+        if ConditionGroup(0):
+            # enable the prompt
+            DisableObjKeyGuide({warp_src_id}, 0)
+            assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+        else:
+            pass
+    elif call.Get() == 0:
+        pass
+    RestartMachine()
+    Quit()
+";
+
+}
+
 void write_string_to_file(String str, String file_path)
 {
     try
@@ -485,6 +540,9 @@ String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
 const int vendricks_hostility_flag = 224000088;
+const int throne_watcher_defender_defeat_flag = 221000091;
+const int giant_lord_defeat_flag = 100972;
+const int nashandra_cutscene_flag = 12010;
 
 Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<BossName, List<StringChange>>() {
     {BossName.OldIronKing, new List<StringChange>{
@@ -501,14 +559,14 @@ Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<Bos
 Dictionary<String, List<int>> chasm_enemy_ids = new Dictionary<String, List<int>>()
 {
     {"DarkChasm_from_black_gulch_exit", new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
-    {"DarkChasm_dranglic_castle_exit",  new List<int>(){1004, 1009, 1012, 3100} },
+    {"DarkChasm_drangleic_castle_exit",  new List<int>(){1004, 1009, 1012, 3100} },
     {"DarkChasm_shaded_woods_exit",     new List<int>(){1000, 1002, 1003, 3000} },
 };
 
 Dictionary<String, int> chasm_event_flags = new()
 {
     {"DarkChasm_shaded_woods_exit",      403000001},
-    {"DarkChasm_dranglic_castle_exit",   403000002},
+    {"DarkChasm_drangleic_castle_exit",   403000002},
     {"DarkChasm_from_black_gulch_exit",  403000003},
 };
 
@@ -519,6 +577,14 @@ Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
     {BossName.OldIronKing, 1500000 }, // not necessary
 };
 
+// in event param if
+// 0x8 - 0xa = 0
+// 0xa = 1
+// 0xc = 0
+// 0xd = 5
+// 0xe - 0xf = 0
+// the event is for cutscene
+// for nashandra = 12010
 // cutscene event id: EventEnded(id)
 Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
 {
@@ -530,6 +596,7 @@ Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
     {BossName.TheDukesDearFreja, 4010 },
     {BossName.TheRotten, 5010 },
     {BossName.VelstadtTheRoyalAegis, 4010 },
+    {BossName.ThroneWatcherAndDefender, 12010 },
 };
 
 //NOTES (for final battle):
@@ -768,13 +835,13 @@ fog_wall_dict[map_names[MapName.ShrineofAmana]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
-    new FogWall("DC_mirror_knight_entry",     "o00_0501_0000", boss_enum_id: BossName.LookingGlassKnight),
-    new FogWall("DC_twin_dragonriders_entry", "o00_0501_0001", boss_enum_id: BossName.TwinDragonrider),
-    new FogWall("DC_twin_dragonriders_exit",  "o00_0501_0004", boss_enum_id: BossName.TwinDragonrider, boss_exit: true),
-    new FogWall("DC_mirror_knight_exit",      "o00_0501_0005", boss_enum_id: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
-    // new FogWall("DC_throne_room",             "o00_0501_0006", boss_enum_id: true),
-    new FogWall("DC_to_chasm_entrance",       "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
-    new FogWall("DC_entrance",                "o00_0504_0000", pvp: true),
+    new FogWall("DrangleicCastle_mirror_knight_entry",     "o00_0501_0000", boss_enum_id: BossName.LookingGlassKnight),
+    new FogWall("DrangleicCastle_twin_dragonriders_entry", "o00_0501_0001", boss_enum_id: BossName.TwinDragonrider),
+    new FogWall("DrangleicCastle_twin_dragonriders_exit",  "o00_0501_0004", boss_enum_id: BossName.TwinDragonrider, boss_exit: true),
+    new FogWall("DrangleicCastle_mirror_knight_exit",      "o00_0501_0005", boss_enum_id: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
+    new FogWall("DrangleicCastle_throne_room",             "o00_0501_0006", boss_enum_id: BossName.ThroneWatcherAndDefender, cutscene: true),
+    new FogWall("DrangleicCastle_to_chasm_entrance",       "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
+    new FogWall("DrangleicCastle_entrance",                "o00_0504_0000", pvp: true),
 };
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
@@ -787,7 +854,7 @@ fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall("DarkChasm_from_black_gulch_exit", "o00_0501_0000"),
-    new FogWall("DarkChasm_dranglic_castle_exit",  "o00_0501_0001"),
+    new FogWall("DarkChasm_drangleic_castle_exit",  "o00_0501_0001"),
     new FogWall("DarkChasm_shaded_woods_exit",     "o00_0501_0002"),
     new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss_enum_id: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
 };
@@ -1319,13 +1386,29 @@ foreach (var pair in map_names)
         }
         else if (fw.destruction_flag > 0 && !fw.boss_exit && fw.cutscene)
         {
-            esd_script += generate_esd_script_boss_cutscene(
-                map_name,
-                esd_script_begin,
-                warp_obj_inst_begin,
-                warp_point_begin,
-                fw
-            );
+            if (fw.enum_id == BossName.ThroneWatcherAndDefender)
+            {
+                esd_script += generate_throne_room_entrance_script(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    throne_watcher_defender_defeat_flag,
+                    giant_lord_defeat_flag,
+                    nashandra_cutscene_flag,
+                    fw
+                );
+            } 
+            else
+            {
+                esd_script += generate_esd_script_boss_cutscene(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    fw
+                );
+            }
         }
         else
         {
@@ -1376,6 +1459,18 @@ foreach (var pair in map_names)
                         warp_obj_inst_begin + 1,
                         warp_point_begin + 1,
                         vendricks_hostility_flag,
+                        fw
+                    );
+                }
+                else if (fw.enum_id == BossName.ThroneWatcherAndDefender)
+                {
+                    esd_script += generate_throne_room_exit_script(
+                        map_name,
+                        esd_script_begin + 1,
+                        warp_obj_inst_begin + 1,
+                        warp_point_begin + 1,
+                        throne_watcher_defender_defeat_flag,
+                        giant_lord_defeat_flag,
                         fw
                     );
                 }

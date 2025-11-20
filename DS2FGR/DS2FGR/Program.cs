@@ -614,9 +614,9 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.UndeadCrypt,                  "m20_24_00_00"},
     ////{ MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
     { MapName.DarkChasmofOld,               "m40_03_00_00"},
-    //{ MapName.ShulvaSanctumCity,            "m50_35_00_00"},
-    //{ MapName.BrumeTower,                   "m50_36_00_00"},
-    //{ MapName.FrozenEleumLoyce,             "m50_37_00_00"},
+    { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
+    { MapName.BrumeTower,                   "m50_36_00_00"},
+    { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
     ////{ MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
 };
 
@@ -791,49 +791,49 @@ fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss_enum_id: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
-//fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
-//    new FogWall("Shulva_sihn_entry",                  "o00_0500_0001", boss: true), // y_offset = 79.928f - 79.436f
-//    new FogWall("Shulva_elana_entry",                 "o00_0501_0000", boss: true), // y_offset = 71.928f - 71.637f
-//    new FogWall("Shulva_gank_entry",                  "o00_0501_0002", boss: true),
-//    new FogWall("Shulva_gank_exit",                   "o00_0501_0003", boss: true, boss_exit: true),
-//    new FogWall("Shulva_to_gank_fight_from_bonfire",  "o00_0501_0005", pvp: true),
-//    new FogWall("Shulva_entrance",                    "o00_0501_0007", pvp: true),
-//    //new FogWall("Shulva_between_sihn_elana",          "o00_0501_0008"), //disabled (duplicate)
-//    new FogWall("Shulva_between_sihn_elana2",         "o00_0501_0010"), // y_offset = 74.743797f - 73.291435f
-//    new FogWall("Shulva_to_gank_fight_from_bonfire2", "o00_0501_0011"),
-//    new FogWall("Shulva_near_jester_thomas",          "o00_0501_0012"), //y_offset = 41.540f - 41.289f
-//};
-//fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
-//fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
-//fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f);
-//fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
-//fog_wall_dict[map_names[MapName.BrumeTower]] = new List<FogWall> {
-//    new FogWall("DLC2_from_2nd_bonfire_to_center",          "o00_0500_0000"),
-//    new FogWall("DLC2_to_central_bonfire_room",             "o00_0500_0001"),
-//    new FogWall("DLC2_to_scorching_iron_sceptor_key_tower", "o00_0500_0002"),
-//    new FogWall("DLC2_sir_alonne_entry",                    "o00_0500_0003", boss: true),
-//    new FogWall("DLC2_sir_alonne_exit",                     "o00_0500_0004", boss: true, boss_exit: true),
-//    new FogWall("DLC2_raime_entry",                         "o00_0501_0000", boss: true), // y_offset = 59.822f - 59.297f
-//    new FogWall("DLC2_raime_exit",                          "o00_0501_0001", boss: true, boss_exit: true), //y_offset = 61.497f - 60.998f
-//    new FogWall("DLC2_smelter_entry",                       "o00_0501_0002", boss: true), //y_offset = 26.875f - 26.556f
-//    new FogWall("DLC2_smelter_exit",                        "o00_0501_0003", boss: true, boss_exit: true),
-//    new FogWall("DLC2_entrance",                            "o00_0501_0006"),
-//    new FogWall("DLC2_to_smelter_area",                     "o00_0501_0007"),
-//    //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
-//};
-//fog_wall_dict[map_names[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
-//fog_wall_dict[map_names[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
-//fog_wall_dict[map_names[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
-//fog_wall_dict[map_names[MapName.FrozenEleumLoyce]] = new List<FogWall> {
-//    new FogWall("DLC3_aava_exit",         "o00_0500_0001", boss: true, boss_exit: true),
-//    new FogWall("DLC3_after_getting_eye", "o00_0500_0002"),
-//    new FogWall("DLC3_ivory_king_entry",  "o00_0500_0003", boss: true),
-//    new FogWall("DLC3_2cats_entry",       "o00_0501_0003", boss: true),
-//    new FogWall("DLC3_aava_entry",        "o00_0501_0005", boss: true),
-//    new FogWall("DLC3_2cats_exit",        "o00_0501_0006", boss: true, boss_exit: true),
-//    new FogWall("DLC3_to_cathedral",      "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
-//};
-//fog_wall_dict[map_names[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
+fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
+    new FogWall("Shulva_sihn_entry",                  "o00_0500_0001", boss_enum_id: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
+    new FogWall("Shulva_elana_entry",                 "o00_0501_0000", boss_enum_id: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
+    new FogWall("Shulva_gank_entry",                  "o00_0501_0002", boss_enum_id: BossName.Gankfight),
+    new FogWall("Shulva_gank_exit",                   "o00_0501_0003", boss_enum_id: BossName.Gankfight, boss_exit: true),
+    new FogWall("Shulva_to_gank_fight_from_bonfire",  "o00_0501_0005", pvp: true),
+    new FogWall("Shulva_entrance",                    "o00_0501_0007", pvp: true),
+    //new FogWall("Shulva_between_sihn_elana",          "o00_0501_0008"), //disabled (duplicate)
+    new FogWall("Shulva_between_sihn_elana2",         "o00_0501_0010"), // y_offset = 74.743797f - 73.291435f
+    new FogWall("Shulva_to_gank_fight_from_bonfire2", "o00_0501_0011"),
+    new FogWall("Shulva_near_jester_thomas",          "o00_0501_0012"), //y_offset = 41.540f - 41.289f
+};
+fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
+fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
+fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f); // this is weird because of the inclined slope
+fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
+fog_wall_dict[map_names[MapName.BrumeTower]] = new List<FogWall> {
+    new FogWall("DLC2_from_2nd_bonfire_to_center",          "o00_0500_0000"),
+    new FogWall("DLC2_to_central_bonfire_room",             "o00_0500_0001"),
+    new FogWall("DLC2_to_scorching_iron_sceptor_key_tower", "o00_0500_0002"),
+    new FogWall("DLC2_sir_alonne_entry",                    "o00_0500_0003", boss_enum_id: BossName.SirAlonne),
+    new FogWall("DLC2_sir_alonne_exit",                     "o00_0500_0004", boss_enum_id: BossName.SirAlonne, boss_exit: true),
+    new FogWall("DLC2_raime_entry",                         "o00_0501_0000", boss_enum_id: BossName.FumeKnight), // y_offset = 59.822f - 59.297f
+    new FogWall("DLC2_raime_exit",                          "o00_0501_0001", boss_enum_id: BossName.FumeKnight, boss_exit: true, reverse: true), //y_offset = 61.497f - 60.998f
+    new FogWall("DLC2_smelter_entry",                       "o00_0501_0002", boss_enum_id: BossName.BlueSmelterDemon), //y_offset = 26.875f - 26.556f
+    new FogWall("DLC2_smelter_exit",                        "o00_0501_0003", boss_enum_id: BossName.BlueSmelterDemon, boss_exit: true),
+    new FogWall("DLC2_entrance",                            "o00_0501_0006"),
+    new FogWall("DLC2_to_smelter_area",                     "o00_0501_0007"),
+    //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
+};
+fog_wall_dict[map_names[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
+fog_wall_dict[map_names[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
+fog_wall_dict[map_names[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
+fog_wall_dict[map_names[MapName.FrozenEleumLoyce]] = new List<FogWall> {
+    new FogWall("DLC3_aava_exit",         "o00_0500_0001", boss_enum_id: BossName.AavaTheKingsPet, boss_exit: true),
+    new FogWall("DLC3_after_getting_eye", "o00_0500_0002"),
+    new FogWall("DLC3_ivory_king_entry",  "o00_0500_0003", boss_enum_id: BossName.BurntIvoryKing),
+    new FogWall("DLC3_2cats_entry",       "o00_0501_0003", boss_enum_id: BossName.LudAndZallen),
+    new FogWall("DLC3_aava_entry",        "o00_0501_0005", boss_enum_id: BossName.AavaTheKingsPet),
+    new FogWall("DLC3_2cats_exit",        "o00_0501_0006", boss_enum_id: BossName.LudAndZallen, boss_exit: true),
+    new FogWall("DLC3_to_cathedral",      "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
+};
+fog_wall_dict[map_names[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
 
 foreach (var kvp in fog_wall_dict)
 {

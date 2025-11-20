@@ -7,13 +7,12 @@ namespace FogWallNS
 		public String name;
 		public String map_name;
 		public int instance_id;
-		public int boss;
 		bool pvp;
 		public bool cutscene;
 		public bool boss_exit;
 		public Vector3? offset;
 		public int event_id; // cutscene event id
-		public BossName enum_id;
+		public BossName boss_name;
 		public int destruction_flag;
 		public int twin_gate_id;
 		public bool use_second_death_check_impl;
@@ -30,7 +29,7 @@ namespace FogWallNS
 			this.offset = null;
 			this.cutscene = cutscene;
 			this.event_id = event_id;
-			this.enum_id = boss_enum_id;
+			this.boss_name = boss_enum_id;
 			this.destruction_flag = -1;
 			this.twin_gate_id = -1;
 			this.use_second_death_check_impl = use_second_death_check_impl;
@@ -126,6 +125,18 @@ namespace FogWallNS
 		{
 			this.from = from;
 			this.to = to;
+		}
+	}
+
+	public struct EventID
+	{
+		public int event_loc_id;
+		public Vector3 position;
+
+		public EventID(int event_loc_id, Vector3 position)
+		{
+			this.event_loc_id = event_loc_id;
+			this.position = position;
 		}
 	}
 }

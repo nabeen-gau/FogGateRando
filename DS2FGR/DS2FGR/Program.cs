@@ -280,7 +280,7 @@ def event_{map_id}_{script_id}():
 
 String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
 {
-    Debug.Assert(fw.destruction_flag > 0);
+    Debug.Assert(fw.boss_name != BossName.None);
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
@@ -299,7 +299,7 @@ def event_{map_id}_{script_id}():
 
 String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, FogWall fw)
 {
-    Debug.Assert(fw.destruction_flag > 0);
+    Debug.Assert(fw.boss_name != BossName.None);
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
@@ -315,7 +315,7 @@ def event_{map_id}_{script_id}():
 
 String generate_vendrick_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int hostility_id, FogWall fw)
 {
-    Debug.Assert(fw.destruction_flag > 0);
+    Debug.Assert(fw.boss_name != BossName.None);
     String map_id = map_name.Substring(0, 6);
     return $@"
 def event_{map_id}_{script_id}():
@@ -574,7 +574,12 @@ Dictionary<String, int> chasm_event_flags = new()
 Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
 {
     {BossName.TheDukesDearFreja, 100000 },
-    {BossName.OldIronKing, 1500000 }, // not necessary
+    {BossName.OldIronKing, 1500000 },
+};
+
+Dictionary<BossName, EventID> boss_quitout_event_loc = new ()
+{
+    {BossName.Vendrick, new EventID(5000000, new Vector3(138.692612f, 19.494614f, 169.913712f)) },
 };
 
 // in event param if
@@ -912,13 +917,18 @@ foreach (var kvp in fog_wall_dict)
     {
         var fog_wall = fog_walls[i];
 
-        if (fog_wall.enum_id != BossName.None)
+        if (fog_wall.boss_name != BossName.None)
         {
             if (fog_wall.cutscene)
             {
-                fog_wall.event_id = boss_event_ids[fog_wall.enum_id];
+                fog_wall.event_id = boss_event_ids[fog_wall.boss_name];
             }
-            fog_wall.destruction_flag = boss_destruction_flags[fog_wall.enum_id];
+            fog_wall.destruction_flag = boss_destruction_flags[fog_wall.boss_name];
+        }
+
+        if (boss_quitout_event_loc.ContainsKey(fog_wall.boss_name))
+        {
+
         }
     }
 }
@@ -991,7 +1001,7 @@ foreach (var pair in map_names)
             {
                 if (i == j) continue;
                 var twin_fog_wall = fog_wall_dict[map_name][j];
-                if (twin_fog_wall.enum_id == fog_wall.enum_id)
+                if (twin_fog_wall.boss_name == fog_wall.boss_name)
                 {
                     fog_wall.twin_gate_id = twin_fog_wall.instance_id;
                     break;
@@ -1217,14 +1227,14 @@ foreach (var pair in map_names)
         {
             rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
         }
-        if (boss_script_change.Keys.Contains(fw.enum_id))
+        if (boss_script_change.Keys.Contains(fw.boss_name))
         {
-            if (fw.destruction_flag > 0 && !fw.boss_exit)
+            if (fw.boss_name != BossName.None && !fw.boss_exit)
             {
 
-                for (int j=0; j<boss_script_change[fw.enum_id].Count; j++)
+                for (int j=0; j<boss_script_change[fw.boss_name].Count; j++)
                 {
-                    esd_script = esd_script.Replace(boss_script_change[fw.enum_id][j].from, boss_script_change[fw.enum_id][j].to);
+                    esd_script = esd_script.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
                 }
             }
         }
@@ -1322,14 +1332,14 @@ foreach (var pair in map_names)
         // adjust the boss spawn event loc to the warp point if the boss should spawn
         if (fw.destruction_flag >= 0) // if the fog door contains the boss
         {
-            if (boss_spawn_event_loc.Keys.Contains(fw.enum_id)) // if the spawn event loc is populated
+            if (boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
             {
                 if (!fw.boss_exit) // if it is the entry gate
                 {
                     for (int j = 0; j < param_event_loc.Rows.Count; j++)
                     {
                         var row = param_event_loc.Rows[j];
-                        if (row.ID == boss_spawn_event_loc[fw.enum_id])
+                        if (row.ID == boss_spawn_event_loc[fw.boss_name])
                         {
                             var new_row = new Row(
                                 row.ID,
@@ -1362,7 +1372,7 @@ foreach (var pair in map_names)
         param_event_loc.Rows.Insert(event_loc_insert_loc + 1, warp_point_row2);
 
         // generate and update the esd script for infront of fogdoor
-        if (fw.destruction_flag > 0 && fw.boss_exit) // add condition to prevent player from leaving
+        if (fw.boss_name != BossName.None  && fw.boss_exit) // add condition to prevent player from leaving
         {
             if (fw.use_second_death_check_impl)
             {
@@ -1384,9 +1394,9 @@ foreach (var pair in map_names)
                 );
             }
         }
-        else if (fw.destruction_flag > 0 && !fw.boss_exit && fw.cutscene)
+        else if (fw.boss_name != BossName.None && !fw.boss_exit && fw.cutscene)
         {
-            if (fw.enum_id == BossName.ThroneWatcherAndDefender)
+            if (fw.boss_name == BossName.ThroneWatcherAndDefender)
             {
                 esd_script += generate_throne_room_entrance_script(
                     map_name,
@@ -1412,7 +1422,7 @@ foreach (var pair in map_names)
         }
         else
         {
-            if (map_name == map_names[MapName.DarkChasmofOld] && fw.enum_id == BossName.None)
+            if (map_name == map_names[MapName.DarkChasmofOld] && fw.boss_name == BossName.None)
             {
                 esd_script += generate_dark_chasm_fog_gate_script(
                     map_name,
@@ -1437,7 +1447,7 @@ foreach (var pair in map_names)
         }
 
         // generate and update the esd script for behind of fogdoor
-        if (fw.destruction_flag > 0 && !fw.boss_exit) // add condition to prevent player from leaving
+        if (fw.boss_name != BossName.None && !fw.boss_exit) // add condition to prevent player from leaving
         {
             if (fw.use_second_death_check_impl)
             {
@@ -1451,7 +1461,7 @@ foreach (var pair in map_names)
             }
             else
             {
-                if (fw.enum_id == BossName.Vendrick)
+                if (fw.boss_name == BossName.Vendrick)
                 {
                     esd_script += generate_vendrick_fog_gate_script(
                         map_name,
@@ -1462,7 +1472,7 @@ foreach (var pair in map_names)
                         fw
                     );
                 }
-                else if (fw.enum_id == BossName.ThroneWatcherAndDefender)
+                else if (fw.boss_name == BossName.ThroneWatcherAndDefender)
                 {
                     esd_script += generate_throne_room_exit_script(
                         map_name,
@@ -1486,7 +1496,7 @@ foreach (var pair in map_names)
                 }
             }
         }
-        else if (fw.destruction_flag > 0 && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
+        else if (fw.boss_name != BossName.None && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
         {
             esd_script += generate_esd_script_boss_cutscene(
                 map_name,

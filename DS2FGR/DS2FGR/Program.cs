@@ -86,10 +86,6 @@ PARAMDEF get_obj_inst_def_paramdef_fogwall(PARAM param)
 {
     return get_obj_inst_def_paramdef_ex(param, 110, 6, 0, 255, 255);
 }
-PARAMDEF get_obj_inst_def_paramdef_eventloc(PARAM param)
-{
-    return get_obj_inst_def_paramdef_ex(param, 110, 6, 0, 255, 255);
-}
 
 PARAMDEF get_event_param_def_paramdef_ex(PARAM param, int event_id, int flag_id)
 {

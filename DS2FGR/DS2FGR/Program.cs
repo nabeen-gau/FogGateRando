@@ -535,10 +535,6 @@ String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark 
 String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
-const int vendricks_hostility_flag = 224000088;
-const int throne_watcher_defender_defeat_flag = 221000091;
-const int giant_lord_defeat_flag = 100972;
-const int nashandra_cutscene_flag = 12010;
 
 Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<BossName, List<StringChange>>() {
     {BossName.OldIronKing, new List<StringChange>{
@@ -1427,9 +1423,9 @@ foreach (var pair in map_names)
                     esd_script_begin,
                     warp_obj_inst_begin,
                     warp_point_begin,
-                    throne_watcher_defender_defeat_flag,
-                    giant_lord_defeat_flag,
-                    nashandra_cutscene_flag,
+                    Constants.throne_watcher_defender_defeat_flag,
+                    Constants.giant_lord_defeat_flag,
+                    Constants.nashandra_cutscene_flag,
                     fw
                 );
             } 
@@ -1492,7 +1488,7 @@ foreach (var pair in map_names)
                         esd_script_begin + 1,
                         warp_obj_inst_begin + 1,
                         warp_point_begin + 1,
-                        vendricks_hostility_flag,
+                        Constants.vendricks_hostility_flag,
                         fw
                     );
                 }
@@ -1503,8 +1499,8 @@ foreach (var pair in map_names)
                         esd_script_begin + 1,
                         warp_obj_inst_begin + 1,
                         warp_point_begin + 1,
-                        throne_watcher_defender_defeat_flag,
-                        giant_lord_defeat_flag,
+                        Constants.throne_watcher_defender_defeat_flag,
+                        Constants.giant_lord_defeat_flag,
                         fw
                     );
                 }

@@ -108,7 +108,7 @@ PARAMDEF get_event_param_def_paramdef(PARAM param)
     return get_event_param_def_paramdef_ex(param, 0, 0);
 }
 
-PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 rotation)
+PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 rotation, UInt16 unk2a = 2560)
 {
     PARAMDEF pd = new_paramdef(param);
     pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_x", position.X));
@@ -125,7 +125,7 @@ PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 ro
     pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_y", 1.0f));
     pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", 1.0f));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk28", 0));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", 2560));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", unk2a));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk2C", 0));
     return pd;
 }
@@ -921,11 +921,6 @@ foreach (var kvp in fog_wall_dict)
             }
             fog_wall.destruction_flag = boss_destruction_flags[fog_wall.boss_name];
         }
-
-        if (boss_quitout_event_loc.ContainsKey(fog_wall.boss_name))
-        {
-
-        }
     }
 }
 
@@ -1174,7 +1169,7 @@ foreach (var pair in map_names)
 
     // calculate event_loc_insert_loc
     int event_loc_insert_loc = -1;
-    for (int i=0; i< param_event_loc.Rows.Count; i++)
+    for (int i=0; i<param_event_loc.Rows.Count; i++)
     {
         var row = param_event_loc.Rows[i];
         if (row.ID == warp_point_begin - 1)
@@ -1184,6 +1179,39 @@ foreach (var pair in map_names)
         }
     }
     Debug.Assert(event_loc_insert_loc >= 0);
+
+    // to handle the quitout event loc
+    // right now seems unnecessary
+    //foreach (var fog_wall in fog_wall_dict[map_name])
+    //{
+    //    foreach (var eventid in boss_quitout_event_loc)
+    //    {
+    //        if (eventid.Key == fog_wall.boss_name)
+    //        {
+    //            for (int i=0; i<param_event_loc.Rows.Count; i++)
+    //            {
+    //                var row = param_event_loc.Rows[i];
+    //                if (row.ID == eventid.Value.event_loc_id)
+    //                {
+    //                    var new_row = new Row(
+    //                        row.ID,
+    //                        $"eventloc_{row.ID}",
+    //                        get_event_loc_def_paramdef_ex(param_event_loc, 
+    //                            eventid.Value.position,
+    //                            rot_fog_walls[fog_wall_dict[map_name].IndexOf(fog_wall)],
+    //                            unk2a: 3 // maybe for quitout events it is 3
+    //                        )
+    //                    );
+    //                    param_event_loc.Rows.Remove(row);
+    //                    param_event_loc.Rows.Insert(i, new_row);
+    //                    break;
+    //                }
+    //                Debug.Assert(i != param_event_loc.Rows.Count - 1);
+    //            }
+    //            break;
+    //        }
+    //    }
+    //}
 
     // cacluate esd_script_begin
     int esd_script_begin = -1;

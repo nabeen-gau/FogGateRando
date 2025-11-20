@@ -139,4 +139,41 @@ namespace FogWallNS
 			this.position = position;
 		}
 	}
+
+	public struct FogGateInfo
+	{
+		String map_name;
+		int script_id;
+		int warp_src_id;
+		int warp_dst_id;
+		FogWall? fogwall;
+		int throne_watcher_defender_defeat_flag;
+		int giant_lord_defeat_flag;
+		int nashandra_cutscene_flag;
+		List<int>? enemy_ids;
+		int chasm_event_flag;
+		int vendricks_hostility_flag;
+		int throne_duo_defeat_flag;
+
+		public FogGateInfo(String map_name, int script_id, int warp_src_id, int warp_dst_id,
+			FogWall? fogwall = null, int throne_watcher_defender_defeat_flag = -1,
+            int giant_lord_defeat_flag = -1, int nashandra_cutscene_flag = -1,
+            List<int>? enemy_ids = null, int chasm_event_flag = -1,
+            int vendricks_hostility_flag = -1, int throne_duo_defeat_flag = -1
+		)
+		{
+            this.map_name = map_name;
+            this.script_id = script_id;
+            this.warp_src_id = warp_src_id;
+            this.warp_dst_id = warp_dst_id;
+            this.fogwall = fogwall;
+            this.throne_watcher_defender_defeat_flag = throne_watcher_defender_defeat_flag;
+            this.giant_lord_defeat_flag = giant_lord_defeat_flag;
+            this.nashandra_cutscene_flag = nashandra_cutscene_flag;
+            this.enemy_ids = enemy_ids;
+            this.chasm_event_flag = chasm_event_flag;
+            this.vendricks_hostility_flag = vendricks_hostility_flag;
+            this.throne_duo_defeat_flag = throne_duo_defeat_flag;
+		}
+	}
 }

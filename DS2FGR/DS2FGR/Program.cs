@@ -134,7 +134,6 @@ PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 ro
     return pd;
 }
 
-// TODO: fix this
 PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 position, Vector3 rotation)
 {
     PARAMDEF pd = new_paramdef(param);
@@ -338,6 +337,36 @@ def event_{map_id}_{script_id}():
 ";
 }
 
+// NOTES
+//# SetEventFlag(403000001, 1) # shadedwoods
+//# SetEventFlag(403000002, 1) # castle
+//# SetEventFlag(403000003, 1) # gulch
+
+String generate_dark_chasm_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, List<int> enemies_ids, int chasm_event_flag, FogWall fw)
+{
+    String map_id = map_name.Substring(0, 6);
+    String ret = $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Dark chasm({fw.name}) fog gate event""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+";
+    foreach (int id in enemies_ids)
+    {
+        ret += $"    IsChrDeadOrRespawnOver(8, {id}, 1)\n";
+    }
+    ret += @$"    if ConditionGroup(8):
+        DisableObjKeyGuide({warp_src_id}, 0)
+        assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
+        SetEventFlag({chasm_event_flag}, 1)
+        assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id})
+    else:
+        pass
+    RestartMachine()
+    Quit()
+";
+    return ret;
+}
+
 void write_string_to_file(String str, String file_path)
 {
     try
@@ -469,6 +498,20 @@ Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<Bos
     },
 };
 
+Dictionary<String, List<int>> chasm_enemy_ids = new Dictionary<String, List<int>>()
+{
+    {"DarkChasm_from_black_gulch_exit", new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
+    {"DarkChasm_dranglic_castle_exit",  new List<int>(){1004, 1009, 1012, 3100} },
+    {"DarkChasm_shaded_woods_exit",     new List<int>(){1000, 1002, 1003, 3000} },
+};
+
+Dictionary<String, int> chasm_event_flags = new()
+{
+    {"DarkChasm_shaded_woods_exit",      403000001},
+    {"DarkChasm_dranglic_castle_exit",   403000002},
+    {"DarkChasm_from_black_gulch_exit",  403000003},
+};
+
 
 Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
 {
@@ -570,7 +613,7 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     //{ MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
     { MapName.UndeadCrypt,                  "m20_24_00_00"},
     ////{ MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
-    //{ MapName.DarkChasmofOld,               "m40_03_00_00"},
+    { MapName.DarkChasmofOld,               "m40_03_00_00"},
     //{ MapName.ShulvaSanctumCity,            "m50_35_00_00"},
     //{ MapName.BrumeTower,                   "m50_36_00_00"},
     //{ MapName.FrozenEleumLoyce,             "m50_37_00_00"},
@@ -741,13 +784,13 @@ fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
     new FogWall("UndeadCrypt_entrance",        "o00_0502_0000", pvp: true),
     new FogWall("UndeadCrypt_vendrick_entry",  "o00_0505_0000", boss_enum_id: BossName.Vendrick), // TODO: should be allowed to leave the fight before aggroing him
 };
-//fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
-//    new FogWall("DarkChasm_one_exit",   "o00_0501_0000"),
-//    new FogWall("DarkChasm_two_exit",   "o00_0501_0001"),
-//    new FogWall("DarkChasm_three_exit", "o00_0501_0002"),
-//    new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss: true, boss_exit: true), // y_offset = 13.792f - 11.966f
-//};
-//fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
+fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
+    new FogWall("DarkChasm_from_black_gulch_exit", "o00_0501_0000"),
+    new FogWall("DarkChasm_dranglic_castle_exit",  "o00_0501_0001"),
+    new FogWall("DarkChasm_shaded_woods_exit",     "o00_0501_0002"),
+    new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss_enum_id: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
+};
+fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
 //fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
 //    new FogWall("Shulva_sihn_entry",                  "o00_0500_0001", boss: true), // y_offset = 79.928f - 79.436f
 //    new FogWall("Shulva_elana_entry",                 "o00_0501_0000", boss: true), // y_offset = 71.928f - 71.637f
@@ -1285,12 +1328,28 @@ foreach (var pair in map_names)
         }
         else
         {
-            esd_script += generate_esd_script(
-                map_name,
-                esd_script_begin,
-                warp_obj_inst_begin,
-                warp_point_begin
-            );
+            if (map_name == map_names[MapName.DarkChasmofOld] && fw.enum_id == BossName.None)
+            {
+                esd_script += generate_dark_chasm_fog_gate_script(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin,
+                    chasm_enemy_ids[fw.name],
+                    chasm_event_flags[fw.name],
+                    fw
+                );
+
+            } 
+            else
+            {
+                esd_script += generate_esd_script(
+                    map_name,
+                    esd_script_begin,
+                    warp_obj_inst_begin,
+                    warp_point_begin
+                );
+            }
         }
 
         // generate and update the esd script for behind of fogdoor

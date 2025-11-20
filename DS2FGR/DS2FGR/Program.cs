@@ -610,7 +610,7 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.GraveofSaints,                "m10_34_00_00"},
     { MapName.MemoryofVammarOrroandJeigh,   "m20_10_00_00"},
     { MapName.ShrineofAmana,                "m20_11_00_00"},
-    //{ MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
+    { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
     { MapName.UndeadCrypt,                  "m20_24_00_00"},
     ////{ MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
     { MapName.DarkChasmofOld,               "m40_03_00_00"},
@@ -767,16 +767,17 @@ fog_wall_dict[map_names[MapName.ShrineofAmana]] = new List<FogWall> {
     new FogWall("ShrineOfAmana_from_castle",             "o00_0501_0007", pvp: true),
 };
 fog_wall_dict[map_names[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
-//fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
-//    new FogWall("DC_mirror_knight_entry",     "o00_0501_0000", boss: true),
-//    new FogWall("DC_twin_dragonriders_entry", "o00_0501_0001", boss: true),
-//    new FogWall("DC_twin_dragonriders_exit",  "o00_0501_0004", boss: true, boss_exit: true),
-//    new FogWall("DC_mirror_knight_exit",      "o00_0501_0005", boss: true, boss_exit: true),
-//    new FogWall("DC_throne_room",             "o00_0501_0006", boss: true),
-//    new FogWall("DC_to_chasm_entrance",       "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
-//    new FogWall("DC_entrance",                "o00_0504_0000", pvp: true),
-//};
-//fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
+fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
+    new FogWall("DC_mirror_knight_entry",     "o00_0501_0000", boss_enum_id: BossName.LookingGlassKnight),
+    new FogWall("DC_twin_dragonriders_entry", "o00_0501_0001", boss_enum_id: BossName.TwinDragonrider),
+    new FogWall("DC_twin_dragonriders_exit",  "o00_0501_0004", boss_enum_id: BossName.TwinDragonrider, boss_exit: true),
+    new FogWall("DC_mirror_knight_exit",      "o00_0501_0005", boss_enum_id: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
+    // new FogWall("DC_throne_room",             "o00_0501_0006", boss_enum_id: true),
+    new FogWall("DC_to_chasm_entrance",       "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
+    new FogWall("DC_entrance",                "o00_0504_0000", pvp: true),
+};
+fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
+fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
 fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
     new FogWall("UndeadCrypt_to_bonfire_room", "o00_0500_0000"),
     new FogWall("UndeadCrypt_velsdat_entry",   "o00_0501_0000", boss_enum_id: BossName.VelstadtTheRoyalAegis, cutscene: true),

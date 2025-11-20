@@ -7,19 +7,9 @@ using static SoulsFormats.PARAMDEF;
 
 using FogWallNS;
 
-String check_backup(String name)
-{
-    if (!File.Exists(name + ".bak"))
-    {
-        File.Copy(name, name + ".bak");
-        Console.WriteLine($"[BACKUP] {name}.bak created.");
-    }
-    return name + ".bak";
-}
-
 MSB2 load_map(String path)
 {
-    String new_path = check_backup(path);
+    String new_path = Util.check_backup(path);
     MSB2 msb2 = MSB2.Read(new_path);
     Console.WriteLine($"[SUCCESS] Map: {path} loaded");
     return msb2;
@@ -27,7 +17,7 @@ MSB2 load_map(String path)
 
 PARAM load_map_param(String path)
 {
-    String new_path = check_backup(path);
+    String new_path = Util.check_backup(path);
     PARAM p = PARAM.Read(new_path);
     Console.WriteLine($"[SUCCESS] Param: {path} loaded");
     return p;
@@ -155,80 +145,6 @@ PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 positi
 PARAMDEF get_event_loc_def_paramdef(PARAM param)
 {
     return get_event_loc_def_paramdef_ex(param, new Vector3(0), new Vector3(0));
-}
-
-static int parse_map_name(string mapCode)
-{
-    // Remove non-numeric characters and concatenate the numbers
-    string numericPart = string.Empty;
-    foreach (char c in mapCode)
-    {
-        if (char.IsDigit(c))
-        {
-            numericPart += c;
-        }
-    }
-
-    // Parse the resulting string to an integer
-    return int.Parse(numericPart);
-}
-
-String get_script_helper_fns(String map_name, int map_num)
-{
-    String map_id = map_name.Substring(0, 6);
-
-    return @$"
-def event_{map_id}_x501(warp_obj_inst_id=_, event_loc=_):
-    """"""
-    [Function] wait until interact button is pressed on `warp_obj_inst_id` and warp to `event_loc`
-    """"""
-    assert event_{map_id}_x502(warp_obj_inst_id=warp_obj_inst_id)
-    assert event_{map_id}_x503(event_loc=event_loc, warp_obj_inst_id=warp_obj_inst_id)
-    return 0
-
-def event_{map_id}_x502(warp_obj_inst_id=_):
-    """"""
-    [Conditions] Wait until interact button is pressed on `warp_obj_inst_id`
-    """"""
-    IsObjSearched(0, warp_obj_inst_id)
-    assert ConditionGroup(0)
-    return 0
-
-def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_):
-    """"""
-    [Execution] Warp to the given event_location
-    """"""
-    DisableObjKeyGuide(warp_obj_inst_id, 1)
-    ProhibitInGameMenu(1)
-    ProhibitPlayerOperation(1)
-    SetPlayerInvincible(1)
-    PlayCutsceneAndWarpToMap(0, 0, {map_num}, event_loc, 0)
-    assert CutsceneWarpEnded() != 0
-    DisableObjKeyGuide(warp_obj_inst_id, 0)
-    ProhibitInGameMenu(0)
-    ProhibitPlayerOperation(0)
-    SetPlayerInvincible(0)
-    return 0
-
-def event_{map_id}_x504(battle_id=_):
-    """"""Wait until the boss of given battle_id is defeated""""""
-    IsEventBossKill(0, battle_id, 0, 1)
-    assert ConditionGroup(0)
-    return 0
-
-def event_{map_id}_x505(flag8=_):
-    """"""[Reproduction] Is boss dead?
-    flag8: Boss destruction flag
-    """"""
-    """"""State 0,1: Are you fighting the boss?""""""
-    if GetEventFlag(flag8) != 0:
-        """"""State 3: the boss is dead""""""
-        return 1
-    else:
-        """"""State 2: the boss is not dead""""""
-        return 0
-
-";
 }
 
 String generate_esd_script(String map_name, int script_id, int warp_src_id, int warp_dest_id)
@@ -429,26 +345,6 @@ void write_string_to_file(String str, String file_path)
     catch (Exception ex)
     {
         Console.WriteLine($"[ERROR] {ex.Message}");
-    }
-}
-
-String read_string_from_file(String file_path)
-{
-    try
-    {
-        String str = File.ReadAllText(file_path);
-        Console.WriteLine($"[SUCCESS] {file_path} loaded.");
-        return str;
-    }
-    catch (FileNotFoundException ex)
-    {
-        Console.WriteLine($"[ERROR] {file_path} not found: {ex.Message}");
-        return "";
-    }
-    catch (IOException ex)
-    {
-        Console.WriteLine($"[ERROR] {file_path} read error: {ex.Message}");
-        return "";
     }
 }
 
@@ -923,7 +819,183 @@ foreach (var kvp in fog_wall_dict)
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
 foreach(var mn in map_names)
 {
-    warp_map_id[mn.Value] = parse_map_name(mn.Value);
+    warp_map_id[mn.Value] = Util.parse_map_name(mn.Value);
+}
+
+FogGateInfo esd_script_fn(FogGateInfo fgi)
+{
+    var fw = fgi.fogwall;
+    Debug.Assert(fw != null);
+    // generate and update the esd script for infront of fogdoor
+    if (fw.boss_name != BossName.None  && fw.boss_exit) // add condition to prevent player from leaving
+    {
+        if (fw.use_second_death_check_impl)
+        {
+            fgi.content += generate_esd_script_boss_from_behind_v2(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id,
+                fw
+            );
+        } else
+        {
+            fgi.content += generate_esd_script_boss_from_behind(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id,
+                fw
+            );
+        }
+    }
+    else if (fw.boss_name != BossName.None && !fw.boss_exit && fw.cutscene)
+    {
+        if (fw.boss_name == BossName.ThroneWatcherAndDefender)
+        {
+            fgi.content += generate_throne_room_entrance_script(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id,
+                Constants.throne_watcher_defender_defeat_flag,
+                Constants.giant_lord_defeat_flag,
+                Constants.nashandra_cutscene_flag,
+                fw
+            );
+        } 
+        else
+        {
+            fgi.content += generate_esd_script_boss_cutscene(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id,
+                fw
+            );
+        }
+    }
+    else
+    {
+        if (fgi.map_name == map_names[MapName.DarkChasmofOld] && fw.boss_name == BossName.None)
+        {
+            fgi.content += generate_dark_chasm_fog_gate_script(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id,
+                chasm_enemy_ids[fw.name],
+                chasm_event_flags[fw.name],
+                fw
+            );
+
+        } 
+        else
+        {
+            fgi.content += generate_esd_script(
+                fgi.map_name,
+                fgi.type.front.script_id,
+                fgi.type.front.warp_src_id,
+                fgi.type.front.warp_dst_id
+            );
+        }
+    }
+
+    // generate and update the esd script for behind of fogdoor
+    if (fw.boss_name != BossName.None && !fw.boss_exit) // add condition to prevent player from leaving
+    {
+        if (fw.use_second_death_check_impl)
+        {
+            fgi.content += generate_esd_script_boss_from_behind_v2(
+                fgi.map_name,
+                fgi.type.back.script_id,
+                fgi.type.back.warp_src_id,
+                fgi.type.back.warp_dst_id,
+                fw
+            );
+        }
+        else
+        {
+            if (fw.boss_name == BossName.Vendrick)
+            {
+                fgi.content += generate_vendrick_fog_gate_script(
+                    fgi.map_name,
+                    fgi.type.back.script_id,
+                    fgi.type.back.warp_src_id,
+                    fgi.type.back.warp_dst_id,
+                    Constants.vendricks_hostility_flag,
+                    fw
+                );
+            }
+            else if (fw.boss_name == BossName.ThroneWatcherAndDefender)
+            {
+                fgi.content += generate_throne_room_exit_script(
+                    fgi.map_name,
+                    fgi.type.back.script_id,
+                    fgi.type.back.warp_src_id,
+                    fgi.type.back.warp_dst_id,
+                    Constants.throne_watcher_defender_defeat_flag,
+                    Constants.giant_lord_defeat_flag,
+                    fw
+                );
+            }
+            else
+            {
+                fgi.content += generate_esd_script_boss_from_behind(
+                    fgi.map_name,
+                    fgi.type.back.script_id,
+                    fgi.type.back.warp_src_id,
+                    fgi.type.back.warp_dst_id,
+                    fw
+                );
+            }
+        }
+    }
+    else if (fw.boss_name != BossName.None && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
+    {
+        fgi.content += generate_esd_script_boss_cutscene(
+            fgi.map_name,
+            fgi.type.back.script_id,
+            fgi.type.back.warp_src_id,
+            fgi.type.back.warp_dst_id,
+            fw
+        );
+    }
+    else
+    {
+        fgi.content += generate_esd_script(
+            fgi.map_name,
+            fgi.type.back.script_id,
+            fgi.type.back.warp_src_id,
+            fgi.type.back.warp_dst_id
+        );
+    }
+
+    return fgi;
+}
+
+// make changes to the script of map according to boss_script_change dict
+String script_changes(int n_fog_walls, FogWall fw, String content)
+{
+    for (int i = 0; i < n_fog_walls; i++)
+    {
+        if (boss_script_change.Keys.Contains(fw.boss_name))
+        {
+            if (fw.boss_name != BossName.None && !fw.boss_exit)
+            {
+                for (int j = 0; j < boss_script_change[fw.boss_name].Count; j++)
+                {
+                    content = content.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
+                }
+            }
+        }
+    }
+    return content;
+}
+
+String get_esd_script_path(String map_name)
+{
+    return Path.Join(mod_folder, "ezstate", $"event_{map_name}.py");
 }
 
 String ezstate_path = Path.Join(mod_folder, "ezstate");
@@ -932,7 +1004,7 @@ int warp_obj_inst_idx = -1;
 MSB2.Part.Object? warp_obj = null;
 MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
-String py_files_list = "";
+List<FogGateInfo> randomized_fog_gates = new();
 foreach (var pair in map_names)
 {
     String map_name = pair.Value;
@@ -947,7 +1019,6 @@ foreach (var pair in map_names)
     String param_event_loc_path   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
     String param_event_path       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
     String obj_inst_param_path    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
-    String esd_script_path        = Path.Join(mod_folder, "ezstate", $"event_{map_name}.py");
 
     MSB2  map               = load_map(map_path);
     PARAM param_event_loc   = load_map_param(param_event_loc_path);
@@ -957,11 +1028,6 @@ foreach (var pair in map_names)
     obj_inst_param.ApplyParamdef(get_obj_inst_def_paramdef(obj_inst_param));
     param_event.ApplyParamdef(get_event_param_def_paramdef(param_event));
     param_event_loc.ApplyParamdef(get_event_loc_def_paramdef(param_event_loc));
-
-    String path = check_backup(esd_script_path);
-    String esd_script = read_string_from_file(path);
-    esd_script += "##Generated by DS2SFogGateRando##\n";
-    esd_script += get_script_helper_fns(map_name, warp_map_id[map_name]);
 
     // get the instance id from map name
     for (int i=0; i<map.Parts.Objects.Count; i++)
@@ -1243,6 +1309,8 @@ foreach (var pair in map_names)
     for (int i=0; i< pos_fog_walls.Count; i++)
     {
         FogWall fw = fog_wall_dict[map_name][i];
+        FogGateInfo fgi = new(map_name, fw);
+
         if (fw.reverse)
         {
             rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
@@ -1254,7 +1322,7 @@ foreach (var pair in map_names)
 
                 for (int j=0; j<boss_script_change[fw.boss_name].Count; j++)
                 {
-                    esd_script = esd_script.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
+                    fgi.content = fgi.content.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
                 }
             }
         }
@@ -1350,7 +1418,7 @@ foreach (var pair in map_names)
         param_event_loc.Rows.Insert(event_loc_insert_loc, warp_point_row);
 
         // adjust the boss spawn event loc to the warp point if the boss should spawn
-        if (fw.destruction_flag >= 0) // if the fog door contains the boss
+        if (fw.boss_name != BossName.None) // if the fog door contains the boss
         {
             if (boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
             {
@@ -1391,150 +1459,7 @@ foreach (var pair in map_names)
         );
         param_event_loc.Rows.Insert(event_loc_insert_loc + 1, warp_point_row2);
 
-        // generate and update the esd script for infront of fogdoor
-        if (fw.boss_name != BossName.None  && fw.boss_exit) // add condition to prevent player from leaving
-        {
-            if (fw.use_second_death_check_impl)
-            {
-                esd_script += generate_esd_script_boss_from_behind_v2(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin,
-                    fw
-                );
-            } else
-            {
-                esd_script += generate_esd_script_boss_from_behind(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin,
-                    fw
-                );
-            }
-        }
-        else if (fw.boss_name != BossName.None && !fw.boss_exit && fw.cutscene)
-        {
-            if (fw.boss_name == BossName.ThroneWatcherAndDefender)
-            {
-                esd_script += generate_throne_room_entrance_script(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin,
-                    Constants.throne_watcher_defender_defeat_flag,
-                    Constants.giant_lord_defeat_flag,
-                    Constants.nashandra_cutscene_flag,
-                    fw
-                );
-            } 
-            else
-            {
-                esd_script += generate_esd_script_boss_cutscene(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin,
-                    fw
-                );
-            }
-        }
-        else
-        {
-            if (map_name == map_names[MapName.DarkChasmofOld] && fw.boss_name == BossName.None)
-            {
-                esd_script += generate_dark_chasm_fog_gate_script(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin,
-                    chasm_enemy_ids[fw.name],
-                    chasm_event_flags[fw.name],
-                    fw
-                );
-
-            } 
-            else
-            {
-                esd_script += generate_esd_script(
-                    map_name,
-                    esd_script_begin,
-                    warp_obj_inst_begin,
-                    warp_point_begin
-                );
-            }
-        }
-
-        // generate and update the esd script for behind of fogdoor
-        if (fw.boss_name != BossName.None && !fw.boss_exit) // add condition to prevent player from leaving
-        {
-            if (fw.use_second_death_check_impl)
-            {
-                esd_script += generate_esd_script_boss_from_behind_v2(
-                    map_name,
-                    esd_script_begin + 1,
-                    warp_obj_inst_begin + 1,
-                    warp_point_begin + 1,
-                    fw
-                );
-            }
-            else
-            {
-                if (fw.boss_name == BossName.Vendrick)
-                {
-                    esd_script += generate_vendrick_fog_gate_script(
-                        map_name,
-                        esd_script_begin + 1,
-                        warp_obj_inst_begin + 1,
-                        warp_point_begin + 1,
-                        Constants.vendricks_hostility_flag,
-                        fw
-                    );
-                }
-                else if (fw.boss_name == BossName.ThroneWatcherAndDefender)
-                {
-                    esd_script += generate_throne_room_exit_script(
-                        map_name,
-                        esd_script_begin + 1,
-                        warp_obj_inst_begin + 1,
-                        warp_point_begin + 1,
-                        Constants.throne_watcher_defender_defeat_flag,
-                        Constants.giant_lord_defeat_flag,
-                        fw
-                    );
-                }
-                else
-                {
-                    esd_script += generate_esd_script_boss_from_behind(
-                        map_name,
-                        esd_script_begin + 1,
-                        warp_obj_inst_begin + 1,
-                        warp_point_begin + 1,
-                        fw
-                    );
-                }
-            }
-        }
-        else if (fw.boss_name != BossName.None && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
-        {
-            esd_script += generate_esd_script_boss_cutscene(
-                map_name,
-                esd_script_begin + 1,
-                warp_obj_inst_begin + 1,
-                warp_point_begin + 1,
-                fw
-            );
-        }
-        else
-        {
-            esd_script += generate_esd_script(
-                map_name,
-                esd_script_begin + 1,
-                warp_obj_inst_begin + 1,
-                warp_point_begin + 1
-            );
-        }
+        fgi.type = new(esd_script_begin, warp_obj_inst_begin, warp_point_begin);
 
         // update the variables for next object
         warp_obj_inst_begin += 2;
@@ -1544,11 +1469,9 @@ foreach (var pair in map_names)
         obj_inst_insert_loc += 2;
         warp_point_begin += 2;
         event_loc_insert_loc += 2;
-    }
 
-    // generate esd file from script
-    write_string_to_file(esd_script, esd_script_path);
-    py_files_list += $" {esd_script_path}";
+        randomized_fog_gates.Add(fgi);
+    }
     
     // write the modded files
     byte[] map_bin = map.Write();
@@ -1571,6 +1494,26 @@ foreach (var pair in map_names)
     {
         Console.WriteLine($"[ERROR] Access denied. {ex.Message}");
     }
+}
+
+String py_files_list = "";
+foreach (var map_name_kv in map_names)
+{
+    String map_name = map_name_kv.Value;
+    String esd_script_path = get_esd_script_path(map_name);
+    String path = Util.check_backup(esd_script_path);
+    String esd_script = Util.read_string_from_file(path);
+    esd_script += Util.get_script_helper_fns(map_name, Util.parse_map_name(map_name));
+    // generate esd file from script
+    foreach (var fgi in randomized_fog_gates)
+    {
+        if (fgi.map_name != map_name) continue;
+        esd_script = script_changes(fog_wall_dict[map_name].Count, fgi.fogwall, esd_script);
+        FogGateInfo new_fgi = esd_script_fn(fgi);
+        esd_script += new_fgi.content;
+    }
+    py_files_list += $" {get_esd_script_path(map_name)}";
+    write_string_to_file(esd_script, esd_script_path);
 }
 
 // run the esdtool.exe to generate esd files from python files

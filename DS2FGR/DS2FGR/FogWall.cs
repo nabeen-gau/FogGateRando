@@ -304,4 +304,90 @@ def event_{map_id}_x505(flag8=_):
             this.chasm_event_flag = chasm_event_flag;
 		}
 	}
+
+	public struct BossDetails
+	{
+		public String name_str;
+		public BossName name;
+		public int destruction_flag;
+		public bool use_second_death_check_impl;
+		public bool cutscene;
+		public bool exit;
+
+		public BossDetails(FogWall fw)
+		{
+			name_str = fw.name;
+			name = fw.boss_name;
+			destruction_flag = fw.destruction_flag;
+			use_second_death_check_impl = fw.use_second_death_check_impl;
+			cutscene = fw.cutscene;
+			exit = fw.boss_exit;
+		}
+	}
+
+	public struct WarpInfo
+	{
+		public String map_name;
+		public int script_id;
+		public int warp_src_id;
+		public int fog_gate_id;
+		public int location_id;
+		public BossDetails boss;
+		public List<int>? enemy_ids;
+		public int chasm_event_flag;
+		public bool boss_locked;
+		public String fog_wall_name;
+		public int cutscene_script_id;
+		public int twin_fog_gate_id;
+		public bool front;
+
+		public WarpInfo(String map_name, int script_id, int warp_src_id, int fog_gate_id, int location_id, FogWall fw,
+			List<int>? enemy_ids = null, int chasm_event_flag = -1, bool boss_locked = true, int cutscene_script_id = -1,
+			bool front = false)
+        {
+            this.map_name = map_name;
+            this.script_id = script_id;
+			this.warp_src_id = warp_src_id;
+            this.fog_gate_id = fog_gate_id;
+            this.location_id = location_id;
+			boss = new BossDetails(fw);
+			this.enemy_ids = enemy_ids;
+			this.chasm_event_flag = chasm_event_flag;
+			this.boss_locked = boss_locked;
+			fog_wall_name = fw.name;
+			this.cutscene_script_id = cutscene_script_id;
+			twin_fog_gate_id = fw.twin_gate_id;
+			this.front = front;
+		}
+	}
+
+	public struct Warp
+	{
+		public WarpInfo from;
+		public WarpInfo to;
+
+		public Warp(FogGateInfo fgi)
+		{
+			bool boss_locked_from = false;
+			bool boss_locked_to   = false;
+            if (fgi.fogwall.boss_name != BossName.None)
+			{
+				boss_locked_from =  fgi.fogwall.boss_exit;
+				boss_locked_to   = !fgi.fogwall.boss_exit;
+			}
+			int cutscene_script_id = -1;
+			if (fgi.fogwall.cutscene)
+			{
+				cutscene_script_id = fgi.type.back.script_id + 1;
+			}
+			from = new(fgi.map_name, fgi.type.front.script_id, fgi.type.front.warp_src_id, fgi.fogwall.instance_id,
+				fgi.type.back.warp_dst_id, fgi.fogwall, 
+				enemy_ids: fgi.type.front.enemy_ids, chasm_event_flag: fgi.type.front.chasm_event_flag, 
+				boss_locked: boss_locked_from, cutscene_script_id: cutscene_script_id, front: true);
+			to   = new(fgi.map_name, fgi.type.back.script_id, fgi.type.back.warp_src_id, fgi.fogwall.instance_id,
+				fgi.type.front.warp_dst_id, fgi.fogwall, 
+				enemy_ids: fgi.type.front.enemy_ids, chasm_event_flag: fgi.type.front.chasm_event_flag,
+				boss_locked: boss_locked_to, cutscene_script_id: cutscene_script_id, front: false);
+		}
+	}
 }

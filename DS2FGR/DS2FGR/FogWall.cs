@@ -176,12 +176,12 @@ namespace FogWallNS
         {
             String map_id = map_name.Substring(0, 6);
             return @$"
-def event_{map_id}_x501(warp_obj_inst_id=_, event_loc=_):
+def event_{map_id}_x501(warp_obj_inst_id=_, event_loc=_, map_id=_):
     """"""
     [Function] wait until interact button is pressed on `warp_obj_inst_id` and warp to `event_loc`
     """"""
     assert event_{map_id}_x502(warp_obj_inst_id=warp_obj_inst_id)
-    assert event_{map_id}_x503(event_loc=event_loc, warp_obj_inst_id=warp_obj_inst_id)
+    assert event_{map_id}_x503(event_loc=event_loc, warp_obj_inst_id=warp_obj_inst_id, map_id=map_id)
     return 0
 
 def event_{map_id}_x502(warp_obj_inst_id=_):
@@ -192,7 +192,7 @@ def event_{map_id}_x502(warp_obj_inst_id=_):
     assert ConditionGroup(0)
     return 0
 
-def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_):
+def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_, map_id=_):
     """"""
     [Execution] Warp to the given event_location
     """"""
@@ -200,7 +200,7 @@ def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_):
     ProhibitInGameMenu(1)
     ProhibitPlayerOperation(1)
     SetPlayerInvincible(1)
-    PlayCutsceneAndWarpToMap(0, 0, {map_num}, event_loc, 0)
+    PlayCutsceneAndWarpToMap(0, 0, map_id, event_loc, 0)
     assert CutsceneWarpEnded() != 0
     DisableObjKeyGuide(warp_obj_inst_id, 0)
     ProhibitInGameMenu(0)
@@ -276,11 +276,11 @@ def event_{map_id}_x505(flag8=_):
 	{
 		public FogGateDetails front;
 		public FogGateDetails back;
-		public FogGateType(int script_id, int warp_src_id, int warp_dst_id,
+		public FogGateType(int script_id, int warp_src_id, int warp_dst_id, int warp_dst_map_id,
 			List<int>? enemy_ids = null, int chasm_event_flag = -1)
 		{
-			front = new(script_id,     warp_src_id,     warp_dst_id,     enemy_ids, chasm_event_flag);
-			back  = new(script_id + 1, warp_src_id + 1, warp_dst_id + 1, enemy_ids, chasm_event_flag);
+			front = new(script_id,     warp_src_id,     warp_dst_id,     warp_dst_map_id, enemy_ids, chasm_event_flag);
+			back  = new(script_id + 1, warp_src_id + 1, warp_dst_id + 1, warp_dst_map_id, enemy_ids, chasm_event_flag);
 		}
 	}
 
@@ -291,13 +291,15 @@ def event_{map_id}_x505(flag8=_):
 		public int warp_dst_id;
 		public List<int>? enemy_ids;
 		public int chasm_event_flag;
+		public int warp_dst_map_id;
 
-		public FogGateDetails(int script_id, int warp_src_id, int warp_dst_id,
+		public FogGateDetails(int script_id, int warp_src_id, int warp_dst_id, int warp_dst_map_id,
 			List<int>? enemy_ids = null, int chasm_event_flag = -1)
 		{
             this.script_id = script_id;
             this.warp_src_id = warp_src_id;
             this.warp_dst_id = warp_dst_id;
+			this.warp_dst_map_id = warp_dst_map_id;
             this.enemy_ids = enemy_ids;
             this.chasm_event_flag = chasm_event_flag;
 		}

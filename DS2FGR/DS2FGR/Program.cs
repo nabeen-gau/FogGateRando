@@ -1428,7 +1428,9 @@ foreach (var map_name_kv in map_names)
     esd_script_dict[map_name] = esd_script;
 }
 
-foreach (var warp in warps)
+List<Warp> new_warps = WarpScrambler.Scramble(warps);
+
+foreach (var warp in new_warps)
 {
     var scripts = esd_script_fn(warp);
     esd_script_dict[warp.from.map_name] += scripts[warp.from.map_name];

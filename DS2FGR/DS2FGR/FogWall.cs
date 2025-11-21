@@ -389,5 +389,45 @@ def event_{map_id}_x505(flag8=_):
 				enemy_ids: fgi.type.front.enemy_ids, chasm_event_flag: fgi.type.front.chasm_event_flag,
 				boss_locked: boss_locked_to, cutscene_script_id: cutscene_script_id, front: false);
 		}
-	}
+
+        public Warp(WarpInfo from, WarpInfo to)
+        {
+            this.from = from;
+            this.to = to;
+        }
+    }
+
+    public static class WarpScrambler
+    {
+        private static Random rng = new Random();
+        public static List<Warp> Scramble(List<Warp> warps)
+        {
+            int n = warps.Count;
+            if (n <= 1) return new List<Warp>(warps);
+            List<WarpInfo> fromList = new List<WarpInfo>(n);
+            List<WarpInfo> toList = new List<WarpInfo>(n);
+
+            foreach (var w in warps)
+            {
+                fromList.Add(w.from);
+                toList.Add(w.to);
+            }
+            Shuffle(toList);
+            var result = new List<Warp>(n);
+            for (int i = 0; i < n; i++)
+            {
+                result.Add(new Warp(fromList[i], toList[i]));
+            }
+            return result;
+        }
+
+        private static void Shuffle<T>(IList<T> list)
+        {
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
+        }
+    }
 }

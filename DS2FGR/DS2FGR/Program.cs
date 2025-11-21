@@ -159,37 +159,6 @@ def event_{map_id}_{script_id}():
 ";
 }
 
-String generate_esd_script_boss_cutscene(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id, FogWall fw)
-{
-    String map_id = map_name.Substring(0, 6);
-    Debug.Assert(fw.event_id > 0);
-    Debug.Assert(fw.instance_id > 0);
-    int fog_gate_instance_id = fw.instance_id;
-    if (fw.twin_gate_id >= 0)
-    {
-        fog_gate_instance_id = fw.twin_gate_id;
-    }
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""Text stele_01""""""
-    """"""State 0,2: [Preset] Boss({fw.name}) fog gate event with cutscene""""""
-    IsObjSearched(0, {warp_src_id})
-    assert ConditionGroup(0)
-    DisableObjKeyGuide({warp_src_id}, 1)
-    if CompareObjStateId({fog_gate_instance_id}, 100, 0):
-        assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    else:
-        ChangeObjState({fog_gate_instance_id}, 100)
-        assert CompareObjStateId({fog_gate_instance_id}, 100, 0)
-        if EventEnded({fw.event_id}) != 0:
-            assert event_{map_id}_x503(warp_obj_inst_id={fw.instance_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    DisableObjKeyGuide({warp_src_id}, 0)
-    """"""State 1: Rerun""""""
-    RestartMachine()
-    Quit()
-";
-}
-
 String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id, FogWall fw)
 {
     Debug.Assert(fw.boss_name != BossName.None);
@@ -281,31 +250,6 @@ def event_{map_id}_{script_id}():
     return ret;
 }
 
-String generate_throne_room_entrance_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id,
-    int throne_duo_event_flag, int giant_lord_event_flag, int nashandra_cutscene_flag, FogWall fw)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Throne room entrance fog gate event""""""
-    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-    call = event_{map_id}_x505(flag8={throne_duo_event_flag})
-    if call.Get() == 1:
-        CompareEventFlag(0, {giant_lord_event_flag}, 1)
-        if ConditionGroup(0):
-            ChangeObjState({fw.instance_id}, 100)
-            assert CompareObjStateId({fw.instance_id}, 100, 0)
-            assert EventEnded({nashandra_cutscene_flag}) != 0
-            assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-        else:
-            pass
-    elif call.Get() == 0:
-        pass
-    assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    RestartMachine()
-    Quit()
-";
-}
 String generate_throne_room_exit_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id,
     int throne_duo_event_flag, int giant_lord_event_flag, FogWall fw)
 {
@@ -450,18 +394,6 @@ String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
 
-Dictionary<BossName, List<StringChange>> boss_script_change = new Dictionary<BossName, List<StringChange>>() {
-    {BossName.OldIronKing, new List<StringChange>{
-        new StringChange(
-            @"CompareObjState(0, 10190610, 100, 0)
-    assert ConditionGroup(0)", ""),
-        new StringChange(
-            @"CompareObjState(0, 10190610, 100, 0)
-            assert ConditionGroup(0)", ""
-        )}
-    },
-};
-
 Dictionary<String, List<int>> chasm_enemy_ids = new Dictionary<String, List<int>>()
 {
     {"DarkChasm_from_black_gulch_exit", new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
@@ -510,15 +442,6 @@ Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
     {BossName.ThroneWatcherAndDefender, 12010 },
 };
 
-//NOTES (for final battle):
-//flag2: Global flag for determining the destruction of giants = 100972
-//flag3: Other flags for queen knight AC destruction determination = 221000091
-//z10: Boss Battle ID(for consecutive battles) = 1021021
-//def event_m20_21_x123(z5=1100000, z6=1100000, z7=102, z8=1021020, z9=221020090, flag2=100972, flag3=221000091,z10 = 1021021):
-// end roll execution judgement flag = 221000094
-// noteworthy fn: def event_m20_21_x118():
-
-
 // GetEventFlag
 Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>()
 {
@@ -542,21 +465,21 @@ Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>
     {BossName.TheDukesDearFreja,            114000081},
     {BossName.RoyalRatVanguard,             134000081},
     {BossName.TheRotten,                    125000081},
-    {BossName.TwinDragonrider,              221000081}, //221000081
-    {BossName.LookingGlassKnight,           221000086}, //221000086
+    {BossName.TwinDragonrider,              221000081},
+    {BossName.LookingGlassKnight,           221000086},
     {BossName.DemonofSong,                  211000081},
     {BossName.VelstadtTheRoyalAegis,        224000081},
     {BossName.Vendrick,                     224000086},
     {BossName.GuardianDragon,               115000081},
     {BossName.AncientDragon,                127000081},
     {BossName.GiantLord,                    210000081},
-    {BossName.ThroneWatcherAndDefender,     221000091}, // 221000091
-    {BossName.Nashandra,                    221000096}, // 221000096 (giant lord = 100972)
-    {BossName.AldiaScholarOfTheFirstSin,    221000006}, // 221000006
+    {BossName.ThroneWatcherAndDefender,     221000091},
+    {BossName.Nashandra,                    221000096},
+    {BossName.AldiaScholarOfTheFirstSin,    221000006},
     {BossName.Darklurker,                   403000081},
     {BossName.ElanaTheSqualidQueen,         535000081},
     {BossName.SinhTheSlumberingDragon,      535000096},
-    {BossName.Gankfight,                    535000091}, // petrochemical root = 535000091
+    {BossName.Gankfight,                    535000091},
     {BossName.FumeKnight,                   536000081},
     {BossName.SirAlonne,                    536000086},
     {BossName.BlueSmelterDemon,             536000091},
@@ -761,7 +684,7 @@ fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
     new FogWall("UndeadCrypt_velsdat_entry",   "o00_0501_0000", boss_enum_id: BossName.VelstadtTheRoyalAegis, cutscene: true),
     new FogWall("UndeadCrypt_velsdat_exit",    "o00_0501_0001", boss_enum_id: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
     new FogWall("UndeadCrypt_entrance",        "o00_0502_0000", pvp: true),
-    new FogWall("UndeadCrypt_vendrick_entry",  "o00_0505_0000", boss_enum_id: BossName.Vendrick), // TODO: should be allowed to leave the fight before aggroing him
+    new FogWall("UndeadCrypt_vendrick_entry",  "o00_0505_0000", boss_enum_id: BossName.Vendrick),
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall("DarkChasm_from_black_gulch_exit", "o00_0501_0000"),
@@ -869,34 +792,6 @@ FogGateInfo esd_script_fn(FogGateInfo fgi)
             );
         }
     }
-    else if (fw.boss_name != BossName.None && !fw.boss_exit && fw.cutscene)
-    {
-        if (fw.boss_name == BossName.ThroneWatcherAndDefender)
-        {
-            fgi.content += generate_throne_room_entrance_script(
-                fgi.map_name,
-                fgi.type.front.script_id,
-                fgi.type.front.warp_src_id,
-                fgi.type.front.warp_dst_id,
-                fgi.type.front.warp_dst_map_id,
-                Constants.throne_watcher_defender_defeat_flag,
-                Constants.giant_lord_defeat_flag,
-                Constants.nashandra_cutscene_flag,
-                fw
-            );
-        } 
-        else
-        {
-            fgi.content += generate_esd_script_boss_cutscene(
-                fgi.map_name,
-                fgi.type.front.script_id,
-                fgi.type.front.warp_src_id,
-                fgi.type.front.warp_dst_id,
-                fgi.type.front.warp_dst_map_id,
-                fw
-            );
-        }
-    }
     else
     {
         if (fgi.map_name == map_names[MapName.DarkChasmofOld] && fw.boss_name == BossName.None)
@@ -979,17 +874,6 @@ FogGateInfo esd_script_fn(FogGateInfo fgi)
             }
         }
     }
-    else if (fw.boss_name != BossName.None && fw.boss_exit && fw.cutscene) // entering from behind the fog gate and cutscene has to play
-    {
-        fgi.content += generate_esd_script_boss_cutscene(
-            fgi.map_name,
-            fgi.type.back.script_id,
-            fgi.type.back.warp_src_id,
-            fgi.type.back.warp_dst_id,
-            fgi.type.back.warp_dst_map_id,
-            fw
-        );
-    }
     else
     {
         fgi.content += generate_esd_script(
@@ -1023,26 +907,6 @@ FogGateInfo esd_script_fn(FogGateInfo fgi)
 
     return fgi;
 }
-
-// not necessary right now
-// make changes to the script of map according to boss_script_change dict
-//String script_changes(int n_fog_walls, FogWall fw, String content)
-//{
-//    for (int i = 0; i < n_fog_walls; i++)
-//    {
-//        if (boss_script_change.Keys.Contains(fw.boss_name))
-//        {
-//            if (fw.boss_name != BossName.None && !fw.boss_exit)
-//            {
-//                for (int j = 0; j < boss_script_change[fw.boss_name].Count; j++)
-//                {
-//                    content = content.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
-//                }
-//            }
-//        }
-//    }
-//    return content;
-//}
 
 String get_esd_script_path(String map_name)
 {
@@ -1293,38 +1157,6 @@ foreach (var pair in map_names)
     }
     Debug.Assert(event_loc_insert_loc >= 0);
 
-    // to handle the quitout event loc
-    // right now seems unnecessary
-    //foreach (var fog_wall in fog_wall_dict[map_name])
-    //{
-    //    foreach (var eventid in boss_quitout_event_loc)
-    //    {
-    //        if (eventid.Key == fog_wall.boss_name)
-    //        {
-    //            for (int i=0; i<param_event_loc.Rows.Count; i++)
-    //            {
-    //                var row = param_event_loc.Rows[i];
-    //                if (row.ID == eventid.Value.event_loc_id)
-    //                {
-    //                    var new_row = new Row(
-    //                        row.ID,
-    //                        $"eventloc_{row.ID}",
-    //                        get_event_loc_def_paramdef_ex(param_event_loc, 
-    //                            eventid.Value.position,
-    //                            rot_fog_walls[fog_wall_dict[map_name].IndexOf(fog_wall)],
-    //                            unk2a: 3 // maybe for quitout events it is 3
-    //                        )
-    //                    );
-    //                    param_event_loc.Rows.Remove(row);
-    //                    param_event_loc.Rows.Insert(i, new_row);
-    //                    break;
-    //                }
-    //                Debug.Assert(i != param_event_loc.Rows.Count - 1);
-    //            }
-    //            break;
-    //        }
-    //    }
-    //}
     // calculate the no. of boss cutscenes in a map
     int n_cutscenes = 0;
     foreach (var fg in fog_wall_dict[map_name])
@@ -1371,17 +1203,6 @@ foreach (var pair in map_names)
         if (fw.reverse)
         {
             rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
-        }
-        if (boss_script_change.Keys.Contains(fw.boss_name))
-        {
-            if (fw.boss_name != BossName.None && !fw.boss_exit)
-            {
-
-                for (int j=0; j<boss_script_change[fw.boss_name].Count; j++)
-                {
-                    fgi.content = fgi.content.Replace(boss_script_change[fw.boss_name][j].from, boss_script_change[fw.boss_name][j].to);
-                }
-            }
         }
         // create and add new map peice in front of the fog door
         var obj = (MSB2.Part.Object)warp_obj.DeepCopy();

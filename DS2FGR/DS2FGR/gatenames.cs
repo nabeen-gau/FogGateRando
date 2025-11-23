@@ -48,6 +48,9 @@ namespace FogWallNS
         //
         IvoryKingFightEndSrc,
         IvoryKingFightEndDst,
+        CoffinWarpSrc,
+        CoffinWarpDst,
+        LudAndZallenExitWarp,
         //
         DragonMemoriesCoveSrc,
         DragonMemoriesMemoryDst,
@@ -439,6 +442,7 @@ namespace FogWallNS
         DLC3Eye,
         DLC3Unfreezed,
         DropDownPath,
+        FrigidOutskirtsKey,
     }
 
     public class Connection
@@ -808,6 +812,12 @@ namespace FogWallNS
             new(Gate.EleumLoyceAfterGettingEyeToSeeGhostsBack, Gate.EleumLoyceAfterGettingEyeToSeeGhostsFront, n1:Cond.OneWay),
             new(Gate.EleumLoyceAfterGettingEyeToSeeGhostsBack, Gate.AavaTheKingsPetExitBack, n1:Cond.OneWay, n2: Cond.DLC3Unfreezed),
             new(Gate.EleumLoyceAfterGettingEyeToSeeGhostsBack, Gate.EleumLoyceCathedraEntranceFront, n1:Cond.OneWay, n2: Cond.DLC3Unfreezed),
+
+            new(Gate.CoffinWarpSrc, Gate.DLC3EntranceDLC, n1: Cond.FrigidOutskirtsKey, n2: Cond.OneWay),
+            new(Gate.CoffinWarpDst, Gate.LudAndZallenEntryFront, n1: Cond.OneWay),
+            new(Gate.LudAndZallenEntryBack, Gate.LudAndZallenExitFront),
+            new(Gate.LudAndZallenExitBack, Gate.LudAndZallenExitWarp, n1: Cond.OneWay),
+
             // dranglic castle
             new(Gate.DrangleicCastleToShadedWoodsBack, Gate.FinalFightArenaFront, n1: Cond.OneWay, n2: Cond.KingsRing),
             new(Gate.DrangleicCastleToShadedWoodsBack, Gate.TwinDragonridersEntryFront, n1: Cond.OneWay),

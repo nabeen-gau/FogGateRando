@@ -17,9 +17,11 @@ namespace FogWallNS
 		public int twin_gate_id;
 		public bool use_second_death_check_impl;
 		public bool reverse;
-		public FogWall(String name, String map_name, BossName boss_enum_id = BossName.None,
+		public bool front_blocked;
+		public bool back_blocked;
+		public FogWall(String name, String map_name, BossName boss_name = BossName.None,
 			int event_id = -1, bool use_second_death_check_impl = false, bool reverse = false,
-			bool pvp = false, bool boss_exit = false, bool cutscene = false)
+			bool pvp = false, bool boss_exit = false, bool cutscene = false, bool front_blocked = false, bool back_blocked = false)
 		{
 			this.name = name;
 			this.map_name = map_name;
@@ -29,11 +31,13 @@ namespace FogWallNS
 			this.offset = null;
 			this.cutscene = cutscene;
 			this.event_id = event_id;
-			this.boss_name = boss_enum_id;
+			this.boss_name = boss_name;
 			this.destruction_flag = -1;
 			this.twin_gate_id = -1;
 			this.use_second_death_check_impl = use_second_death_check_impl;
 			this.reverse = reverse;
+			this.front_blocked = front_blocked;
+            this.back_blocked = back_blocked;
 		}
 	};
 

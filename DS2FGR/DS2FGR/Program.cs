@@ -528,7 +528,7 @@ fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall("TB_tut1_entry", "o00_0500_0001"),
     new FogWall("TB_tut3_exit",  "o00_0500_0002"),
     new FogWall("TB_tut2_entry", "o00_0500_0003"),
-    new FogWall("TB_tut3_entry", "o00_0500_0004"),
+    new FogWall("TB_tut3_entry", "o00_0500_0004", front_blocked: true),
     new FogWall("TB_tut2_exit",  "o00_0500_0005"),
 };
 fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
@@ -545,9 +545,9 @@ fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
 fog_wall_dict[map_names[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
 fog_wall_dict[map_names[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall("ForestOfFG_last_giant",            "o00_0501_0001", boss_enum_id: BossName.TheLastGiant, cutscene: true),
-    new FogWall("ForestOfFG_pursuer_entry",         "o00_0501_0003", boss_enum_id: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
-    new FogWall("ForestOfFG_pursuer_exit",          "o00_0500_0004", boss_enum_id: BossName.ThePursuer, boss_exit: true, cutscene: true),
+    new FogWall("ForestOfFG_last_giant",            "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
+    new FogWall("ForestOfFG_pursuer_entry",         "o00_0501_0003", boss_name: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
+    new FogWall("ForestOfFG_pursuer_exit",          "o00_0500_0004", boss_name: BossName.ThePursuer, boss_exit: true, cutscene: true),
     new FogWall("ForestOfFG_balcony_to_last_giant", "o00_0500_0000"),
     new FogWall("ForestOfFG_fire_pit_to_outside",   "o00_0500_0003"),
     new FogWall("ForestOfFG_first_fog_wall",        "o00_0500_0002"),
@@ -556,125 +556,125 @@ fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
 fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
-    new FogWall("BCTseldora_congregation_entry", "o00_0500_0000", boss_enum_id: BossName.ProwlingMagusAndCongregation),
-    new FogWall("BCTseldora_congregation_exit",  "o00_0500_0001", boss_enum_id: BossName.ProwlingMagusAndCongregation, boss_exit: true),
+    new FogWall("BCTseldora_congregation_entry", "o00_0500_0000", boss_name: BossName.ProwlingMagusAndCongregation),
+    new FogWall("BCTseldora_congregation_exit",  "o00_0500_0001", boss_name: BossName.ProwlingMagusAndCongregation, boss_exit: true),
     new FogWall("BCTseldora_area_entry",         "o00_0500_0002", pvp: true),
-    new FogWall("BCTseldora_freya_exit",         "o00_0501_0001", boss_enum_id: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
-    new FogWall("BCTseldora_freya_entry",        "o00_0502_0000", boss_enum_id: BossName.TheDukesDearFreja, cutscene: true),
+    new FogWall("BCTseldora_freya_exit",         "o00_0501_0001", boss_name: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
+    new FogWall("BCTseldora_freya_entry",        "o00_0502_0000", boss_name: BossName.TheDukesDearFreja, cutscene: true),
 };
 fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
-    new FogWall("AldiasKeep_guardian_dragon_entry", "o00_0501_0000", boss_enum_id: BossName.GuardianDragon),
-    new FogWall("AldiasKeep_guardian_dragon_exit",  "o00_0501_0001", boss_enum_id: BossName.GuardianDragon, boss_exit: true),
+    new FogWall("AldiasKeep_guardian_dragon_entry", "o00_0501_0000", boss_name: BossName.GuardianDragon),
+    new FogWall("AldiasKeep_guardian_dragon_exit",  "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
     new FogWall("AldiasKeep_entry",                 "o00_0501_0002", pvp: true),
 };
 fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
-    new FogWall("LostBastille_gargoyles_entry",   "o00_0500_0000", boss_enum_id: BossName.BelfryGargoyles),
-    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_enum_id: BossName.RuinSentinels, boss_exit: true, reverse: true),
+    new FogWall("LostBastille_gargoyles_entry",   "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
+    new FogWall("LostBastille_sentinels_exit",    "o00_0500_0001", boss_name: BossName.RuinSentinels, boss_exit: true, reverse: true),
     new FogWall("LostBastille_to_sinners_rise",   "o00_0500_0005"),
-    new FogWall("LostBastille_gargoyles_exit",    "o00_0500_0006", boss_enum_id: BossName.BelfryGargoyles, boss_exit: true),
+    new FogWall("LostBastille_gargoyles_exit",    "o00_0500_0006", boss_name: BossName.BelfryGargoyles, boss_exit: true),
     // TODO: add boss fight triggers near hidden fog gates
-    new FogWall("LostBastille_sentinels_hidden1", "o00_0500_0007", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
-    new FogWall("LostBastille_sentinels_hidden2", "o00_0500_0008", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
-    new FogWall("LostBastille_sentinels_hidden3", "o00_0500_0009", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
-    new FogWall("LostBastille_sentinels_hidden4", "o00_0500_0010", boss_enum_id: BossName.RuinSentinels, boss_exit: true),
+    new FogWall("LostBastille_sentinels_hidden1", "o00_0500_0007", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall("LostBastille_sentinels_hidden2", "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall("LostBastille_sentinels_hidden3", "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall("LostBastille_sentinels_hidden4", "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
     new FogWall("LostBastille_sentinels_upper_exit",   "o00_0500_0011", reverse: true), 
     new FogWall("LostBastille_from_wharf",        "o00_0500_0012", pvp: true),
-    new FogWall("LostBastille_to_belfry",         "o00_0500_0013", pvp: true), // TODO: cannot access when lockstone is not used but can be used from the other side
-    new FogWall("LostBastille_sentinels_entry",   "o00_0501_0000", boss_enum_id: BossName.RuinSentinels),
-    new FogWall("LostBastille_lost_sinner_entry", "o00_0501_0002", boss_enum_id: BossName.TheLostSinner, cutscene: true),
-    new FogWall("LostBastille_lost_sinner_exit",  "o00_0501_0003", boss_enum_id: BossName.TheLostSinner, boss_exit: true, cutscene: true),
+    new FogWall("LostBastille_to_belfry",         "o00_0500_0013", pvp: true, front_blocked: true), // TODO: cannot access when lockstone is not used but can be used from the other side
+    new FogWall("LostBastille_sentinels_entry",   "o00_0501_0000", boss_name: BossName.RuinSentinels, back_blocked: true),
+    new FogWall("LostBastille_lost_sinner_entry", "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
+    new FogWall("LostBastille_lost_sinner_exit",  "o00_0501_0003", boss_name: BossName.TheLostSinner, boss_exit: true, cutscene: true),
 };
 fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
-    new FogWall("EarthenPeak_covetous_entry",   "o00_0500_0000", boss_enum_id: BossName.CovetousDemon),
+    new FogWall("EarthenPeak_covetous_entry",   "o00_0500_0000", boss_name: BossName.CovetousDemon),
     new FogWall("EarthenPeak_mid_bonfire",      "o00_0500_0001"),
-    new FogWall("EarthenPeak_mytha_entry",      "o00_0500_0002", boss_enum_id: BossName.MythaTheBanefulQueen),
-    new FogWall("EarthenPeak_covetous_exit",    "o00_0500_0003", boss_enum_id: BossName.CovetousDemon, boss_exit: true),
-    new FogWall("EarthenPeak_mytha_exit",       "o00_0501_0000", boss_enum_id: BossName.MythaTheBanefulQueen, boss_exit: true),
+    new FogWall("EarthenPeak_mytha_entry",      "o00_0500_0002", boss_name: BossName.MythaTheBanefulQueen),
+    new FogWall("EarthenPeak_covetous_exit",    "o00_0500_0003", boss_name: BossName.CovetousDemon, boss_exit: true),
+    new FogWall("EarthenPeak_mytha_exit",       "o00_0501_0000", boss_name: BossName.MythaTheBanefulQueen, boss_exit: true),
     new FogWall("EarthenPeak_from_skele_lords", "o00_0501_0001", pvp: true),
 };
 fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
-    new FogWall("NMWharf_sentry_exit",  "o00_0500_0000", boss_enum_id: BossName.FlexileSentry, boss_exit: true),
-    new FogWall("NMWharf_sentry_entry", "o00_0500_0001", boss_enum_id: BossName.FlexileSentry),
+    new FogWall("NMWharf_sentry_exit",  "o00_0500_0000", boss_name: BossName.FlexileSentry, boss_exit: true),
+    new FogWall("NMWharf_sentry_entry", "o00_0500_0001", boss_name: BossName.FlexileSentry),
     new FogWall("NMWharf_from_heides",  "o00_0501_0000", pvp: true),
 };
 fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
-    new FogWall("IronKeep_smelter_entry",          "o00_0500_0000", boss_enum_id: BossName.SmelterDemon),
+    new FogWall("IronKeep_smelter_entry",          "o00_0500_0000", boss_name: BossName.SmelterDemon),
     new FogWall("IronKeep_lava_pit_after_smelter", "o00_0500_0002"),
     new FogWall("IronKeep_belfry_exit",            "o00_0500_0003"),
     new FogWall("IronKeep_belfry_entry",           "o00_0500_0004"),
-    new FogWall("IronKeep_OIK_entry",              "o00_0500_0005", boss_enum_id: BossName.OldIronKing, cutscene: true),
-    new FogWall("IronKeep_OIK_exit",               "o00_0500_0006", boss_enum_id: BossName.OldIronKing, boss_exit: true, cutscene: true),
-    new FogWall("IronKeep_smelter_exit",           "o00_0500_0007", boss_enum_id: BossName.SmelterDemon, boss_exit: true),
+    new FogWall("IronKeep_OIK_entry",              "o00_0500_0005", boss_name: BossName.OldIronKing, cutscene: true),
+    new FogWall("IronKeep_OIK_exit",               "o00_0500_0006", boss_name: BossName.OldIronKing, boss_exit: true, cutscene: true),
+    new FogWall("IronKeep_smelter_exit",           "o00_0500_0007", boss_name: BossName.SmelterDemon, boss_exit: true),
     new FogWall("IronKeep_smelter_to_bonfire",     "o00_0500_0008", pvp: true),
-    new FogWall("IronKeep_pharros_to_belfry",      "o00_0500_0010", pvp: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
+    new FogWall("IronKeep_pharros_to_belfry",      "o00_0500_0010", pvp: true, front_blocked: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
 //    new FogWall("IK_belfry_entry",           "o00_0500_0011"), // duplicate of another maybe for pvp
     new FogWall("IK_from_EarthenPeak",       "o00_0501_0000", pvp: true),
 };
 fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
-    new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_enum_id: BossName.SkeletonLords, use_second_death_check_impl: true),
-    new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_enum_id: BossName.ExecutionersChariot, cutscene: true),
-    new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_enum_id: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
-    new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_enum_id: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
+    new FogWall("HuntsmanCopse_skelelords_entry", "o00_0501_0000", boss_name: BossName.SkeletonLords, use_second_death_check_impl: true),
+    new FogWall("HuntsmanCopse_chariot_entry",    "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
+    new FogWall("HuntsmanCopse_skelelords_exit",  "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
+    new FogWall("HuntsmanCopse_chariot_exit",     "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
     new FogWall("HuntsmanCopse_from_majula",      "o00_0501_0007", pvp: true),
 };
 fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
     new FogWall("GutterBlackGulch_to_gutter_mid_bonfire", "o00_0500_0000"),
-    new FogWall("GutterBlackGulch_rotten_exit",           "o00_0500_0001", boss_enum_id: BossName.TheRotten, boss_exit: true, cutscene: true),
+    new FogWall("GutterBlackGulch_rotten_exit",           "o00_0500_0001", boss_name: BossName.TheRotten, boss_exit: true, cutscene: true),
     new FogWall("GutterBlackGulch_gulch_entry",           "o00_0501_0000"),
     new FogWall("GutterBlackGulch_from_GoS",              "o00_0501_0001", pvp: true),
-    new FogWall("GutterBlackGulch_rotten_entry",          "o00_0503_0100", boss_enum_id: BossName.TheRotten, cutscene: true),
+    new FogWall("GutterBlackGulch_rotten_entry",          "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
 };
 fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
     new FogWall("DragonAerie_entrance",   "o00_0501_0000"),
-    new FogWall("DragonAerie_ancient_dragon_entry", "o00_0502_0000", boss_enum_id: BossName.AncientDragon),
+    new FogWall("DragonAerie_ancient_dragon_entry", "o00_0502_0000", boss_name: BossName.AncientDragon), // TODO: hostile determination
 };
 fog_wall_dict[map_names[MapName.MajulaShadedWoods]] = new List<FogWall> {
     new FogWall("MajulaToShadedWoods_entrance", "o00_0500_0100", pvp: true),
 };
 fog_wall_dict[map_names[MapName.HeidesTowerofFlame]] = new List<FogWall> {
-    new FogWall("HeidesTowerOfFlame_dragonrider_entry",  "o00_0500_0000", boss_enum_id: BossName.Dragonrider),
-    new FogWall("HeidesTowerOfFlame_dragonrider_exit",   "o00_0500_0001", boss_enum_id: BossName.Dragonrider, boss_exit: true),
+    new FogWall("HeidesTowerOfFlame_dragonrider_entry",  "o00_0500_0000", boss_name: BossName.Dragonrider),
+    new FogWall("HeidesTowerOfFlame_dragonrider_exit",   "o00_0500_0001", boss_name: BossName.Dragonrider, boss_exit: true),
     new FogWall("HeidesTowerOfFlame_to_majula",          "o00_0500_0002", pvp: true),
     new FogWall("HeidesTowerOfFlame_to_NMW",             "o00_0500_0100", pvp: true),
-    new FogWall("HeidesTowerOfFlame_dragonslayer_entry", "o00_0501_0000", boss_enum_id: BossName.OldDragonslayer),
-    new FogWall("HeidesTowerOfFlame_dragonslayer_exit",  "o00_0501_0001", boss_enum_id: BossName.OldDragonslayer, boss_exit: true),
+    new FogWall("HeidesTowerOfFlame_dragonslayer_entry", "o00_0501_0000", boss_name: BossName.OldDragonslayer),
+    new FogWall("HeidesTowerOfFlame_dragonslayer_exit",  "o00_0501_0001", boss_name: BossName.OldDragonslayer, boss_exit: true),
 };
 fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
-    new FogWall("ShadedWoods_najka_exit",   "o00_0500_0000", boss_enum_id: BossName.ScorpionessNajka, boss_exit: true),
+    new FogWall("ShadedWoods_najka_exit",   "o00_0500_0000", boss_name: BossName.ScorpionessNajka, boss_exit: true),
     new FogWall("ShadedWoods_to_mist_area", "o00_0501_0001", pvp: true),
-    new FogWall("ShadedWoods_najka_entry",  "o00_0503_0000", boss_enum_id: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
+    new FogWall("ShadedWoods_najka_entry",  "o00_0503_0000", boss_name: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
 };
 fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
 fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
-    new FogWall("DoorsOfPharros_rat_boss_exit",    "o00_0500_0000", boss_enum_id: BossName.RoyalRatAuthority, boss_exit: true),
+    new FogWall("DoorsOfPharros_rat_boss_exit",    "o00_0500_0000", boss_name: BossName.RoyalRatAuthority, boss_exit: true),
     new FogWall("DoorsOfPharros_to_rat_boss", "o00_0500_0001", pvp: true),
     new FogWall("DoorsOfPharros_entrance",    "o00_0500_0002", pvp: true),
-    new FogWall("DoorsOfPharros_rat_boss_entry",   "o00_0501_0000", boss_enum_id: BossName.RoyalRatAuthority),
+    new FogWall("DoorsOfPharros_rat_boss_entry",   "o00_0501_0000", boss_name: BossName.RoyalRatAuthority),
 };
 fog_wall_dict[map_names[MapName.GraveofSaints]] = new List<FogWall> {
     new FogWall("GoS_entrance",    "o00_0500_0000", pvp: true),
     new FogWall("GoS_to_rat_boss", "o00_0501_0000", pvp: true),
-    new FogWall("GoS_rat_entry",   "o00_0501_0001", boss_enum_id: BossName.RoyalRatVanguard),
-    new FogWall("GoS_rat_exit",    "o00_0501_0002", boss_enum_id: BossName.RoyalRatVanguard, boss_exit: true),
+    new FogWall("GoS_rat_entry",   "o00_0501_0001", boss_name: BossName.RoyalRatVanguard),
+    new FogWall("GoS_rat_exit",    "o00_0501_0002", boss_name: BossName.RoyalRatVanguard, boss_exit: true),
 };
 fog_wall_dict[map_names[MapName.MemoryofVammarOrroandJeigh]] = new List<FogWall> {
-    new FogWall("Memory_giant_entry", "o00_0500_0000", boss_enum_id: BossName.GiantLord),
-    new FogWall("Memory_giant_exit",  "o00_0500_0001", boss_enum_id: BossName.GiantLord, boss_exit: true),
+    new FogWall("Memory_giant_entry", "o00_0500_0000", boss_name: BossName.GiantLord),
+    new FogWall("Memory_giant_exit",  "o00_0500_0001", boss_name: BossName.GiantLord, boss_exit: true),
 };
 fog_wall_dict[map_names[MapName.ShrineofAmana]] = new List<FogWall> {
-    new FogWall("ShrineOfAmana_Demon_entry",             "o00_0501_0000", boss_enum_id: BossName.DemonofSong),
+    new FogWall("ShrineOfAmana_Demon_entry",             "o00_0501_0000", boss_name: BossName.DemonofSong),
     new FogWall("ShrineOfAmana_to_2nd_bonfire",          "o00_0501_0001"),
     new FogWall("ShrineOfAmana_to_harvals_rest_bonfire", "o00_0501_0005"),
-    new FogWall("ShrineOfAmana_Demon_exit",              "o00_0501_0006", boss_enum_id: BossName.DemonofSong, boss_exit: true), // y_offset = 32.121f - 31.336f
+    new FogWall("ShrineOfAmana_Demon_exit",              "o00_0501_0006", boss_name: BossName.DemonofSong, boss_exit: true), // y_offset = 32.121f - 31.336f
     new FogWall("ShrineOfAmana_from_castle",             "o00_0501_0007", pvp: true),
 };
 fog_wall_dict[map_names[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
-    new FogWall("DrangleicCastle_mirror_knight_entry",     "o00_0501_0000", boss_enum_id: BossName.LookingGlassKnight),
-    new FogWall("DrangleicCastle_twin_dragonriders_entry", "o00_0501_0001", boss_enum_id: BossName.TwinDragonrider),
-    new FogWall("DrangleicCastle_twin_dragonriders_exit",  "o00_0501_0004", boss_enum_id: BossName.TwinDragonrider, boss_exit: true),
-    new FogWall("DrangleicCastle_mirror_knight_exit",      "o00_0501_0005", boss_enum_id: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
-    new FogWall("DrangleicCastle_throne_room",             "o00_0501_0006", boss_enum_id: BossName.ThroneWatcherAndDefender, cutscene: true),
+    new FogWall("DrangleicCastle_mirror_knight_entry",     "o00_0501_0000", boss_name: BossName.LookingGlassKnight),
+    new FogWall("DrangleicCastle_twin_dragonriders_entry", "o00_0501_0001", boss_name: BossName.TwinDragonrider),
+    new FogWall("DrangleicCastle_twin_dragonriders_exit",  "o00_0501_0004", boss_name: BossName.TwinDragonrider, boss_exit: true),
+    new FogWall("DrangleicCastle_mirror_knight_exit",      "o00_0501_0005", boss_name: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
+    new FogWall("DrangleicCastle_throne_room",             "o00_0501_0006", boss_name: BossName.ThroneWatcherAndDefender, cutscene: true),
     new FogWall("DrangleicCastle_to_chasm_entrance",       "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
     new FogWall("DrangleicCastle_entrance",                "o00_0504_0000", pvp: true),
 };
@@ -682,23 +682,23 @@ fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][3].offset = new Ve
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
 fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
     new FogWall("UndeadCrypt_to_bonfire_room", "o00_0500_0000"),
-    new FogWall("UndeadCrypt_velsdat_entry",   "o00_0501_0000", boss_enum_id: BossName.VelstadtTheRoyalAegis, cutscene: true),
-    new FogWall("UndeadCrypt_velsdat_exit",    "o00_0501_0001", boss_enum_id: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
+    new FogWall("UndeadCrypt_velsdat_entry",   "o00_0501_0000", boss_name: BossName.VelstadtTheRoyalAegis, cutscene: true),
+    new FogWall("UndeadCrypt_velsdat_exit",    "o00_0501_0001", boss_name: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
     new FogWall("UndeadCrypt_entrance",        "o00_0502_0000", pvp: true),
-    new FogWall("UndeadCrypt_vendrick_entry",  "o00_0505_0000", boss_enum_id: BossName.Vendrick),
+    new FogWall("UndeadCrypt_vendrick_entry",  "o00_0505_0000", boss_name: BossName.Vendrick),
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall("DarkChasm_from_black_gulch_exit", "o00_0501_0000"),
     new FogWall("DarkChasm_drangleic_castle_exit",  "o00_0501_0001"),
     new FogWall("DarkChasm_shaded_woods_exit",     "o00_0501_0002"),
-    new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss_enum_id: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
+    new FogWall("DarkChasm_boss_exit",  "o00_0501_0003", boss_name: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
 fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
-    new FogWall("Shulva_sihn_entry",                  "o00_0500_0001", boss_enum_id: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
-    new FogWall("Shulva_elana_entry",                 "o00_0501_0000", boss_enum_id: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
-    new FogWall("Shulva_gank_entry",                  "o00_0501_0002", boss_enum_id: BossName.Gankfight),
-    new FogWall("Shulva_gank_exit",                   "o00_0501_0003", boss_enum_id: BossName.Gankfight, boss_exit: true),
+    new FogWall("Shulva_sihn_entry",                  "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
+    new FogWall("Shulva_elana_entry",                 "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
+    new FogWall("Shulva_gank_entry",                  "o00_0501_0002", boss_name: BossName.Gankfight),
+    new FogWall("Shulva_gank_exit",                   "o00_0501_0003", boss_name: BossName.Gankfight, boss_exit: true),
     new FogWall("Shulva_to_gank_fight_from_bonfire",  "o00_0501_0005", pvp: true),
     new FogWall("Shulva_entrance",                    "o00_0501_0007", pvp: true),
     //new FogWall("Shulva_between_sihn_elana",          "o00_0501_0008"), //disabled (duplicate)
@@ -714,12 +714,12 @@ fog_wall_dict[map_names[MapName.BrumeTower]] = new List<FogWall> {
     new FogWall("DLC2_from_2nd_bonfire_to_center",          "o00_0500_0000"),
     new FogWall("DLC2_to_central_bonfire_room",             "o00_0500_0001"),
     new FogWall("DLC2_to_scorching_iron_sceptor_key_tower", "o00_0500_0002"),
-    new FogWall("DLC2_sir_alonne_entry",                    "o00_0500_0003", boss_enum_id: BossName.SirAlonne),
-    new FogWall("DLC2_sir_alonne_exit",                     "o00_0500_0004", boss_enum_id: BossName.SirAlonne, boss_exit: true),
-    new FogWall("DLC2_raime_entry",                         "o00_0501_0000", boss_enum_id: BossName.FumeKnight), // y_offset = 59.822f - 59.297f
-    new FogWall("DLC2_raime_exit",                          "o00_0501_0001", boss_enum_id: BossName.FumeKnight, boss_exit: true, reverse: true), //y_offset = 61.497f - 60.998f
-    new FogWall("DLC2_smelter_entry",                       "o00_0501_0002", boss_enum_id: BossName.BlueSmelterDemon), //y_offset = 26.875f - 26.556f
-    new FogWall("DLC2_smelter_exit",                        "o00_0501_0003", boss_enum_id: BossName.BlueSmelterDemon, boss_exit: true),
+    new FogWall("DLC2_sir_alonne_entry",                    "o00_0500_0003", boss_name: BossName.SirAlonne),
+    new FogWall("DLC2_sir_alonne_exit",                     "o00_0500_0004", boss_name: BossName.SirAlonne, boss_exit: true),
+    new FogWall("DLC2_raime_entry",                         "o00_0501_0000", boss_name: BossName.FumeKnight), // y_offset = 59.822f - 59.297f
+    new FogWall("DLC2_raime_exit",                          "o00_0501_0001", boss_name: BossName.FumeKnight, boss_exit: true, reverse: true), //y_offset = 61.497f - 60.998f
+    new FogWall("DLC2_smelter_entry",                       "o00_0501_0002", boss_name: BossName.BlueSmelterDemon), //y_offset = 26.875f - 26.556f
+    new FogWall("DLC2_smelter_exit",                        "o00_0501_0003", boss_name: BossName.BlueSmelterDemon, boss_exit: true),
     new FogWall("DLC2_entrance",                            "o00_0501_0006"),
     new FogWall("DLC2_to_smelter_area",                     "o00_0501_0007"),
     //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
@@ -728,12 +728,12 @@ fog_wall_dict[map_names[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.82
 fog_wall_dict[map_names[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
 fog_wall_dict[map_names[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
 fog_wall_dict[map_names[MapName.FrozenEleumLoyce]] = new List<FogWall> {
-    new FogWall("DLC3_aava_exit",         "o00_0500_0001", boss_enum_id: BossName.AavaTheKingsPet, boss_exit: true),
+    new FogWall("DLC3_aava_exit",         "o00_0500_0001", boss_name: BossName.AavaTheKingsPet, boss_exit: true),
     new FogWall("DLC3_after_getting_eye", "o00_0500_0002"),
-    new FogWall("DLC3_ivory_king_entry",  "o00_0500_0003", boss_enum_id: BossName.BurntIvoryKing),
-    new FogWall("DLC3_2cats_entry",       "o00_0501_0003", boss_enum_id: BossName.LudAndZallen),
-    new FogWall("DLC3_aava_entry",        "o00_0501_0005", boss_enum_id: BossName.AavaTheKingsPet),
-    new FogWall("DLC3_2cats_exit",        "o00_0501_0006", boss_enum_id: BossName.LudAndZallen, boss_exit: true),
+    new FogWall("DLC3_ivory_king_entry",  "o00_0500_0003", boss_name: BossName.BurntIvoryKing, back_blocked: true),
+    new FogWall("DLC3_2cats_entry",       "o00_0501_0003", boss_name: BossName.LudAndZallen),
+    new FogWall("DLC3_aava_entry",        "o00_0501_0005", boss_name: BossName.AavaTheKingsPet),
+    new FogWall("DLC3_2cats_exit",        "o00_0501_0006", boss_name: BossName.LudAndZallen, boss_exit: true),
     new FogWall("DLC3_to_cathedral",      "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
 };
 fog_wall_dict[map_names[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
@@ -774,7 +774,7 @@ Dictionary<String,String> esd_script_fn(Warp warp)
     };
     if (warp.from.map_name != warp.to.map_name)
     {
-        scripts[warp.to.map_name] = $"\n##{warp.to.fog_wall_name}({fb2})-{warp.from.fog_wall_name}({fb})##";
+        scripts[warp.to.map_name] = $"";
     }
     // generate and update the esd script for warping source
     if (warp.from.boss.name != BossName.None  && warp.from.boss_locked) // add condition to prevent player from leaving
@@ -936,6 +936,10 @@ Dictionary<String,String> esd_script_fn(Warp warp)
 String get_esd_script_path(String map_name)
 {
     return Path.Join(mod_folder, "ezstate", $"event_{map_name}.py");
+}
+String get_esd_file_path(String map_name)
+{
+    return Path.Join(mod_folder, "ezstate", $"event_{map_name}.esd");
 }
 
 String ezstate_path = Path.Join(mod_folder, "ezstate");
@@ -1422,6 +1426,14 @@ foreach (var map_name_kv in map_names)
 {
     String map_name = map_name_kv.Value;
     String esd_script_path = get_esd_script_path(map_name);
+    if (!Path.Exists(esd_script_path))
+    {
+        String esd_tool = Path.GetFullPath("./esdtool/esdtool.exe");
+        String argus = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i\"{get_esd_file_path(map_name)}\" -writepy \"{esd_script_path}\"";
+        Debug.Assert(File.Exists(esd_tool));
+        run_external_command(esd_tool, argus);   // decomplie esd into .py files
+        Debug.Assert(File.Exists(esd_script_path));
+    }
     String path = Util.check_backup(esd_script_path);
     String esd_script = Util.read_string_from_file(path);
     esd_script += Util.get_script_helper_fns(map_name, Util.parse_map_name(map_name));
@@ -1449,6 +1461,6 @@ foreach (var map_script_kv in esd_script_dict)
 
 // run the esdtool.exe to generate esd files from python files
 String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
-String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir {mod_folder} -backup -i{py_files_list} -writeloose {Path.Join(ezstate_path, "%e.esd")}";
+String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i{py_files_list} -writeloose \"{Path.Join(ezstate_path, "%e.esd")}\"";
 Debug.Assert(File.Exists(esdtool_path));
 run_external_command(esdtool_path, arguments);

@@ -4,7 +4,7 @@ namespace FogWallNS
 {
 	public class FogWall
 	{
-		public String name;
+		public Gate name;
 		public String map_name;
 		public int instance_id;
 		bool pvp;
@@ -19,7 +19,7 @@ namespace FogWallNS
 		public bool reverse;
 		public bool front_blocked;
 		public bool back_blocked;
-		public FogWall(String name, String map_name, BossName boss_name = BossName.None,
+		public FogWall(Gate name, String map_name, BossName boss_name = BossName.None,
 			int event_id = -1, bool use_second_death_check_impl = false, bool reverse = false,
 			bool pvp = false, bool boss_exit = false, bool cutscene = false, bool front_blocked = false, bool back_blocked = false)
 		{
@@ -311,7 +311,7 @@ def event_{map_id}_x505(flag8=_):
 
 	public struct BossDetails
 	{
-		public String name_str;
+		public Gate name_str;
 		public BossName name;
 		public int destruction_flag;
 		public bool use_second_death_check_impl;
@@ -340,7 +340,7 @@ def event_{map_id}_x505(flag8=_):
 		public List<int>? enemy_ids;
 		public int chasm_event_flag;
 		public bool boss_locked;
-		public String fog_wall_name;
+		public Gate fog_wall_name;
 		public int cutscene_script_id;
 		public int twin_fog_gate_id;
 		public bool front;

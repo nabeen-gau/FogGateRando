@@ -571,12 +571,12 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
     { MapName.ShrineofAmana,                "m20_11_00_00"},
     { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
     { MapName.UndeadCrypt,                  "m20_24_00_00"},
-    ////{ MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
+    { MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
     { MapName.DarkChasmofOld,               "m40_03_00_00"},
     { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
     { MapName.BrumeTower,                   "m50_36_00_00"},
     { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
-    ////{ MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
+    { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
 };
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
@@ -1013,6 +1013,9 @@ foreach (var pair in map_names)
     // hardcoded to 1000
     //int warp_obj_begin = warp_object_begin_list[map_name];
     int warp_obj_begin = 1000;
+
+    // skip dragon memories and memory of the king
+    if (pair.Key == MapName.MemoryoftheKing || pair.Key == MapName.DragonMemories) continue;
 
     int n_fog_walls = fog_wall_dict[map_name].Count;
 
@@ -1461,10 +1464,10 @@ foreach (var pair in map_names)
     byte[] event_loc_bin = param_event_loc.Write();
     try
     {
-        File.WriteAllBytes(map_path, map_bin);
-        File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
-        File.WriteAllBytes(param_event_path, event_param_bin);
-        File.WriteAllBytes(param_event_loc_path, event_loc_bin);
+        //File.WriteAllBytes(map_path, map_bin);
+        //File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
+        //File.WriteAllBytes(param_event_path, event_param_bin);
+        //File.WriteAllBytes(param_event_loc_path, event_loc_bin);
         Console.WriteLine($"[SUCCESS] {map_name} done!\n");
     }
     catch (IOException ex)
@@ -1497,8 +1500,322 @@ foreach (var map_name_kv in map_names)
     esd_script_dict[map_name] = esd_script;
 }
 
-List<Warp> new_warps = WarpScrambler.Scramble(warps);
+List<WarpInfo> warp_infos = new(warps.Count*2);
+foreach (var warp in warps)
+{
+    warp_infos.Add(warp.from);
+    warp_infos.Add(warp.to);
+}
 
+List<List<Warp>> all_possilble_warps = new();
+for (int i=0; i<warp_infos.Count; i++)
+{
+    all_possilble_warps.Add(new());
+    for (int j = i+1; j < warp_infos.Count; j++)
+    {
+        var from = warp_infos[i];
+        if (GateConnections.cannot_warp_from.Contains(from.fog_wall_name))
+        {
+            continue;
+        }
+        var to = warp_infos[j];
+        if (GateConnections.cannot_warp_to.Contains(to.fog_wall_name))
+        {
+            continue;
+        }
+        all_possilble_warps[i].Add(new Warp(from, to));
+    }
+}
+
+Random rand = new Random();
+List<Warp> selectedPairs = new(warps.Count);
+List<int> skip_list = new();
+List<int> not_selected_idx = new();
+for (int i=0; i<all_possilble_warps.Count; i++)
+{
+    if (skip_list.Contains(i)) continue;
+    int index = rand.Next(all_possilble_warps[i].Count);
+    if (index >= all_possilble_warps[i].Count)
+    {
+        not_selected_idx.Add(i);
+        Console.WriteLine($"[Warning] skipped index {i}.");
+        continue;
+    }
+    var random_item = all_possilble_warps[i][index];
+    int n_iters = 0;
+    do
+    {
+        index = rand.Next(all_possilble_warps[i].Count);
+        n_iters++;
+        if (n_iters > 1_000_000)
+        {
+            not_selected_idx.Add(i);
+            Console.WriteLine($"[Warning] Could not select index {i}.");
+            break;
+        }
+    } while (skip_list.Contains(i + index + 1));
+    if (n_iters > 1_000_000)
+    {
+        continue;
+    }
+    skip_list.Add(i + index + 1);
+    random_item = all_possilble_warps[i][index];
+    selectedPairs.Add(random_item);
+}
+
+// add the fixed warps to the selectedPairs
+Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst)
+{
+    FogWall fw_src = new(warp_node_src, map_names[map_name_src]);
+    WarpInfo warpinfo_src = new(map_names[map_name_src], -1, -1, -1, -1, fw_src);
+    FogWall fw_dst = new(warp_node_dst, map_names[map_name_dst]);
+    WarpInfo warpinfo_dst = new(map_names[map_name_dst], -1, -1, -1, -1, fw_dst);
+    return new Warp(warpinfo_src, warpinfo_dst);
+}
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.TheLostBastilleBelfryLuna,
+    WarpNode.NearPursuerBirdEntry, WarpNode.NearPursuerBirdExit
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+    WarpNode.LudAndZallenExitWarp, WarpNode.CoffinWarpSrc
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+    WarpNode.IvoryKingFightEndSrc, WarpNode.IvoryKingFightEndDst
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.DarkChasmofOld, MapName.ShadedWoodsShrineofWinter,
+    WarpNode.ChasmShadedWoodsExitWarp, WarpNode.ChasmPortalFromShadedWoods
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.DarkChasmofOld, MapName.TheGutterBlackGulch,
+    WarpNode.ChasmGulchExitWarp, WarpNode.ChasmPortalFromBlackGulch
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
+    WarpNode.ChasmCastleExitWarp, WarpNode.ChasmPortalFromCastle
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
+    WarpNode.ChasmDarkLurkerExitWarp, WarpNode.ChasmPortalFromCastle
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.NearPateGiantMemoryEntryFront, WarpNode.NearPateGiantMemoryEntryBack
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.NearPursuerGiantMemoryEntryFront, WarpNode.NearPursuerGiantMemoryEntryBack
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.GiantLordMemoryEntryFront, WarpNode.GiantLordMemoryEntryBack
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.NearPateGiantMemoryEntryFront, WarpNode.NearPateGiantMemoryExit
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.NearPursuerGiantMemoryEntryFront, WarpNode.NearPursuerGiantMemoryExit
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+    WarpNode.GiantLordMemoryEntryFront, WarpNode.GiantLordMemoryExit
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.BrightstoneCoveTseldora, MapName.DragonMemories,
+    WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.BrightstoneCoveTseldora, MapName.DragonMemories,
+    WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemorySrc
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.BrumeTower, MapName.BrumeTower,
+    WarpNode.SirAlonneArmorDLC, WarpNode.SirAlonneArmorMemory
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.BrumeTower, MapName.BrumeTower,
+    WarpNode.SirAlonneArmorDLC, WarpNode.SirAlonneMemoryExit
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.NomansWharf, MapName.TheLostBastilleBelfryLuna,
+    WarpNode.PirateShipWharf, WarpNode.PirateShipBastille
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.TheGutterBlackGulch, MapName.ShulvaSanctumCity,
+    WarpNode.DLC1EntranceBaseGame, WarpNode.DLC1EntranceDLC
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.IronKeepBelfrySol, MapName.BrumeTower,
+    WarpNode.DLC2EntranceBaseGame, WarpNode.DLC2EntranceDLC
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ShadedWoodsShrineofWinter, MapName.FrozenEleumLoyce,
+    WarpNode.DLC3EntranceBaseGame, WarpNode.DLC3EntranceDLC
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.UndeadCrypt, MapName.MemoryoftheKing,
+    WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.UndeadCrypt, MapName.MemoryoftheKing,
+    WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemorySrc
+));
+
+List<WarpInfo> flattened_list = selectedPairs
+    .SelectMany(t => new[] { t.from, t.to })
+    .ToList();
+
+List<WarpInfo> flattened_list_copy = new(flattened_list.Count);
+foreach (var i in flattened_list)
+{
+    if (!flattened_list_copy.Contains(i))
+    {
+        flattened_list_copy.Add(i);
+    }
+}
+
+List<WarpNode> allowed_dups = new() 
+{ 
+    WarpNode.ChasmPortalFromCastle,
+    WarpNode.NearPateGiantMemoryEntryFront,
+    WarpNode.NearPursuerGiantMemoryEntryFront,
+    WarpNode.GiantLordMemoryEntryFront,
+    WarpNode.DragonMemoriesCoveSrc,
+    WarpNode.SirAlonneArmorDLC,
+    WarpNode.MemoryOfTheKingCryptSrc,
+};
+
+var duplicates2 = flattened_list
+    .GroupBy(x => x)
+    .Where(g => g.Count() > 1)
+    .Select(g => g.Key)
+    .ToList();
+foreach (var i in allowed_dups)
+{
+    foreach (var j in duplicates2)
+    {
+        if (j.fog_wall_name == i)
+        {
+            duplicates2.Remove(j);
+            break;
+        }
+    }
+}
+Debug.Assert(duplicates2.Count == 0);
+
+int find_connection_from_warp_point(WarpNode point)
+{
+    for (int i=0; i<segments.Count; i++)
+    {
+        var seg = segments[i];
+        foreach (var con in seg)
+        {
+            if (point == con.n1 || con.n2 == point)
+            {
+                return i;
+            }
+        }
+
+    }
+    return -1;
+}
+
+List<List<Warp>> travel_path_global = new();
+
+void walk_through(WarpInfo point, List<Warp> travel_path)
+{
+    int i = find_connection_from_warp_point(point.fog_wall_name);
+    Debug.Assert(i >= 0);
+    var segment = segments[i];
+    foreach (var seg in segment)
+    {
+        foreach (var con in selectedPairs)
+        {
+            // if con is already in the list skip it
+            //if (travel_path.Contains(con)) continue;
+            if (travel_path_global.Any(
+                innerList => innerList.Any(warp => warp == con)
+            )) continue;
+            if (con.from.fog_wall_name == seg.n1
+            || con.from.fog_wall_name == seg.n2)
+            {
+                if (con.from.fog_wall_name == point.fog_wall_name) continue;
+                if (seg.condition_n2 == Cond.OneWay && con.from.fog_wall_name == seg.n2) continue;
+                if (seg.condition_n1 == Cond.OneWay && con.from.fog_wall_name == seg.n1) continue;
+                // go into the connection (to)
+                travel_path.Add(con);
+                // if the current segment is lone segment return
+                if (seg.n1 == WarpNode.Lone || seg.n2 == WarpNode.Lone) return;
+                walk_through(con.to, travel_path);
+            }
+            else if (con.to.fog_wall_name == seg.n1
+            || con.to.fog_wall_name == seg.n2 )
+            {
+                if (con.to.fog_wall_name == point.fog_wall_name) continue;
+                if (seg.condition_n2 == Cond.OneWay && con.to.fog_wall_name == seg.n2) continue;
+                if (seg.condition_n1 == Cond.OneWay && con.to.fog_wall_name == seg.n1) continue;
+                // go into the connection (from)
+                travel_path.Add(con);
+                if (seg.n1 == WarpNode.Lone || seg.n2 == WarpNode.Lone) return;
+                walk_through(con.from, travel_path);
+            }
+        }
+    }
+}
+
+// check if it is possible to finish the game
+var segment = segments[0];
+foreach (var seg in segment)
+{
+    foreach (var con in selectedPairs)
+    {
+        if (con.from.fog_wall_name == seg.n1
+        || con.from.fog_wall_name == seg.n2)
+        {
+            // go into the connection (to)
+            travel_path_global.Add(new(){con});
+            walk_through(con.to, travel_path_global[^1]);
+        }
+        else if (con.to.fog_wall_name == seg.n1
+        || con.to.fog_wall_name == seg.n2 )
+        {
+            // go into the connection (from)
+            travel_path_global.Add(new() { con });
+            walk_through(con.from, travel_path_global[^1]);
+        }
+    }
+}
+
+
+List<Warp> new_warps = new();
+//List<Warp> new_warps = WarpScrambler.Scramble(warps);
 foreach (var warp in new_warps)
 {
     var scripts = esd_script_fn(warp);

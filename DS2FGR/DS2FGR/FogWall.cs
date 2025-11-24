@@ -1,4 +1,7 @@
+using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace FogWallNS
 {
@@ -39,7 +42,29 @@ namespace FogWallNS
 			this.front_blocked = front_blocked;
             this.back_blocked = back_blocked;
 		}
-	};
+
+        public FogWall get_back_gate()
+        {
+			var copy = (FogWall)this.MemberwiseClone();
+            string name = copy.name.ToString();
+            if (name.EndsWith("Front"))
+            {
+                name = name.Replace("Front", "Back");
+            }
+            else if (name.EndsWith("Back"))
+            {
+                name = name.Replace("Back", "Front");
+            }
+			else
+			{
+				throw new Exception($"Could not parse the name `{copy.name}`");
+			}
+            copy.name = (WarpNode)Enum.Parse(typeof(WarpNode), name);
+			return copy;
+        }
+
+
+    };
 
 	enum MapName
 	{
@@ -327,7 +352,8 @@ def event_{map_id}_x505(flag8=_):
 		}
 	}
 
-	public struct WarpInfo
+    [DebuggerDisplay("{fog_wall_name}")]
+    public struct WarpInfo
 	{
 		public String map_name;
 		public int script_id;
@@ -363,6 +389,7 @@ def event_{map_id}_x505(flag8=_):
 		}
 	}
 
+    [DebuggerDisplay("{from.fog_wall_name} <-> {to.fog_wall_name}")]
 	public struct Warp
 	{
 		public WarpInfo from;
@@ -387,7 +414,7 @@ def event_{map_id}_x505(flag8=_):
 				enemy_ids: fgi.type.front.enemy_ids, chasm_event_flag: fgi.type.front.chasm_event_flag, 
 				boss_locked: boss_locked_from, cutscene_script_id: cutscene_script_id, front: true);
 			to   = new(fgi.map_name, fgi.type.back.script_id, fgi.type.back.warp_src_id, fgi.fogwall.instance_id,
-				fgi.type.front.warp_dst_id, fgi.fogwall, 
+				fgi.type.front.warp_dst_id, fgi.fogwall.get_back_gate(), 
 				enemy_ids: fgi.type.front.enemy_ids, chasm_event_flag: fgi.type.front.chasm_event_flag,
 				boss_locked: boss_locked_to, cutscene_script_id: cutscene_script_id, front: false);
 		}
@@ -396,6 +423,26 @@ def event_{map_id}_x505(flag8=_):
         {
             this.from = from;
             this.to = to;
+        }
+
+		public bool contains_common_point(Warp other)
+		{
+			if (
+				this.from.fog_wall_name == other.from.fog_wall_name
+				|| this.from.fog_wall_name == other.to.fog_wall_name
+				|| this.to.fog_wall_name == other.to.fog_wall_name
+				|| this.to.fog_wall_name == other.from.fog_wall_name
+			) return true;
+			return false;
+		}
+
+        public static bool operator ==(Warp a, Warp b)
+        {
+            return a.from.fog_wall_name == b.from.fog_wall_name && a.to.fog_wall_name == b.to.fog_wall_name;
+        }
+        public static bool operator !=(Warp a, Warp b)
+        {
+            return a.from.fog_wall_name != b.from.fog_wall_name || a.to.fog_wall_name != b.to.fog_wall_name;
         }
     }
 
@@ -406,15 +453,16 @@ def event_{map_id}_x505(flag8=_):
         {
             int n = warps.Count;
             if (n <= 1) return new List<Warp>(warps);
-            List<WarpInfo> fromList = new List<WarpInfo>(n);
-            List<WarpInfo> toList = new List<WarpInfo>(n);
+			List<WarpInfo> allList = new List<WarpInfo>(2 * n);
 
             foreach (var w in warps)
             {
-                fromList.Add(w.from);
-                toList.Add(w.to);
+				allList.Add(w.from);
+				allList.Add(w.to);
             }
-            Shuffle(toList);
+            Shuffle(allList);
+			List<WarpInfo> fromList = allList[..n];
+			List<WarpInfo> toList = allList[n..(2*n)];
             var result = new List<Warp>(n);
             for (int i = 0; i < n; i++)
             {

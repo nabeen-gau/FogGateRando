@@ -367,6 +367,7 @@ namespace FogWallNS
         IvoryKingBack,
         EleumLoyceAfterGettingEyeToSeeGhostsBack,
         EleumLoyceCathedraEntranceBack,
+        Count,
     }
 
     public enum SegmentName
@@ -517,7 +518,7 @@ namespace FogWallNS
         public KeyCond(Cond cond, WarpNode n1, WarpNode n2)
         {
             this.cond = cond;
-            access_nodes = new() { n1, n2};
+            access_nodes = new() { n1, n2 };
             prereqs = new(0);
         }
         public KeyCond(Cond cond, List<WarpNode> nodes, bool all = false)
@@ -593,8 +594,6 @@ namespace FogWallNS
             new(WarpNode.Tutorial3ExitBack, WarpNode.MajulaToShadedWoodsFront, n1: Cond.OneWay),
             new(WarpNode.Tutorial3ExitBack, WarpNode.MajulaToRotundaLockstoneFront, n1: Cond.OneWay),
 
-            new(WarpNode.Tutorial3ExitFront, WarpNode.Tutorial3EntryBack, n2: Cond.OneWay),
-
             new(WarpNode.MajulaToForestOfFallenGiantsFront, WarpNode.MajulaToGraveOfSaintsFront, n1: Cond.OneWay, n2: Cond.Catring),
             new(WarpNode.MajulaToForestOfFallenGiantsFront, WarpNode.MajulaToGutterFront, n1: Cond.OneWay, n2: Cond.Catring),
             new(WarpNode.MajulaToForestOfFallenGiantsFront, WarpNode.MajulaToShadedWoodsFront),
@@ -611,7 +610,8 @@ namespace FogWallNS
 
             new(WarpNode.Tutorial1EntryBack, WarpNode.Tutorial1ExitFront),
             new(WarpNode.Tutorial2EntryBack, WarpNode.Tutorial2ExitFront, n1: Cond.OneWay),
-            new(WarpNode.Tutorial3EntryBack, WarpNode.Tutorial1ExitFront, n1: Cond.OneWay),
+            new(WarpNode.Tutorial3ExitFront, WarpNode.Tutorial3EntryBack, n2: Cond.OneWay),
+
 
             // Forest of the fallen giants
             new(WarpNode.MajulaToForestOfFallenGiantsBack, WarpNode.ForestOfFallenGiantsFromMajulaFront),
@@ -793,10 +793,11 @@ namespace FogWallNS
             new(WarpNode.SmeltorDemonToBonfireBack, WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, n1: Cond.OneWay, n2: Cond.PharrosLockstone),
             new(WarpNode.SmeltorDemonToBonfireBack, WarpNode.IronKeepNearFlameThrowerAndTurtleFront, n1: Cond.OneWay),
 
-            new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.BelfrySolEntryFront),
+            new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.BelfrySolEntryFront, n1: Cond.OneWay),
             new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.IronKeepNearFlameThrowerAndTurtleFront, n1: Cond.OneWay),
             new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.BelfrySolExitBack, n2: Cond.OneWay),
             new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, n1: Cond.OneWay, n2: Cond.PharrosLockstone),
+            new(WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, WarpNode.SmeltorDemonEntryFront, n1: Cond.OneWay),
             new(WarpNode.BelfrySolEntryBack, WarpNode.BelfrySolExitFront),
 
             new(WarpNode.BelfrySolExitBack, WarpNode.SmeltorDemonEntryFront, n1: Cond.OneWay),
@@ -884,7 +885,7 @@ namespace FogWallNS
             new(WarpNode.ShadedWoodsToMistyAreaFront, WarpNode.DrangleicCastleToShadedWoodsFront, n1: Cond.OneWay, n2: Cond.FirstFourSouls),
             new(WarpNode.ShadedWoodsToMistyAreaFront, WarpNode.DLC3EntranceBaseGame, n1: Cond.OneWay, n2: Cond.FirstFourSouls),
 
-            new(WarpNode.AldiasKeepEntranceFront, WarpNode.DrangleicCastleToShadedWoodsFront, n1: Cond.OneWay, n2: Cond.KingsRingFirstFourSouls),
+            new(WarpNode.AldiasKeepEntranceFront, WarpNode.DrangleicCastleToShadedWoodsFront, n1: Cond.OneWay, n2: Cond.KingsRingFirstFourSouls), // TODO: test if the shrine of winter opens if approached from behind
             new(WarpNode.AldiasKeepEntranceFront, WarpNode.DLC3EntranceBaseGame, n1: Cond.OneWay, n2: Cond.KingsRingFirstFourSouls),
 
             new(WarpNode.DrangleicCastleToShadedWoodsFront, WarpNode.DLC3EntranceBaseGame, n1: Cond.OneWay, n2: Cond.FirstFourSouls),
@@ -934,6 +935,7 @@ namespace FogWallNS
             new(WarpNode.EleumLoyceAfterGettingEyeToSeeGhostsBack, WarpNode.EleumLoyceCathedraEntranceFront, n1:Cond.OneWay, n2: Cond.DLC3Unfreezed),
 
             new(WarpNode.CoffinWarpSrc, WarpNode.DLC3EntranceDLC, n1: Cond.FrigidOutskirtsKey, n2: Cond.OneWay),
+            new(WarpNode.CoffinWarpSrc, WarpNode.AavaTheKingsPetEntryFront, n1: Cond.FrigidOutskirtsKey, n2: Cond.OneWay),
             new(WarpNode.CoffinWarpDst, WarpNode.LudAndZallenEntryFront, n1: Cond.OneWay),
             new(WarpNode.LudAndZallenEntryBack, WarpNode.LudAndZallenExitFront),
             new(WarpNode.LudAndZallenExitBack, WarpNode.LudAndZallenExitWarp, n1: Cond.OneWay),
@@ -996,6 +998,9 @@ namespace FogWallNS
             // dragon aerie
             new(WarpNode.DragonAerieToAldiasKeepBack, WarpNode.AncientDragonFront),
             new(WarpNode.AncientDragonBack, WarpNode.Lone),
+
+            // final fight
+            new(WarpNode.FinalFightArenaBack, WarpNode.Lone),
         };
 
         public static IReadOnlyList<KeyCond> key_reqs { get; } = new List<KeyCond> {
@@ -1016,8 +1021,8 @@ namespace FogWallNS
             new(Cond.FirstFourSouls, new(){})
         };
 
-        public static IReadOnlyList<WarpNode> cannot_warp_from = new List<WarpNode> 
-        { 
+        public static IReadOnlyList<WarpNode> cannot_warp_from = new List<WarpNode>
+        {
             WarpNode.NearPursuerBirdExit,
             WarpNode.NearPateGiantMemoryEntryBack,
             WarpNode.NearPursuerGiantMemoryEntryBack,
@@ -1055,5 +1060,82 @@ namespace FogWallNS
             WarpNode.FinalFightArenaBack,
             WarpNode.GiantLordEntryBack,
         };
+    }
+
+    class TreeNode
+    {
+        public WarpNode Value;
+        public List<TreeNode> Children = new List<TreeNode>();
+
+
+        public TreeNode(WarpNode value)
+        {
+            Value = value;
+        }
+
+        public static TreeNode? BuildTraversalTree(Graph graph, WarpNode startNode, HashSet<WarpNode>? visited = null)
+        {
+            if (visited == null)
+                visited = new HashSet<WarpNode>();
+
+            // Avoid cycles
+            if (visited.Contains(startNode))
+                return null;
+
+            visited.Add(startNode);
+
+            var node = new TreeNode(startNode);
+
+            foreach (var next in graph.Edges[startNode])
+            {
+                var child = BuildTraversalTree(graph, next, visited);
+                if (child != null)
+                    node.Children.Add(child);
+            }
+
+            return node;
+        }
+
+        public static void PrintTree(TreeNode node, string indent = "", bool isLast = true)
+        {
+            Console.Write(indent);
+
+            if (isLast)
+            {
+                Console.Write("└── ");
+                indent += "    ";
+            }
+            else
+            {
+                Console.Write("├── ");
+                indent += "│   ";
+            }
+
+            Console.WriteLine(node.Value);
+
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                PrintTree(node.Children[i], indent, i == node.Children.Count - 1);
+            }
+        }
+
+    }
+
+    class Graph
+    {
+        public Dictionary<WarpNode, List<WarpNode>> Edges = new Dictionary<WarpNode, List<WarpNode>>();
+
+        public void AddNode(WarpNode node)
+        {
+            if (!Edges.ContainsKey(node))
+                Edges[node] = new List<WarpNode>();
+        }
+
+        public void AddEdge(WarpNode from, WarpNode to)
+        {
+            AddNode(from);
+            AddNode(to);
+            Edges[from].Add(to);
+        }
     }
 }

@@ -444,6 +444,16 @@ def event_{map_id}_x505(flag8=_):
         {
             return a.from.fog_wall_name != b.from.fog_wall_name || a.to.fog_wall_name != b.to.fog_wall_name;
         }
+
+        public override bool Equals(object? obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static class WarpScrambler

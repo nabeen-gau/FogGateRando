@@ -1,5 +1,7 @@
 ﻿using FogWallNS;
 using SoulsFormats;
+using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
 using static SoulsFormats.PARAM;
@@ -622,7 +624,7 @@ fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
 fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
     new FogWall(WarpNode.GuardianDragonEntryFront, "o00_0501_0000", boss_name: BossName.GuardianDragon),
     new FogWall(WarpNode.GuardianDragonExitFront, "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
-    new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0002", pvp: true),
+    new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true),
 };
 fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
     new FogWall(WarpNode.GargoylesEntryFront, "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
@@ -1507,10 +1509,12 @@ foreach (var warp in warps)
     warp_infos.Add(warp.to);
 }
 
-List<List<Warp>> all_possilble_warps = new();
+// TODO: add prevention for connection gates that dont lead to any where
+// Example the final fight arena connected to outside the exit of rat authority fight
+List<List<Warp>> all_possible_warps = new();
 for (int i=0; i<warp_infos.Count; i++)
 {
-    all_possilble_warps.Add(new());
+    all_possible_warps.Add(new());
     for (int j = i+1; j < warp_infos.Count; j++)
     {
         var from = warp_infos[i];
@@ -1523,7 +1527,7 @@ for (int i=0; i<warp_infos.Count; i++)
         {
             continue;
         }
-        all_possilble_warps[i].Add(new Warp(from, to));
+        all_possible_warps[i].Add(new Warp(from, to));
     }
 }
 
@@ -1531,21 +1535,21 @@ Random rand = new Random();
 List<Warp> selectedPairs = new(warps.Count);
 List<int> skip_list = new();
 List<int> not_selected_idx = new();
-for (int i=0; i<all_possilble_warps.Count; i++)
+for (int i=0; i<all_possible_warps.Count; i++)
 {
     if (skip_list.Contains(i)) continue;
-    int index = rand.Next(all_possilble_warps[i].Count);
-    if (index >= all_possilble_warps[i].Count)
+    int index = rand.Next(all_possible_warps[i].Count);
+    if (index >= all_possible_warps[i].Count)
     {
         not_selected_idx.Add(i);
         Console.WriteLine($"[Warning] skipped index {i}.");
         continue;
     }
-    var random_item = all_possilble_warps[i][index];
+    var random_item = all_possible_warps[i][index];
     int n_iters = 0;
     do
     {
-        index = rand.Next(all_possilble_warps[i].Count);
+        index = rand.Next(all_possible_warps[i].Count);
         n_iters++;
         if (n_iters > 1_000_000)
         {
@@ -1556,10 +1560,11 @@ for (int i=0; i<all_possilble_warps.Count; i++)
     } while (skip_list.Contains(i + index + 1));
     if (n_iters > 1_000_000)
     {
+        Console.WriteLine($"[Warning] Cound not connect index {i}");
         continue;
     }
     skip_list.Add(i + index + 1);
-    random_item = all_possilble_warps[i][index];
+    random_item = all_possible_warps[i][index];
     selectedPairs.Add(random_item);
 }
 
@@ -1601,6 +1606,21 @@ selectedPairs.Add(get_default_warp(
 selectedPairs.Add(get_default_warp(
     MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
     WarpNode.ChasmCastleExitWarp, WarpNode.ChasmPortalFromCastle
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.TheGutterBlackGulch, MapName.DarkChasmofOld,
+    WarpNode.ChasmPortalFromBlackGulch, WarpNode.ChasmPortalFromBlackGulchDungeon
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.DrangleicCastleThroneofWant, MapName.DarkChasmofOld,
+    WarpNode.ChasmPortalFromCastle, WarpNode.ChasmPortalFromCastleDungeon
+));
+
+selectedPairs.Add(get_default_warp(
+    MapName.ShadedWoodsShrineofWinter, MapName.DarkChasmofOld,
+    WarpNode.ChasmPortalFromShadedWoods, WarpNode.ChasmPortalFromShadedWoodsDungeon
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1688,6 +1708,11 @@ selectedPairs.Add(get_default_warp(
     WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemorySrc
 ));
 
+selectedPairs.Add(get_default_warp(
+    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+    WarpNode.CoffinWarpSrc, WarpNode.CoffinWarpDst
+));
+
 List<WarpInfo> flattened_list = selectedPairs
     .SelectMany(t => new[] { t.from, t.to })
     .ToList();
@@ -1704,12 +1729,15 @@ foreach (var i in flattened_list)
 List<WarpNode> allowed_dups = new() 
 { 
     WarpNode.ChasmPortalFromCastle,
+    WarpNode.ChasmPortalFromShadedWoods,
+    WarpNode.ChasmPortalFromBlackGulch,
     WarpNode.NearPateGiantMemoryEntryFront,
     WarpNode.NearPursuerGiantMemoryEntryFront,
     WarpNode.GiantLordMemoryEntryFront,
     WarpNode.DragonMemoriesCoveSrc,
     WarpNode.SirAlonneArmorDLC,
     WarpNode.MemoryOfTheKingCryptSrc,
+    WarpNode.CoffinWarpSrc,
 };
 
 var duplicates2 = flattened_list
@@ -1748,14 +1776,23 @@ int find_connection_from_warp_point(WarpNode point)
 }
 
 List<List<Warp>> travel_path_global = new();
+List<WarpNode> nodes = new();
 
-void walk_through(WarpInfo point, List<Warp> travel_path)
+bool walk_through(WarpNode point, List<Warp> travel_path)
 {
-    int i = find_connection_from_warp_point(point.fog_wall_name);
+    nodes.Add(point);
+    int i = find_connection_from_warp_point(point);
     Debug.Assert(i >= 0);
     var segment = segments[i];
     foreach (var seg in segment)
     {
+        // if the point is not in segment continue
+        if (point != seg.n1 && point != seg.n2) continue;
+        // if the current segment is lone segment return
+        if (seg.n1 == WarpNode.Lone || seg.n2 == WarpNode.Lone)
+        {
+            return true;
+        }
         foreach (var con in selectedPairs)
         {
             // if con is already in the list skip it
@@ -1766,53 +1803,118 @@ void walk_through(WarpInfo point, List<Warp> travel_path)
             if (con.from.fog_wall_name == seg.n1
             || con.from.fog_wall_name == seg.n2)
             {
-                if (con.from.fog_wall_name == point.fog_wall_name) continue;
+                // skip if dst is the same one as src
+                if (con.from.fog_wall_name == point) continue;
+                // skip one way fog doors
                 if (seg.condition_n2 == Cond.OneWay && con.from.fog_wall_name == seg.n2) continue;
                 if (seg.condition_n1 == Cond.OneWay && con.from.fog_wall_name == seg.n1) continue;
                 // go into the connection (to)
+                int its_pos = travel_path.Count;
                 travel_path.Add(con);
-                // if the current segment is lone segment return
-                if (seg.n1 == WarpNode.Lone || seg.n2 == WarpNode.Lone) return;
-                walk_through(con.to, travel_path);
+                nodes.Add(con.from.fog_wall_name);
+                if (!walk_through(con.to.fog_wall_name, travel_path))
+                {
+                    //var start = get_warp_pair(travel_path_global[^1][^1].from.fog_wall_name);
+                    walk_through(con.from.fog_wall_name, travel_path_global[^1]);
+                }
+                if (its_pos > 1)
+                {
+                    return false;
+                }
+                return true;
             }
             else if (con.to.fog_wall_name == seg.n1
             || con.to.fog_wall_name == seg.n2 )
             {
-                if (con.to.fog_wall_name == point.fog_wall_name) continue;
+                if (con.to.fog_wall_name == point) continue;
+                // skip one way fog doors
                 if (seg.condition_n2 == Cond.OneWay && con.to.fog_wall_name == seg.n2) continue;
                 if (seg.condition_n1 == Cond.OneWay && con.to.fog_wall_name == seg.n1) continue;
                 // go into the connection (from)
+                int its_pos = travel_path.Count;
                 travel_path.Add(con);
-                if (seg.n1 == WarpNode.Lone || seg.n2 == WarpNode.Lone) return;
-                walk_through(con.from, travel_path);
+                nodes.Add(con.to.fog_wall_name);
+                if (!walk_through(con.from.fog_wall_name, travel_path))
+                {
+                    //var start = get_warp_pair(travel_path_global[^1][^1].from.fog_wall_name);
+                    walk_through(con.from.fog_wall_name, travel_path_global[^1]);
+
+                }
+                if (its_pos > 1)
+                {
+                    return false;
+                }
+                return true;
             }
         }
     }
+    return true;
 }
 
-// check if it is possible to finish the game
-var segment = segments[0];
-foreach (var seg in segment)
+Warp? get_warp_pair(WarpNode node)
 {
-    foreach (var con in selectedPairs)
+    foreach (var p in selectedPairs)
     {
-        if (con.from.fog_wall_name == seg.n1
-        || con.from.fog_wall_name == seg.n2)
-        {
-            // go into the connection (to)
-            travel_path_global.Add(new(){con});
-            walk_through(con.to, travel_path_global[^1]);
-        }
-        else if (con.to.fog_wall_name == seg.n1
-        || con.to.fog_wall_name == seg.n2 )
-        {
-            // go into the connection (from)
-            travel_path_global.Add(new() { con });
-            walk_through(con.from, travel_path_global[^1]);
-        }
+        if (p.from.fog_wall_name == node || p.to.fog_wall_name == node) return p;
     }
+    Debug.Assert(false);
+    return null;
 }
 
+
+// TODO: when a gate has no exit gate stop and it is the first one it causes wrong list to generate
+List<WarpNode> connected_nodes = new List<WarpNode>();
+List<WarpNode> all_nodes = new();
+
+List<WarpNode> starting_gates = new() 
+{ 
+    WarpNode.Tutorial1EntryFront,
+    WarpNode.Tutorial2EntryFront,
+    WarpNode.MajulaToForestOfFallenGiantsFront,
+    WarpNode.MajulaToRotundaLockstoneFront,
+};
+foreach (var k in starting_gates)
+{
+    Graph g = new Graph();
+    if (connected_nodes.Contains(k)) continue;
+    int j = find_connection_from_warp_point(k);
+    Debug.Assert(j >= 0);
+    var segment = segments[j];
+    for (int i=0; i<segment.Count; i++)
+    {
+        WarpNode s = segment[i].n1;
+        //if (i == 0)
+        //{
+        //    s = segment[i].n1;
+        //    if (s == WarpNode.Lone) continue;
+        //}
+        //else
+        //{
+        //    s = segment[i].n2;
+        //    if (s == WarpNode.Lone) continue;
+        //    //g.AddEdge(segment[i - 1].n1, segment[i].n2);
+        //}
+        nodes.Add(s);
+        var start = get_warp_pair(s);
+        if (start == null)
+        {
+            Console.WriteLine($"{s} was not selected.");
+            continue;
+        }
+        travel_path_global.Add(new(){start.Value});
+        walk_through(start.Value.to.fog_wall_name, travel_path_global[^1]);
+    }
+    for (int l=0; l<nodes.Count-1; l++)
+    {
+        g.AddEdge(nodes[l], nodes[l+1]);
+    }
+    var tree = TreeNode.BuildTraversalTree(g, nodes[0]);
+    Debug.Assert(tree != null);
+    TreeNode.PrintTree(tree);
+    connected_nodes.AddRange(nodes);
+    nodes.Clear();
+    Console.WriteLine("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+}
 
 List<Warp> new_warps = new();
 //List<Warp> new_warps = WarpScrambler.Scramble(warps);

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Text;
 
 namespace FogWallNS
 {
@@ -1096,26 +1100,31 @@ namespace FogWallNS
             return node;
         }
 
-        public static void PrintTree(TreeNode node, string indent = "", bool isLast = true)
+        public static void PrintTree(TreeNode node, StringBuilder sb, string indent = "", bool isLast = true)
         {
             Console.Write(indent);
+            sb.Append(indent);
 
             if (isLast)
             {
                 Console.Write("└── ");
+                sb.Append("└── ");
                 indent += "    ";
             }
             else
             {
                 Console.Write("├── ");
+                sb.Append("├── ");
                 indent += "│   ";
             }
 
             Console.WriteLine(node.Value);
+            sb.Append(node.Value.ToString());
+            sb.AppendLine();
 
             for (int i = 0; i < node.Children.Count; i++)
             {
-                PrintTree(node.Children[i], indent, i == node.Children.Count - 1);
+                PrintTree(node.Children[i], sb, indent, i == node.Children.Count - 1);
             }
         }
 
@@ -1136,6 +1145,48 @@ namespace FogWallNS
             AddNode(from);
             AddNode(to);
             Edges[from].Add(to);
+        }
+    }
+
+    public enum CType
+    {
+        Warp,
+        Walk
+    }
+    
+    public class ConnectionElem
+    {
+        public CType type;
+        public WarpNode to;
+
+        public ConnectionElem(WarpNode to, CType type)
+        {
+            this.type = type;
+            this.to = to;
+        }
+    }
+
+    public class ConnectionGroup
+    {
+        public Dictionary<WarpNode, List<ConnectionElem>> items = new();
+
+        void Add(WarpNode node)
+        {
+            if (!items.ContainsKey(node))
+            {
+                items[node] = new();
+            }
+        }
+        public void Add(WarpNode src, WarpNode dst, CType type)
+        {
+            Add(src);
+            Add(dst);
+            items[src].Add(new(dst, type));
+        }
+
+        public bool Contains(WarpNode node)
+        {
+            return items.ContainsKey(node);
         }
     }
 }

@@ -753,7 +753,7 @@ namespace FogWallNS
             // no man's wharf
             new(WarpNode.NoMansWharfToHeidesBack, WarpNode.FlexileSentryEntryFront, n1: Cond.ShipBellRang, n2: Cond.ShipBellRang),
             new(WarpNode.FlexileSentryEntryBack, WarpNode.FlexileSentryExitFront, n1: Cond.ShipBellRang, n2: Cond.ShipBellRang), // TODO: what to do here should the ship spawn at wharf??
-            new(WarpNode.FlexileSentryExitBack, WarpNode.PirateShipWharf, n1: Cond.ShipBellRang, n2: Cond.ShipBellRang),
+            new(WarpNode.FlexileSentryExitBack, WarpNode.PirateShipWharf, n1: Cond.OneWay, n2: Cond.ShipBellRang),
 
             // huntsman copse
             new(WarpNode.MajulaToHuntsmanCopseBack, WarpNode.HuntsmanCopseToMajulaFront),
@@ -914,7 +914,7 @@ namespace FogWallNS
             new(WarpNode.DoorOfPharrosToOrdealEndBonfireFront, WarpNode.DoorOfPharrosToRatKingDomainBack),
 
             // brightstone cove
-            new(WarpNode.BrightstoneCoveToDoorsOfPharrosBack, WarpNode.CongregationEntryFront),
+            new(WarpNode.BrightstoneCoveToDoorsOfPharrosBack, WarpNode.CongregationEntryFront, n1: Cond.OneWay),
             new(WarpNode.CongregationEntryBack, WarpNode.CongregationExitFront),
             new(WarpNode.CongregationExitBack, WarpNode.DukesDearFreyjaEntryFront, n1: Cond.OneWay),
             new(WarpNode.DukesDearFreyjaEntryBack, WarpNode.DukesDearFreyjaExitFront),

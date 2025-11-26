@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using static SoulsFormats.PARAM;
 using static SoulsFormats.PARAMDEF;
@@ -1511,8 +1512,68 @@ foreach (var warp in warps)
     warp_infos.Add(warp.to);
 }
 
+List<WarpNode> has_predefined_warp = new() 
+{ 
+    WarpNode.MemoryOfTheKingCryptSrc,
+    WarpNode.MemoryOfTheKingMemorySrc,
+    WarpNode.MemoryOfTheKingMemoryDst,
+
+    WarpNode.NearPateGiantMemoryExit,
+    WarpNode.NearPursuerGiantMemoryExit,
+    WarpNode.GiantLordMemoryExit,
+
+    WarpNode.NearPursuerGiantMemoryEntryFront,
+    WarpNode.NearPursuerGiantMemoryEntryBack,
+    WarpNode.NearPateGiantMemoryEntryFront,
+    WarpNode.NearPateGiantMemoryEntryBack,
+    WarpNode.GiantLordMemoryEntryFront,
+    WarpNode.GiantLordMemoryEntryBack,
+
+    WarpNode.DragonMemoriesCoveSrc,
+    WarpNode.DragonMemoriesMemorySrc,
+    WarpNode.DragonMemoriesMemoryDst,
+
+    WarpNode.ChasmPortalFromCastleDungeon,
+    WarpNode.ChasmPortalFromBlackGulchDungeon,
+    WarpNode.ChasmPortalFromShadedWoodsDungeon,
+
+    WarpNode.ChasmPortalFromBlackGulch,
+    WarpNode.ChasmPortalFromCastle,
+    WarpNode.ChasmPortalFromShadedWoods,
+
+    WarpNode.ChasmGulchExitWarp,
+    WarpNode.ChasmCastleExitWarp,
+    WarpNode.ChasmShadedWoodsExitWarp,
+    WarpNode.ChasmDarkLurkerExitWarp,
+
+    WarpNode.CoffinWarpSrc,
+    WarpNode.CoffinWarpDst,
+    WarpNode.PirateShipWharf,
+    WarpNode.PirateShipBastille,
+
+    WarpNode.DLC1EntranceBaseGame,
+    WarpNode.DLC1EntranceDLC,
+    WarpNode.DLC2EntranceBaseGame,
+    WarpNode.DLC2EntranceDLC,
+    WarpNode.DLC3EntranceBaseGame,
+    WarpNode.DLC3EntranceDLC,
+
+    WarpNode.SirAlonneMemoryExit,
+    WarpNode.SirAlonneArmorMemory,
+    WarpNode.SirAlonneArmorDLC,
+
+    WarpNode.IvoryKingFightEndDst,
+    WarpNode.IvoryKingFightEndSrc,
+    WarpNode.LudAndZallenExitWarp,
+
+    WarpNode.NearPursuerBirdEntry,
+    WarpNode.NearPursuerBirdExit,
+};
+
 bool is_this_warp_allowed(WarpNode from, WarpNode to)
 {
+    if (from == WarpNode.Lone || to == WarpNode.Lone) return false;
+    if (has_predefined_warp.Contains(from) || has_predefined_warp.Contains(to)) return false;
     if (from == to) return false;
     if (GateConnections.cannot_warp_from.Contains(from))
     {
@@ -1524,44 +1585,6 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
     }
     Connection? con_a = null;
     Connection? con_b = null;
-    //int i = find_connection_from_warp_point(a);
-    //if (i < 0) return false;
-    //int total_count = 0;
-    //int hit_count = 0;
-    //foreach (var a1 in segments[i])
-    //{
-    //    if (a1.n1 == a)
-    //    {
-    //        total_count++;
-    //        if (a1.condition_n2 == Cond.OneWay) hit_count++;
-    //    }
-    //    else if (a1.n2 == a)
-    //    {
-    //        total_count++;
-    //        if (a1.condition_n1 == Cond.OneWay) hit_count++;
-    //    }
-    //}
-    //if ((total_count == hit_count) && total_count != 0) return false;
-
-    //int j = find_connection_from_warp_point(b);
-    //if (j < 0) return false;
-    //total_count = 0;
-    //hit_count = 0;
-    //foreach (var b1 in segments[j])
-    //{
-    //    if (b1.n1 == b)
-    //    {
-    //        total_count++;
-    //        if (b1.condition_n2 == Cond.OneWay) hit_count++;
-    //    }
-    //    else if (b1.n2 == b)
-    //    {
-    //        total_count++;
-    //        if (b1.condition_n1 == Cond.OneWay) hit_count++;
-    //    }
-    //}
-    //if ((total_count == hit_count) && total_count != 0) return false;
-
     foreach (var segment in segments)
     {
         foreach (var con in segment)
@@ -1603,69 +1626,215 @@ for (int i=0; i<warp_infos.Count; i++)
 }
 
 Random rand = new Random();
+
+// by default weight will be 1 for full random
+// increasing weight will reduce its likelihood of being selected
+int weighted_random_number(int start, int end, int odd, int weight)
+{
+    Debug.Assert(start <= odd && end >= odd);
+    int total_factor = (end - start - 1) * weight + 1;
+    int r = rand.Next(total_factor);
+    if (r == 0) return odd;
+    else if ((r - 1) / weight + 1 + start == odd) return start;
+    else return (r - 1) / weight + 1 + start;
+}
+
+WarpInfo get_warp_info_from_name(WarpNode name)
+{
+    foreach (var wi in warp_infos)
+    {
+        if (wi.fog_wall_name == name) return wi;
+    }
+    Debug.Assert(false);
+    return new WarpInfo();
+}
+
 List<Warp> selectedPairs = new(warps.Count);
 List<WarpNode> skip_list = new();
 List<int> not_selected_idx = new();
-for (int i=0; i<all_possible_warps.Count-1; i++)
+List<List<WarpNode>> segments_flat = new();
+foreach (var i in segments)
 {
-    int index = 0;
-    if (all_possible_warps[i].Count == 0)
-    {
-        Debug.Assert(i != 0);
-        var to = all_possible_warps[0][i - 1].to;
-        if (skip_list.Contains(to.fog_wall_name)) continue;
-        for (int j=i+1; j<all_possible_warps.Count-1; j++)
-        {
-            if (all_possible_warps[j].Count == 0) continue;
-            var from = all_possible_warps[j][0].from;
-            if (skip_list.Contains(from.fog_wall_name)) continue;
-            if (!is_this_warp_allowed(from.fog_wall_name, to.fog_wall_name)) continue;
-            skip_list.Add(from.fog_wall_name);
-            skip_list.Add(to.fog_wall_name);
-            selectedPairs.Add(new Warp(from, to));
-            Console.WriteLine($"[INFO] pair for {to.fog_wall_name} was not found so created new pair ({from.fog_wall_name}->{to.fog_wall_name})");
-        }
-        Debug.Assert(skip_list.Contains(to.fog_wall_name));
-    }
-    var random_item = all_possible_warps[i][index];
-    if (skip_list.Contains(random_item.from.fog_wall_name)) continue;
-    if (index >= all_possible_warps[i].Count)
-    {
-        not_selected_idx.Add(i);
-        Console.WriteLine($"[Warning] skipped index {i}.");
-        continue;
-    }
-    int n_iters = 0;
-    do
-    {
-        index = rand.Next(all_possible_warps[i].Count);
-        random_item = all_possible_warps[i][index];
-        n_iters++;
-        if (n_iters > 1_000_000)
-        {
-            not_selected_idx.Add(i);
-            Console.WriteLine($"[Warning] Could not select index {i}.");
-            break;
-        }
-        if (skip_list.Contains(random_item.from.fog_wall_name)
-            || skip_list.Contains(random_item.to.fog_wall_name)
-        )
-        {
-            continue;
-        }
-        else break;
-    } while (true);
-    if (n_iters > 1_000_000)
-    {
-        Console.WriteLine($"[Warning] Cound not connect index {i}");
-        continue;
-    }
-    skip_list.Add(random_item.from.fog_wall_name);
-    skip_list.Add(random_item.to.fog_wall_name);
-    selectedPairs.Add(random_item);
-    //var dups = selectedPairs.SelectMany(t => new[] { t.from, t.to }).GroupBy(x => x.fog_wall_name).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
-    //Debug.Assert(dups.Count == 0);
+    var elem = i.SelectMany(x => new[] { x.n1, x.n2 }).Distinct().ToList();
+    segments_flat.Add(new(elem));
 }
+
+// randomize all the lone gates
+int count = 0;
+foreach (var segment in segments)
+{
+    foreach (var s in segment)
+    {
+        WarpNode node;
+        if (s.n1 == WarpNode.Lone) node = s.n2;
+        else if (s.n2 == WarpNode.Lone) node = s.n1;
+        else continue;
+        Top:
+        int i1 = rand.Next(segments.Count);
+        int i2 = rand.Next(segments[i1].Count);
+        var to = segments[i1][i2];
+        if (to.n1 == WarpNode.Lone || to.n2 == WarpNode.Lone) goto Top;
+
+        if (is_this_warp_allowed(node, to.n1))
+        {
+            if (!segments_flat[i1].Contains(to.n1)) continue;
+            if (to.condition_n1 == Cond.OneWay) goto Top;
+            selectedPairs.Add(new(
+                get_warp_info_from_name(node),
+                get_warp_info_from_name(to.n1)
+            ));
+            Debug.Assert(segments_flat[count].Remove(node));
+            Debug.Assert(segments_flat[i1].Remove(to.n1));
+        }
+        else if (is_this_warp_allowed(node, to.n2))
+        {
+            if (!segments_flat[i1].Contains(to.n2)) continue;
+            if (to.condition_n2 == Cond.OneWay) goto Top;
+            selectedPairs.Add(new(
+                get_warp_info_from_name(node),
+                get_warp_info_from_name(to.n2)
+            ));
+            Debug.Assert(segments_flat[count].Remove(node));
+            Debug.Assert(segments_flat[i1].Remove(to.n2));
+        }
+        else
+        {
+            goto Top;
+        }
+    }
+    count++;
+}
+
+int idx = 0;
+int cur_iter = 0;
+while (true)
+{
+    cur_iter++;
+    if (cur_iter > 10000)
+    {
+        cur_iter = 0;
+        idx++;
+        if (idx >= segments_flat.Count && selectedPairs.Count < warp_infos.Count / 2) idx = 0;
+        else if (selectedPairs.Count >= warp_infos.Count / 2) break;
+    }
+    // get random segment index that is less likely to be 0
+    var frm_seg = segments_flat[idx];
+    if (frm_seg.Count == 0)
+    {
+        segments_flat.RemoveAt(idx);
+        if (idx != 0) idx--;
+        continue;
+    }
+    int seg_grp_idx = weighted_random_number(0, segments_flat.Count, idx, 2);
+    var to_seg = segments_flat[seg_grp_idx];
+    if (to_seg.Count == 0)
+    {
+        segments_flat.RemoveAt(seg_grp_idx);
+        if (idx != 0) idx--;
+        continue;
+    }
+
+    int frm_seg_idx = rand.Next(frm_seg.Count);
+    int to_seg_idx = rand.Next(to_seg.Count);
+
+    var frm_s = frm_seg[frm_seg_idx];
+    if (skip_list.Contains(frm_s)) continue;
+    var to_s = to_seg[to_seg_idx];
+    if (skip_list.Contains(to_s)) continue;
+
+    if (has_predefined_warp.Contains(frm_s) || frm_s == WarpNode.Lone)
+    {
+        frm_seg.RemoveAt(frm_seg_idx);
+        continue;
+    }
+    else if (has_predefined_warp.Contains(to_s) || to_s == WarpNode.Lone)
+    {
+        to_seg.RemoveAt(to_seg_idx);
+        continue;
+    }
+
+    if (!is_this_warp_allowed(frm_s, to_s)) continue;
+
+    skip_list.Add(frm_s);
+    skip_list.Add(to_s);
+
+    segments_flat[idx].Remove(frm_s);
+    segments_flat[seg_grp_idx].Remove(to_s);
+
+    selectedPairs.Add(new(
+        get_warp_info_from_name(frm_s), 
+        get_warp_info_from_name(to_s)
+    ));
+
+    cur_iter = 0;
+    idx++;
+    Console.WriteLine(idx);
+    if (idx >= segments_flat.Count && selectedPairs.Count < warp_infos.Count / 2) idx = 0;
+    else if (selectedPairs.Count == warp_infos.Count / 2) break;
+}
+var dups = selectedPairs.SelectMany(t => new[] { t.from, t.to }).GroupBy(x => x.fog_wall_name).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+Debug.Assert(dups.Count == 0);
+
+//for (int i=0; i<all_possible_warps.Count-1; i++)
+//{
+//    int index = 0;
+//    if (all_possible_warps[i].Count == 0)
+//    {
+//        Debug.Assert(i != 0);
+//        var to = all_possible_warps[0][i - 1].to;
+//        if (skip_list.Contains(to.fog_wall_name)) continue;
+//        for (int j=i+1; j<all_possible_warps.Count-1; j++)
+//        {
+//            if (all_possible_warps[j].Count == 0) continue;
+//            var from = all_possible_warps[j][0].from;
+//            if (skip_list.Contains(from.fog_wall_name)) continue;
+//            if (!is_this_warp_allowed(from.fog_wall_name, to.fog_wall_name)) continue;
+//            skip_list.Add(from.fog_wall_name);
+//            skip_list.Add(to.fog_wall_name);
+//            selectedPairs.Add(new Warp(from, to));
+//            Console.WriteLine($"[INFO] pair for {to.fog_wall_name} was not found so created new pair ({from.fog_wall_name}->{to.fog_wall_name})");
+//        }
+//        Debug.Assert(skip_list.Contains(to.fog_wall_name));
+//    }
+//    var random_item = all_possible_warps[i][index];
+//    if (skip_list.Contains(random_item.from.fog_wall_name)) continue;
+//    if (index >= all_possible_warps[i].Count)
+//    {
+//        not_selected_idx.Add(i);
+//        Console.WriteLine($"[Warning] skipped index {i}.");
+//        continue;
+//    }
+//    int n_iters = 0;
+//    do
+//    {
+//        index = rand.Next(all_possible_warps[i].Count);
+//        random_item = all_possible_warps[i][index];
+//        n_iters++;
+//        if (n_iters > 1_000_000)
+//        {
+//            not_selected_idx.Add(i);
+//            Console.WriteLine($"[Warning] Could not select index {i}.");
+//            break;
+//        }
+//        if (skip_list.Contains(random_item.from.fog_wall_name)
+//            || skip_list.Contains(random_item.to.fog_wall_name)
+//        )
+//        {
+//            continue;
+//        }
+//        else break;
+//    } while (true);
+//    if (n_iters > 1_000_000)
+//    {
+//        Console.WriteLine($"[Warning] Cound not connect index {i}");
+//        continue;
+//    }
+//    skip_list.Add(random_item.from.fog_wall_name);
+//    skip_list.Add(random_item.to.fog_wall_name);
+//    selectedPairs.Add(random_item);
+//    //var dups = selectedPairs.SelectMany(t => new[] { t.from, t.to }).GroupBy(x => x.fog_wall_name).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+//    //Debug.Assert(dups.Count == 0);
+//}
 
 // add the fixed warps to the selectedPairs
 Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst)
@@ -1893,7 +2062,7 @@ List<Connection> get_segment(WarpNode point)
     return new();
 }
 
-bool walk_through(WarpNode warp_src, int depth)
+bool walk_through(WarpNode warp_src)
 {
     var warp_dst = get_warp_pair(warp_src);
     group.Add(warp_src, warp_dst, CType.Warp);
@@ -1919,7 +2088,7 @@ bool walk_through(WarpNode warp_src, int depth)
         if (s == WarpNode.Lone) return false;
         if (group.Contains(s)) continue;
         group.Add(warp_dst, s, CType.Walk);
-        if (!walk_through(s, depth+1))
+        if (!walk_through(s))
         {
             continue;
         }
@@ -1954,7 +2123,7 @@ foreach (var k in starting_gates)
         Console.WriteLine( "==============================================");
     }
 
-    walk_through(k, 0);
+    walk_through(k);
 
     //g.AddEdge(nodes[l], nodes[l+1]);
     foreach (var item in group.items)
@@ -1969,6 +2138,37 @@ foreach (var k in starting_gates)
     StringBuilder sb = new();
     TreeNode.PrintTree(tree, sb);
     write_string_to_file(sb.ToString(), $"C:/Users/Acer/test/tree_{k}.txt");
+    Console.WriteLine("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+}
+
+foreach (var i in warp_infos)
+{
+    var k = i.fog_wall_name;
+    Graph g = new Graph();
+    if (group.Contains(k))
+    {
+        Console.WriteLine( "==============================================");
+        Console.WriteLine($"[INFO] {k} already reached skipping.");
+        Console.WriteLine( "==============================================");
+        continue;
+    } else
+    {
+        Console.WriteLine( "==============================================");
+        Console.WriteLine($"[INFO] {k} tree.");
+        Console.WriteLine( "==============================================");
+    }
+    walk_through(k);
+    foreach (var item in group.items)
+    {
+        foreach (var inner_item in item.Value)
+        {
+            g.AddEdge(item.Key, inner_item.to);
+        }
+    }
+    var tree = TreeNode.BuildTraversalTree(g, k);
+    Debug.Assert(tree != null);
+    StringBuilder sb = new();
+    TreeNode.PrintTree(tree, sb);
     Console.WriteLine("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 }
 

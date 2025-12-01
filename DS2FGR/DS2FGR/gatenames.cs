@@ -11,19 +11,25 @@ namespace FogWallNS
     public enum WarpNode
     {
         Lone,
+        // game start spawn point
+        GameStartSpawnSrc,
+        GameStartSpawnDst,
         // warp gates
         NearPursuerBirdEntry,
-        NearPursuerGiantMemoryEntryFront,
-        NearPateGiantMemoryEntryFront,
-        GiantLordMemoryEntryFront,
+        NearPursuerGiantMemoryEntrySrc,
+        NearPateGiantMemoryEntrySrc,
+        GiantLordMemoryEntrySrc,
+        NearPursuerGiantMemoryExitDst,
+        NearPateGiantMemoryExitDst,
+        GiantLordMemoryExitDst,
         //
         NearPursuerBirdExit,
-        NearPursuerGiantMemoryEntryBack,
-        NearPateGiantMemoryEntryBack,
-        GiantLordMemoryEntryBack,
-        NearPursuerGiantMemoryExit,
-        NearPateGiantMemoryExit,
-        GiantLordMemoryExit,
+        NearPursuerGiantMemoryEntryDst,
+        NearPateGiantMemoryEntryDst,
+        GiantLordMemoryEntryDst,
+        NearPursuerGiantMemoryExitSrc,
+        NearPateGiantMemoryExitSrc,
+        GiantLordMemoryExitSrc,
         //
         PirateShipWharf,
         PirateShipBastille,
@@ -35,33 +41,41 @@ namespace FogWallNS
         DLC2EntranceDLC,
         DLC3EntranceDLC,
         //
-        SirAlonneArmorDLC,
-        SirAlonneArmorMemory,
-        SirAlonneMemoryExit,
+        SirAlonneArmorDLCEntrySrc,
+        SirAlonneArmorDLCEntryDst,
+        SirAlonneMemoryExitSrc,
+        SirAlonneMemoryExitDst,
         //
-        ChasmPortalFromBlackGulch,
-        ChasmPortalFromShadedWoods,
-        ChasmPortalFromCastle,
+        ChasmPortalFromBlackGulchSrc,
+        ChasmPortalFromShadedWoodsSrc,
+        ChasmPortalFromCastleSrc,
         //
-        ChasmPortalFromBlackGulchDungeon,
-        ChasmPortalFromShadedWoodsDungeon,
-        ChasmPortalFromCastleDungeon,
+        ChasmPortalFromBlackGulchDst,
+        ChasmPortalFromShadedWoodsDst,
+        ChasmPortalFromCastleDst,
         //
-        ChasmGulchExitWarp,
-        ChasmShadedWoodsExitWarp,
-        ChasmCastleExitWarp,
-        ChasmDarkLurkerExitWarp,
+        ChasmGulchExitWarpSrc,
+        ChasmShadedWoodsExitWarpSrc,
+        ChasmCastleExitWarpSrc,
+        ChasmDarkLurkerExitWarpSrc,
+        ChasmGulchExitWarpDst,
+        ChasmShadedWoodsExitWarpDst,
+        ChasmCastleExitWarpDst,
+        ChasmDarkLurkerExitWarpDst,
         //
         IvoryKingFightEndSrc,
         IvoryKingFightEndDst,
         CoffinWarpSrc,
         CoffinWarpDst,
-        LudAndZallenExitWarp,
+        LudAndZallenExitWarpSrc,
+        LudAndZallenExitWarpDst,
         //
         DragonMemoriesCoveSrc,
+        DragonMemoriesCoveDst,
         DragonMemoriesMemoryDst,
         DragonMemoriesMemorySrc,
         MemoryOfTheKingCryptSrc,
+        MemoryOfTheKingCryptDst,
         MemoryOfTheKingMemoryDst,
         MemoryOfTheKingMemorySrc,
         // Things betwixt
@@ -452,6 +466,8 @@ namespace FogWallNS
         DropDownPath,
         FrigidOutskirtsKey,
         ShipBellRang,
+        IronKeyToFireLizards,
+        DragonStone,
     }
 
     [DebuggerDisplay("{n1} <-> {n2}")]
@@ -525,6 +541,14 @@ namespace FogWallNS
             access_nodes = new() { n1, n2 };
             prereqs = new(0);
         }
+
+        public KeyCond(Cond cond, Cond n1, WarpNode n2)
+        {
+            this.cond = cond;
+            access_nodes = new() { n2 };
+            prereqs = new() { n1 };
+        }
+
         public KeyCond(Cond cond, List<WarpNode> nodes, bool all = false)
         {
             this.cond = cond;
@@ -550,6 +574,16 @@ namespace FogWallNS
     public static class GateConnections
     {
         public static IReadOnlyList<Connection> items { get; } = new List<Connection> {
+            // start connections
+            new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial1EntryFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial2EntryFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToForestOfFallenGiantsFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToShadedWoodsFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGraveOfSaintsFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGutterFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial3EntryFront, n1:Cond.OneWay),
+
+            // things betwixt
             new(WarpNode.Tutorial1EntryFront, WarpNode.Tutorial2EntryFront),
             new(WarpNode.Tutorial1EntryFront, WarpNode.Tutorial3EntryFront, n2: Cond.FragrantBranchOfYore),
             new(WarpNode.Tutorial1EntryFront, WarpNode.Tutorial1ExitBack,   n2: Cond.OneWay),
@@ -621,51 +655,57 @@ namespace FogWallNS
             new(WarpNode.MajulaToForestOfFallenGiantsBack, WarpNode.ForestOfFallenGiantsFromMajulaFront),
             new(WarpNode.ForestOfFallenGiantsFromMajulaBack, WarpNode.ForestOfFallenGiantsAfterFirstBonfireFront),
 
-            new(WarpNode.NearPateGiantMemoryEntryBack, WarpNode.NearPateGiantMemoryExit),
-            new(WarpNode.NearPursuerGiantMemoryEntryBack, WarpNode.NearPursuerGiantMemoryExit),
+            new(WarpNode.NearPateGiantMemoryEntryDst, WarpNode.NearPateGiantMemoryExitSrc),
+            new(WarpNode.NearPursuerGiantMemoryEntryDst, WarpNode.NearPursuerGiantMemoryExitSrc),
 
             // TODO: add logic for iron key?
             new(WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack, WarpNode.ForestOfFallenGiantsToCaleFront, n1: Cond.DropDownPath),
-            new(WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack, WarpNode.ForestOfFallenGiantsBalconyBack, n1: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack, WarpNode.GiantLordMemoryEntryFront, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
+            //new(WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack, WarpNode.ForestOfFallenGiantsBalconyBack, n1: Cond.OneWay),
+            new(WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack, WarpNode.GiantLordMemoryEntrySrc, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
+
+            new(WarpNode.GiantLordMemoryExitDst, WarpNode.GiantLordMemoryEntrySrc, n1: Cond.OneWay),
 
             new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.ForestOfFallenGiantsBalconyBack, n2: Cond.OneWay),
             new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.LastGiantFront, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.GiantLordMemoryEntryFront, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
+            new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.GiantLordMemoryEntrySrc, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
 
             new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.LastGiantFront),
-            new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.GiantLordMemoryEntryFront, n1: Cond.OneWay, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
+            new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.GiantLordMemoryEntrySrc, n1: Cond.OneWay, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
 
             new(WarpNode.LastGiantBack, WarpNode.Lone),
 
             new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.ForestOfFallenGiantsBalconyFront),
             new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.ForestOfFallenGiantsToPursuerArenaFront, n1: Cond.OneWay, n2: Cond.SoldiersKey),
             new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.PursuerExitBack, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.NearPursuerGiantMemoryEntryFront, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.NearPateGiantMemoryEntryFront, n2: Cond.AshenMistHeart),
+            new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.NearPursuerGiantMemoryEntrySrc, n2: Cond.OneWay),
+            new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.NearPateGiantMemoryEntrySrc, n2: Cond.AshenMistHeart),
+
+            new(WarpNode.NearPateGiantMemoryExitDst, WarpNode.NearPateGiantMemoryEntrySrc, n1:Cond.OneWay),
+
+            new(WarpNode.NearPursuerGiantMemoryExitDst, WarpNode.NearPursuerGiantMemoryEntrySrc, n1:Cond.OneWay),
 
             new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.ForestOfFallenGiantsToPursuerArenaFront, n1: Cond.OneWay, n2: Cond.SoldiersKey),
             new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.PursuerExitBack, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.NearPursuerGiantMemoryEntryFront, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.NearPateGiantMemoryEntryFront, n2: Cond.AshenMistHeart),
+            new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.NearPursuerGiantMemoryEntrySrc, n2: Cond.OneWay),
+            new(WarpNode.ForestOfFallenGiantsBalconyFront, WarpNode.NearPateGiantMemoryEntrySrc, n2: Cond.AshenMistHeart),
 
             new(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, WarpNode.PursuerExitBack, n1:Cond.SoldiersKey, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, WarpNode.NearPursuerGiantMemoryEntryFront, n1: Cond.SoldiersKey, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, WarpNode.NearPateGiantMemoryEntryFront, n1: Cond.SoldiersKey, n2: Cond.AshenMistHeartSoldiersKey),
+            new(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, WarpNode.NearPursuerGiantMemoryEntrySrc, n1: Cond.SoldiersKey, n2: Cond.OneWay),
+            new(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, WarpNode.NearPateGiantMemoryEntrySrc, n1: Cond.SoldiersKey, n2: Cond.OneWay),
 
-            new(WarpNode.PursuerExitBack, WarpNode.NearPursuerGiantMemoryEntryFront, n2: Cond.AshenMistHeart),
-            new(WarpNode.PursuerExitBack, WarpNode.NearPateGiantMemoryEntryFront, n1: Cond.OneWay, n2: Cond.AshenMistHeart),
+            new(WarpNode.PursuerExitBack, WarpNode.NearPursuerGiantMemoryEntrySrc, n2: Cond.AshenMistHeart),
+            new(WarpNode.PursuerExitBack, WarpNode.NearPateGiantMemoryEntrySrc, n1: Cond.OneWay, n2: Cond.AshenMistHeart),
             new(WarpNode.PursuerExitBack, WarpNode.NearPursuerBirdEntry, n1: Cond.OneWay),
 
-            new(WarpNode.NearPursuerGiantMemoryEntryFront, WarpNode.NearPateGiantMemoryEntryFront, n1: Cond.OneWay, n2: Cond.AshenMistHeart),
+            new(WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntrySrc, n1: Cond.OneWay, n2: Cond.AshenMistHeart),
 
             new(WarpNode.ForestOfFallenGiantsToPursuerArenaBack, WarpNode.PursuerEntryFront),
 
             new(WarpNode.PursuerEntryBack, WarpNode.PursuerExitFront),
 
-            new(WarpNode.GiantLordEntryFront, WarpNode.GiantLordMemoryEntryBack, n2: Cond.OneWay),
+            new(WarpNode.GiantLordEntryFront, WarpNode.GiantLordMemoryEntryDst, n2: Cond.OneWay),
             new(WarpNode.GiantLordEntryBack, WarpNode.GiantLordExitFront),
-            new(WarpNode.GiantLordExitBack, WarpNode.GiantLordMemoryExit),
+            new(WarpNode.GiantLordExitBack, WarpNode.GiantLordMemoryExitSrc),
 
             // lost bastille
             new(WarpNode.NearPursuerBirdExit, WarpNode.RuinSentinelsEntryFront, n2: Cond.FragrantBranchOfYore, n1: Cond.OneWay),
@@ -812,6 +852,9 @@ namespace FogWallNS
             new(WarpNode.OldIronKingEntryBack, WarpNode.OldIronKingExitFront),
             new(WarpNode.OldIronKingExitBack, WarpNode.DLC2EntranceBaseGame),
 
+            new(WarpNode.IronKeepNearFlameThrowerAndTurtleFront, WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, n2: Cond.PharrosLockstone),
+            new(WarpNode.IronKeepNearFlameThrowerAndTurtleBack, WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, n2: Cond.OneWay),
+
             new(WarpNode.OldIronKingEntryFront, WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, n2: Cond.OneWay),
             new(WarpNode.OldIronKingEntryFront, WarpNode.IronKeepToBelfryAtPharrosLockstoneBack, n2: Cond.OneWay),
             new(WarpNode.OldIronKingEntryFront, WarpNode.BelfrySolExitBack, n2: Cond.OneWay),
@@ -829,13 +872,15 @@ namespace FogWallNS
             new(WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack, WarpNode.BrumeTowerToBlueSmelterDungeonFront, n1: Cond.OneWay, n2: Cond.ScorchingIronSceptor),
             new(WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack, WarpNode.FumeKnightEntryFront, n1: Cond.OneWay, n2: Cond.ScorchingIronSceptor),
             new(WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack, WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomBack, n1: Cond.OneWay, n2: Cond.ScorchingIronSceptor),
-            new(WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack, WarpNode.SirAlonneArmorDLC, n1: Cond.OneWay, n2: Cond.ScorchingIronSceptor),
+            new(WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack, WarpNode.SirAlonneArmorDLCEntrySrc, n1: Cond.OneWay, n2: Cond.ScorchingIronSceptor),
 
-            new(WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomBack, WarpNode.SirAlonneArmorDLC, n1: Cond.OneWay, n2: Cond.ActivateBrumeTower),
+            new(WarpNode.SirAlonneMemoryExitDst, WarpNode.SirAlonneArmorDLCEntrySrc, n1:Cond.OneWay),
 
-            new(WarpNode.SirAlonneArmorMemory, WarpNode.SirAlonneEntryFront, n1: Cond.OneWay),
+            new(WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomBack, WarpNode.SirAlonneArmorDLCEntrySrc, n1: Cond.OneWay, n2: Cond.ActivateBrumeTower),
+
+            new(WarpNode.SirAlonneArmorDLCEntryDst, WarpNode.SirAlonneEntryFront, n1: Cond.OneWay),
             new(WarpNode.SirAlonneEntryBack, WarpNode.SirAlonneExitFront),
-            new(WarpNode.SirAlonneExitBack, WarpNode.SirAlonneMemoryExit),
+            new(WarpNode.SirAlonneExitBack, WarpNode.SirAlonneMemoryExitSrc),
 
             new(WarpNode.FumeKnightEntryBack, WarpNode.FumeKnightExitFront),
             new(WarpNode.FumeKnightExitBack, WarpNode.Lone),
@@ -855,8 +900,10 @@ namespace FogWallNS
             new(WarpNode.GutterNearAntQueenBack, WarpNode.BlackGulchEntranceFront,  n1:Cond.OneWay),
             // black gulch
             new(WarpNode.BlackGulchEntranceBack, WarpNode.TheRottenEntryFront),
-            new(WarpNode.BlackGulchEntranceBack, WarpNode.ChasmPortalFromBlackGulch, n1: Cond.OneWay, n2: Cond.DarkCovenentJoinedForgottenKey),
-            new(WarpNode.ChasmPortalFromBlackGulch, WarpNode.TheRottenEntryFront, n1: Cond.DarkCovenentJoinedForgottenKey, n2: Cond.OneWay),
+            new(WarpNode.BlackGulchEntranceBack, WarpNode.ChasmPortalFromBlackGulchSrc, n1: Cond.OneWay, n2: Cond.DarkCovenentJoinedForgottenKey),
+            new(WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.TheRottenEntryFront, n1: Cond.DarkCovenentJoinedForgottenKey, n2: Cond.OneWay),
+
+            new(WarpNode.ChasmGulchExitWarpDst, WarpNode.ChasmPortalFromBlackGulchSrc, n1:Cond.OneWay),
 
             new(WarpNode.TheRottenEntryBack, WarpNode.TheRottenExitFront),
             new(WarpNode.TheRottenExitBack, WarpNode.DLC1EntranceBaseGame),
@@ -906,8 +953,10 @@ namespace FogWallNS
 
             new(WarpNode.BrightstoneCoveToDoorsOfPharrosFront, WarpNode.RoyalRatAuthorityExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.ChasmPortalFromShadedWoods, WarpNode.ShadedWoodsToMistyAreaBack, n1: Cond.DarkCovenentJoined),
-            new(WarpNode.ChasmPortalFromShadedWoods, WarpNode.ScorpionessNajkaEntryFront, n1: Cond.DarkCovenentJoined),
+            new(WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ShadedWoodsToMistyAreaBack, n1: Cond.DarkCovenentJoined),
+            new(WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ScorpionessNajkaEntryFront, n1: Cond.DarkCovenentJoined),
+            
+            new(WarpNode.ChasmShadedWoodsExitWarpDst, WarpNode.ChasmPortalFromShadedWoodsSrc, n1:Cond.OneWay),
 
             new(WarpNode.RoyalRatAuthorityEntryFront, WarpNode.DoorOfPharrosToOrdealEndBonfireBack),
             new(WarpNode.RoyalRatAuthorityEntryBack, WarpNode.RoyalRatAuthorityExitFront),
@@ -922,6 +971,7 @@ namespace FogWallNS
             new(WarpNode.DukesDearFreyjaEntryBack, WarpNode.DragonMemoriesCoveSrc, n2: Cond.AshenMistHeart),
             new(WarpNode.DukesDearFreyjaExitFront, WarpNode.DragonMemoriesCoveSrc, n2: Cond.AshenMistHeart),
             new(WarpNode.DragonMemoriesMemoryDst, WarpNode.DragonMemoriesMemorySrc, n1: Cond.OneWay),
+            new(WarpNode.DragonMemoriesCoveDst, WarpNode.DragonMemoriesCoveSrc, n1:Cond.OneWay),
 
             // dlc3
             new(WarpNode.DLC3EntranceDLC, WarpNode.AavaTheKingsPetEntryFront, n1: Cond.DLC3Key, n2: Cond.DLC3Key),
@@ -942,7 +992,9 @@ namespace FogWallNS
             new(WarpNode.CoffinWarpSrc, WarpNode.AavaTheKingsPetEntryFront, n1: Cond.FrigidOutskirtsKey, n2: Cond.OneWay),
             new(WarpNode.CoffinWarpDst, WarpNode.LudAndZallenEntryFront, n1: Cond.OneWay),
             new(WarpNode.LudAndZallenEntryBack, WarpNode.LudAndZallenExitFront),
-            new(WarpNode.LudAndZallenExitBack, WarpNode.LudAndZallenExitWarp, n1: Cond.OneWay),
+            new(WarpNode.LudAndZallenExitBack, WarpNode.LudAndZallenExitWarpSrc, n1: Cond.OneWay),
+
+            new(WarpNode.LudAndZallenExitWarpDst, WarpNode.CoffinWarpSrc, n1:Cond.OneWay),
 
             // dranglic castle
             new(WarpNode.DrangleicCastleToShadedWoodsBack, WarpNode.FinalFightArenaFront, n1: Cond.OneWay, n2: Cond.KingsRing),
@@ -954,7 +1006,9 @@ namespace FogWallNS
 
             new(WarpNode.TwinDragonridersEntryFront, WarpNode.DrangleicCastleToChasmPortalFront, n2: Cond.OneWay),
 
-            new(WarpNode.DrangleicCastleToChasmPortalBack, WarpNode.ChasmPortalFromCastle, n1: Cond.OneWay, n2: Cond.DarkCovenentJoined),
+            new(WarpNode.DrangleicCastleToChasmPortalBack, WarpNode.ChasmPortalFromCastleSrc, n1: Cond.OneWay, n2: Cond.DarkCovenentJoined),
+
+            new(WarpNode.ChasmCastleExitWarpDst, WarpNode.ChasmPortalFromCastleSrc, n1:Cond.OneWay),
 
             new(WarpNode.TwinDragonridersEntryBack, WarpNode.TwinDragonridersExitFront),
             new(WarpNode.TwinDragonridersExitBack, WarpNode.LookingGlassKnightEntryFront, n1: Cond.OneWay),
@@ -981,18 +1035,21 @@ namespace FogWallNS
             new(WarpNode.VendrickBack, WarpNode.MemoryOfTheKingCryptSrc, n2: Cond.AshenMistHeartKingMemory),
             new(WarpNode.MemoryOfTheKingMemoryDst, WarpNode.MemoryOfTheKingMemorySrc, n1: Cond.OneWay),
 
+            new(WarpNode.MemoryOfTheKingCryptDst, WarpNode.MemoryOfTheKingCryptSrc, n1:Cond.OneWay),
+
             // dark chasms
-            new(WarpNode.ChasmPortalFromBlackGulchDungeon, WarpNode.DarkChasmFromBlackGulchExitFront, n1: Cond.OneWay),
-            new(WarpNode.DarkChasmFromBlackGulchExitBack, WarpNode.ChasmGulchExitWarp, n1: Cond.OneWay),
+            new(WarpNode.ChasmPortalFromBlackGulchDst, WarpNode.DarkChasmFromBlackGulchExitFront, n1: Cond.OneWay),
+            new(WarpNode.DarkChasmFromBlackGulchExitBack, WarpNode.ChasmGulchExitWarpSrc, n1: Cond.OneWay),
 
-            new(WarpNode.ChasmPortalFromShadedWoodsDungeon, WarpNode.DarkChasmFromShadedWoodsExitFront, n1: Cond.OneWay),
-            new(WarpNode.DarkChasmFromShadedWoodsExitBack, WarpNode.ChasmShadedWoodsExitWarp, n1: Cond.OneWay),
+            new(WarpNode.ChasmPortalFromShadedWoodsDst, WarpNode.DarkChasmFromShadedWoodsExitFront, n1: Cond.OneWay),
+            new(WarpNode.DarkChasmFromShadedWoodsExitBack, WarpNode.ChasmShadedWoodsExitWarpSrc, n1: Cond.OneWay),
 
-            new(WarpNode.ChasmPortalFromCastleDungeon, WarpNode.DarkChasmFromDrangleicCastleExitFront, n1: Cond.OneWay),
-            new(WarpNode.DarkChasmFromDrangleicCastleExitBack, WarpNode.ChasmCastleExitWarp, n1: Cond.OneWay),
+            new(WarpNode.ChasmPortalFromCastleDst, WarpNode.DarkChasmFromDrangleicCastleExitFront, n1: Cond.OneWay),
+            new(WarpNode.DarkChasmFromDrangleicCastleExitBack, WarpNode.ChasmCastleExitWarpSrc, n1: Cond.OneWay),
 
-            new(WarpNode.DarkLurkerExitBack, WarpNode.ChasmDarkLurkerExitWarp, n1: Cond.OneWay),
+            new(WarpNode.DarkLurkerExitBack, WarpNode.ChasmDarkLurkerExitWarpSrc, n1: Cond.OneWay),
             new(WarpNode.DarkLurkerExitFront, WarpNode.Lone),
+            new(WarpNode.ChasmDarkLurkerExitWarpDst, WarpNode.ChasmPortalFromCastleSrc, n1: Cond.OneWay), // TODO: this is not correct as it depends on where you entered from
 
             // aldia's keep
             new(WarpNode.AldiasKeepEntranceBack, WarpNode.GuardianDragonEntryFront, n1: Cond.OneWay),
@@ -1008,55 +1065,99 @@ namespace FogWallNS
         };
 
         public static IReadOnlyList<KeyCond> key_reqs { get; } = new List<KeyCond> {
-            new(Cond.FragrantBranchOfYore, WarpNode.LostSinnerExitBack),
-            new(Cond.FragrantBranchOfYore, WarpNode.SkeletonLordsExitBack),
-            new(Cond.FragrantBranchOfYore, WarpNode.GiantLordMemoryEntryFront), // TODO: this is complicated
-            new(Cond.FragrantBranchOfYore, WarpNode.NearPursuerBirdExit),
-            new(Cond.FragrantBranchOfYore, WarpNode.TheGutterFromGraveOfSaintsBack),
-            new(Cond.FragrantBranchOfYore, WarpNode.BlackGulchEntranceFront, WarpNode.GutterNearAntQueenBack),
-            new(Cond.FragrantBranchOfYore, WarpNode.VelsdatEntryFront, WarpNode.UndeadCryptFromAgdayneToBonfireBack),
-            new(Cond.FragrantBranchOfYore, WarpNode.DragonAerieToAldiasKeepBack, WarpNode.AncientDragonFront),
-            new(Cond.FragrantBranchOfYore, WarpNode.DukesDearFreyjaExitBack),
-            new(Cond.RotundaLockstone, WarpNode.DragonriderExitBack, WarpNode.HeidesToWharfFront),
-            new(Cond.RotundaLockstone, WarpNode.HeidesToWharfFront),
+            // fragrant branches locations
+            new(Cond.FragrantBranchOfYore, WarpNode.LostSinnerExitBack), // in the chest
+            new(Cond.FragrantBranchOfYore, WarpNode.SkeletonLordsExitBack), // near gavlan
+            new(Cond.FragrantBranchOfYore, WarpNode.GiantLordMemoryEntrySrc), // on a body on the ledge // TODO: it can also be accessed after getting king's ring and soldier's key in FOFG
+            new(Cond.FragrantBranchOfYore, WarpNode.NearPursuerBirdExit), // in a chest next to pursuer exit
+            new(Cond.FragrantBranchOfYore, WarpNode.TheGutterFromGraveOfSaintsBack), // on a group of corpse
+            new(Cond.FragrantBranchOfYore, WarpNode.BlackGulchEntranceFront), // on corpse next to sconce
+            new(Cond.FragrantBranchOfYore, WarpNode.VelsdatEntryFront), // in a chest next to fog gate
+            new(Cond.FragrantBranchOfYore, WarpNode.AncientDragonFront), // in a chest near the egg
+            new(Cond.FragrantBranchOfYore, WarpNode.DukesDearFreyjaExitBack), // in the chest
+            new(Cond.FragrantBranchOfYore, WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack), // melentia's shop
+
+            new(Cond.RotundaLockstone, WarpNode.DragonriderExitBack), // licia
+
             new(Cond.SoldiersKey, WarpNode.LastGiantBack),
-            new(Cond.KingsRing, WarpNode.VendrickBack, WarpNode.MemoryOfTheKingCryptSrc),
+            new(Cond.KingsRing, WarpNode.VendrickBack),
             new(Cond.KingsRingFragrantBranch, Cond.KingsRing, Cond.FragrantBranchOfYore),
-            new(Cond.FirstFourSouls, new(){})
+            new(Cond.FirstFourSouls, new List<WarpNode>(){
+                WarpNode.LostSinnerEntryBack,
+                WarpNode.TheRottenEntryBack,
+                WarpNode.DukesDearFreyjaEntryBack,
+                WarpNode.OldIronKingEntryBack,
+            }),
+
+            new(Cond.KingsRingFirstFourSouls, Cond.KingsRing, Cond.FirstFourSouls),
+            // cat's ring is always accessible
+            new(Cond.AshenMistHeart, WarpNode.AncientDragonBack),
+            new(Cond.AshenMistHeartSoldiersKey, Cond.AshenMistHeart, Cond.SoldiersKey),
+            new(Cond.AshenMistHeartSoldiersKeyKingsRing, Cond.AshenMistHeartSoldiersKey, Cond.KingsRing),
+            new(Cond.AshenMistHeartKingMemory, Cond.AshenMistHeart, Cond.KingsRing), // TODO: right now if you reached the king and have ashen mist heart you might have to kill vendrick to proceed
+            new(Cond.OldKeyInBastille, WarpNode.NearPursuerBirdExit),
+            new(Cond.BastilleKey, WarpNode.RuinSentinelsExitBack),
+            new(Cond.PharrosLockstone, WarpNode.Lone), // TODO:
+            new(Cond.ScorchingIronSceptor, WarpNode.BrumeTowerToScorchingIronSceptorKeyBack),
+            new(Cond.ActivateBrumeTower, Cond.ScorchingIronSceptor, WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack),
+            new(Cond.DarkCovenentJoined, new List<WarpNode>(){
+                WarpNode.ScorpionessNajkaEntryFront,
+                WarpNode.DrangleicCastleToChasmPortalBack,
+                WarpNode.TheRottenEntryFront,
+            }, new List<Cond> {
+                Cond.ForgottenKey,
+            }),
+            new(Cond.DarkCovenentJoinedForgottenKey, Cond.DarkCovenentJoined, Cond.ForgottenKey),
+            new(Cond.ForgottenKey, WarpNode.TheRottenEntryFront),
+            new(Cond.IronKeyToFireLizards, WarpNode.SmeltorDemonEntryFront),
+            new(Cond.DLC1Key, Cond.ForgottenKey, Cond.Catring),
+            new(Cond.DLC2Key, Cond.IronKeyToFireLizards, WarpNode.LastGiantFront), // has two conds
+            new(Cond.DLC2Key, Cond.Catring, WarpNode.ForestOfFallenGiantsToCaleFront), // has two conds
+            new(Cond.DLC3Key, WarpNode.TwinDragonridersEntryFront),
+            new(Cond.ShulvaSanctumKey, WarpNode.ShulvaEntranceBack),
+            new(Cond.ActivateDragonStone, Cond.DragonStone, WarpNode.NearJesterThomasBack),
+            new(Cond.DLC3Eye, WarpNode.EleumLoyceAfterGettingEyeToSeeGhostsFront),
+            new(Cond.DLC3Unfreezed, WarpNode.EleumLoyceCathedraEntranceBack, WarpNode.IvoryKingFightEndDst),
+            new(Cond.FrigidOutskirtsKey, Cond.DLC3Unfreezed, WarpNode.AavaTheKingsPetEntryFront),
+            new(Cond.ShipBellRang, WarpNode.NoMansWharfToHeidesBack),
         };
 
         public static IReadOnlyList<WarpNode> cannot_warp_from = new List<WarpNode>
         {
             WarpNode.NearPursuerBirdExit,
-            WarpNode.NearPateGiantMemoryEntryBack,
-            WarpNode.NearPursuerGiantMemoryEntryBack,
-            WarpNode.GiantLordMemoryEntryBack,
+            WarpNode.NearPateGiantMemoryEntryDst,
+            WarpNode.NearPursuerGiantMemoryEntryDst,
+            WarpNode.GiantLordMemoryEntryDst,
             WarpNode.DragonMemoriesMemoryDst,
-            WarpNode.SirAlonneArmorMemory,
+            WarpNode.SirAlonneArmorDLCEntryDst,
             WarpNode.PirateShipBastille,
             WarpNode.CoffinWarpDst,
             WarpNode.IvoryKingFightEndDst,
-            WarpNode.ChasmPortalFromBlackGulchDungeon,
-            WarpNode.ChasmPortalFromCastleDungeon,
-            WarpNode.ChasmPortalFromShadedWoodsDungeon,
+            WarpNode.ChasmPortalFromBlackGulchDst,
+            WarpNode.ChasmPortalFromCastleDst,
+            WarpNode.ChasmPortalFromShadedWoodsDst,
             WarpNode.IvoryKingBack,
+
+            WarpNode.NearPateGiantMemoryExitDst,
+            WarpNode.NearPursuerGiantMemoryExitDst,
+            WarpNode.GiantLordMemoryExitDst,
         };
 
         public static IReadOnlyList<WarpNode> cannot_warp_to = new List<WarpNode>
         {
             WarpNode.NearPursuerBirdEntry,
-            WarpNode.NearPateGiantMemoryExit,
-            WarpNode.NearPursuerGiantMemoryExit,
-            WarpNode.GiantLordMemoryExit,
+            WarpNode.NearPateGiantMemoryExitSrc,
+            WarpNode.NearPursuerGiantMemoryExitSrc,
+            WarpNode.GiantLordMemoryExitSrc,
             WarpNode.DragonMemoriesMemorySrc,
-            WarpNode.SirAlonneMemoryExit,
+            WarpNode.SirAlonneMemoryExitSrc,
             WarpNode.PirateShipWharf,
-            WarpNode.LudAndZallenExitWarp,
+            WarpNode.LudAndZallenExitWarpSrc,
             WarpNode.IvoryKingFightEndSrc,
-            WarpNode.ChasmCastleExitWarp,
-            WarpNode.ChasmDarkLurkerExitWarp,
-            WarpNode.ChasmGulchExitWarp,
-            WarpNode.ChasmShadedWoodsExitWarp,
+            WarpNode.ChasmCastleExitWarpSrc,
+            WarpNode.ChasmDarkLurkerExitWarpSrc,
+            WarpNode.ChasmGulchExitWarpSrc,
+            WarpNode.ChasmShadedWoodsExitWarpSrc,
         };
 
         public static IReadOnlyList<WarpNode> reqd_gates_to_complete_game = new List<WarpNode>
@@ -1070,14 +1171,15 @@ namespace FogWallNS
     {
         public WarpNode Value;
         public List<TreeNode> Children = new List<TreeNode>();
+        public CType Type;
 
-
-        public TreeNode(WarpNode value)
+        public TreeNode(WarpNode value, CType type)
         {
             Value = value;
+            Type = type;
         }
 
-        public static TreeNode? BuildTraversalTree(Graph graph, WarpNode startNode, HashSet<WarpNode>? visited = null)
+        public static TreeNode? BuildTraversalTree(Graph graph, WarpNode startNode, CType type, HashSet<WarpNode>? visited = null)
         {
             if (visited == null)
                 visited = new HashSet<WarpNode>();
@@ -1088,13 +1190,15 @@ namespace FogWallNS
 
             visited.Add(startNode);
 
-            var node = new TreeNode(startNode);
+            var node = new TreeNode(startNode, type);
 
+            int count = 0;
             foreach (var next in graph.Edges[startNode])
             {
-                var child = BuildTraversalTree(graph, next, visited);
+                var child = BuildTraversalTree(graph, next, graph.Types[startNode][count], visited: visited);
                 if (child != null)
                     node.Children.Add(child);
+                count++;
             }
 
             return node;
@@ -1133,18 +1237,22 @@ namespace FogWallNS
     class Graph
     {
         public Dictionary<WarpNode, List<WarpNode>> Edges = new Dictionary<WarpNode, List<WarpNode>>();
+        public Dictionary<WarpNode, List<CType>> Types = new Dictionary<WarpNode, List<CType>>();
 
         public void AddNode(WarpNode node)
         {
             if (!Edges.ContainsKey(node))
                 Edges[node] = new List<WarpNode>();
+            if (!Types.ContainsKey(node))
+                Types[node] = new List<CType>();
         }
 
-        public void AddEdge(WarpNode from, WarpNode to)
+        public void AddEdge(WarpNode from, WarpNode to, CType type)
         {
             AddNode(from);
             AddNode(to);
             Edges[from].Add(to);
+            Types[from].Add(type);
         }
     }
 
@@ -1177,16 +1285,34 @@ namespace FogWallNS
                 items[node] = new();
             }
         }
-        public void Add(WarpNode src, WarpNode dst, CType type)
+        public void Add(WarpNode src, WarpNode dst, CType type, bool twoway = false)
         {
             Add(src);
             Add(dst);
-            items[src].Add(new(dst, type));
+            if (!has_child(src, dst))
+            {
+                items[src].Add(new(dst, type));
+            }
+            if (twoway && !has_child(dst, src))
+            {
+                items[dst].Add(new(src, type));
+            }
         }
 
         public bool Contains(WarpNode node)
         {
             return items.ContainsKey(node);
+        }
+
+        public bool has_child(WarpNode parent, WarpNode child)
+        {
+            if (!items.ContainsKey(parent)) return false;
+            if (items[parent].Count == 0) return false;
+            foreach (var c in items[parent])
+            {
+                if (c.to == child) return true;
+            }
+            return false;
         }
     }
 }

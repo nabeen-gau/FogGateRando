@@ -447,7 +447,9 @@ def event_{map_id}_x505(flag8=_):
 
         public override bool Equals(object? obj)
         {
-            throw new NotImplementedException();
+			if (obj == null) return false;
+			var other = (Warp)obj;
+			return from.fog_wall_name == other.from.fog_wall_name && to.fog_wall_name == other.to.fog_wall_name;
         }
 
         public override int GetHashCode()

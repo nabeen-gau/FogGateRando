@@ -1,12 +1,7 @@
 ﻿using FogWallNS;
 using SoulsFormats;
-using System;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Numerics;
-using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using static SoulsFormats.PARAM;
 using static SoulsFormats.PARAMDEF;
@@ -588,12 +583,12 @@ Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
 fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
-    new FogWall(WarpNode.Tutorial1ExitFront,  "o00_0500_0000"),
     new FogWall(WarpNode.Tutorial1EntryFront, "o00_0500_0001"),
-    new FogWall(WarpNode.Tutorial3ExitFront,  "o00_0500_0002"),
     new FogWall(WarpNode.Tutorial2EntryFront, "o00_0500_0003"),
     new FogWall(WarpNode.Tutorial3EntryFront, "o00_0500_0004", front_blocked: true),
+    new FogWall(WarpNode.Tutorial1ExitFront,  "o00_0500_0000"),
     new FogWall(WarpNode.Tutorial2ExitFront,  "o00_0500_0005"),
+    new FogWall(WarpNode.Tutorial3ExitFront,  "o00_0500_0002"),
 };
 fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
     //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
@@ -686,7 +681,7 @@ fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
     new FogWall(WarpNode.GutterNearAntQueenFront, "o00_0500_0000"),
     new FogWall(WarpNode.TheRottenExitFront, "o00_0500_0001", boss_name: BossName.TheRotten, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.BlackGulchEntranceFront, "o00_0501_0000"),
-    new FogWall(WarpNode.TheGutterFromGraveOfSaintsFront, "o00_0501_0001", pvp: true),
+    new FogWall(WarpNode.TheGutterFromGraveOfSaintsFront, "o00_0501_0001", pvp: true, reverse: true),
     new FogWall(WarpNode.TheRottenEntryFront, "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
 };
 fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
@@ -1677,6 +1672,7 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 // Example the final fight arena connected to outside the exit of rat authority fight
 
 Random rand = new Random();
+//Random rand = new Random(247);
 
 // by default weight will be 1 for full random
 // increasing weight will reduce its likelihood of being selected
@@ -2003,36 +1999,6 @@ var duplicates2 = flattened_list
     .ToList();
 Debug.Assert(duplicates2.Count == 0);
 
-ConnectionGroup group = new();
-group.Add(WarpNode.GameStartSpawnSrc, WarpNode.GameStartSpawnDst, CType.Warp);
-
-group.Add(WarpNode.PirateShipWharf, WarpNode.PirateShipBastille, CType.Warp);
-group.Add(WarpNode.NearPursuerBirdEntry, WarpNode.NearPursuerBirdExit, CType.Warp);
-group.Add(WarpNode.CoffinWarpSrc, WarpNode.CoffinWarpDst, CType.Warp);
-group.Add(WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.ChasmPortalFromBlackGulchDst, CType.Warp);
-group.Add(WarpNode.ChasmPortalFromCastleSrc, WarpNode.ChasmPortalFromCastleDst, CType.Warp);
-group.Add(WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ChasmPortalFromShadedWoodsDst, CType.Warp);
-group.Add(WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst, CType.Warp);
-group.Add(WarpNode.DragonMemoriesMemorySrc, WarpNode.DragonMemoriesCoveDst, CType.Warp);
-group.Add(WarpNode.SirAlonneArmorDLCEntrySrc, WarpNode.SirAlonneArmorDLCEntryDst, CType.Warp);
-group.Add(WarpNode.SirAlonneMemoryExitSrc, WarpNode.SirAlonneMemoryExitDst, CType.Warp);
-group.Add(WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPursuerGiantMemoryEntryDst, CType.Warp);
-group.Add(WarpNode.NearPateGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntryDst, CType.Warp);
-group.Add(WarpNode.GiantLordMemoryEntrySrc, WarpNode.GiantLordMemoryEntryDst, CType.Warp);
-group.Add(WarpNode.NearPursuerGiantMemoryExitSrc, WarpNode.NearPursuerGiantMemoryExitDst, CType.Warp);
-group.Add(WarpNode.NearPateGiantMemoryExitSrc, WarpNode.NearPateGiantMemoryExitDst, CType.Warp);
-group.Add(WarpNode.GiantLordMemoryExitSrc, WarpNode.GiantLordMemoryExitDst, CType.Warp);
-group.Add(WarpNode.DLC1EntranceBaseGame, WarpNode.DLC1EntranceDLC, CType.Warp, true);
-group.Add(WarpNode.DLC2EntranceBaseGame, WarpNode.DLC2EntranceDLC, CType.Warp, true);
-group.Add(WarpNode.DLC3EntranceBaseGame, WarpNode.DLC3EntranceDLC, CType.Warp, true);
-group.Add(WarpNode.ChasmGulchExitWarpSrc, WarpNode.ChasmGulchExitWarpDst, CType.Warp);
-group.Add(WarpNode.ChasmShadedWoodsExitWarpSrc, WarpNode.ChasmShadedWoodsExitWarpDst, CType.Warp);
-group.Add(WarpNode.ChasmCastleExitWarpSrc, WarpNode.ChasmCastleExitWarpDst, CType.Warp);
-group.Add(WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst, CType.Warp);
-group.Add(WarpNode.MemoryOfTheKingMemorySrc, WarpNode.MemoryOfTheKingCryptDst, CType.Warp);
-
-
-
 WarpNode get_warp_pair(WarpNode pt_from)
 {
     foreach (var p in selectedPairs)
@@ -2073,12 +2039,12 @@ bool can_walk_to(WarpNode from, WarpNode to)
     var segment = get_segment(from);
     foreach (var s in segment)
     {
-        if (s.n1 == to)
+        if (s.n1 == to && s.n2 == from)
         {
             if (s.condition_n1 != Cond.OneWay) return true;
             else return false;
         }
-        else if (s.n2 == to)
+        else if (s.n2 == to && s.n1 == from)
         {
             if (s.condition_n2 != Cond.OneWay) return true;
             else return false;
@@ -2098,89 +2064,6 @@ int get_segment_idx(WarpNode node)
     }
     Debug.Assert(false);
     return -1;
-}
-
-// (segment_id, depth)
-List<(int, int, WarpNode)> segments_reached = new();
-List<WarpNode> potential_nodes = new();
-
-void update_segments_reached(int depth, WarpNode warp_dst)
-{
-    int segment_id = get_segment_idx(warp_dst);
-    foreach (var sr in segments_reached)
-    {
-        if (sr.Item1 == segment_id)
-        {
-            if (sr.Item2 == depth) return;
-            // this might be the place
-            if (can_walk_to(sr.Item3, warp_dst))
-            {
-                if (!potential_nodes.Contains(warp_dst)) potential_nodes.Add(warp_dst);
-            }
-            Console.WriteLine($"Maybe this is the place ({segment_id}, {warp_dst})");
-            return;
-        }
-    }
-    segments_reached.Add((segment_id, depth, warp_dst));
-}
-
-bool walk_through(WarpNode warp_src, int depth)
-{
-    var warp_dst = get_warp_pair(warp_src);
-    Debug.Assert(warp_dst != WarpNode.Lone);
-    group.Add(warp_src, warp_dst, CType.Warp, true);
-    var segments = get_segment(warp_dst); // all the possible non-warpable paths from the current node
-    // find the next segment to walk to
-    foreach (var segment in segments)
-    {
-        WarpNode s;
-        if (segment.n1 == warp_dst)
-        {
-            if (segment.condition_n2 == Cond.OneWay) continue;
-            s = segment.n2;
-        }
-        else if (segment.n2 == warp_dst)
-        {
-            if (segment.condition_n1 == Cond.OneWay) continue;
-            s = segment.n1;
-        }
-        else
-        {
-            continue;
-        }
-        if (s == WarpNode.Lone) return false;
-        if (group.Contains(s))
-        {
-            if (!group.has_child(warp_dst, s))
-            {
-                if ((s == segment.n1 && segment.condition_n1 != Cond.OneWay) // TOOD: right now just check if it is not lone gate
-                    || (s == segment.n2 && segment.condition_n2 != Cond.OneWay))
-                {
-                    update_segments_reached(depth, warp_dst);
-                    group.Add(warp_dst, s, CType.Walk);
-                    if (!walk_through(s, depth+1)) continue;
-                    return true;
-                }
-                //if ((s == segment.n1 && segment.condition_n2 == Cond.None)
-                //    || (s == segment.n2 && segment.condition_n1 == Cond.None))
-                //{
-                //    group.Add(s, warp_dst, CType.Walk);
-                //}
-            }
-            else
-            {
-                continue;
-            }
-        }
-        update_segments_reached(depth, warp_dst);
-        group.Add(warp_dst, s, CType.Walk);
-        if (!walk_through(s, depth+1))
-        {
-            continue;
-        }
-        return true;
-    }
-    return false;
 }
 
 int get_selected_pair_idx_from_name(WarpNode node)
@@ -2208,97 +2091,319 @@ T pop<T>(List<T> list, int index)
     return item;
 }
 
-Graph graph = new Graph();
-walk_through(WarpNode.GameStartSpawnSrc, 0);
-foreach (var item in group.items)
-{
-    foreach (var inner_item in item.Value)
-    {
-        graph.AddEdge(item.Key, inner_item.to, inner_item.type);
-    }
-}
-var tree_node = TreeNode.BuildTraversalTree(graph, WarpNode.GameStartSpawnSrc, CType.Walk);
-Debug.Assert(tree_node != null);
-StringBuilder string_builder = new();
-TreeNode.PrintTree(tree_node, string_builder);
-Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-
-Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-Console.WriteLine("Reconnecting one of the unconnected gates back");
-Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-
-List<WarpNode> unconnected_gates = new();
-foreach (var i in warp_infos)
-{
-    var node = i.fog_wall_name;
-    if (group.Contains(node)) continue;
-    unconnected_gates.Add(node);
-}
-
 void swap_warp(WarpNode n1, WarpNode n2)
 {
     var i1 = get_selected_pair_idx_from_name(n1);
     var i2 = get_selected_pair_idx_from_name(n2);
     var w1 = selectedPairs[i1];
     var w2 = selectedPairs[i2];
+    Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
     selectedPairs.RemoveAt(i1);
     selectedPairs.Insert(i1, new(
-        w1.from, w2.from
+        w1.from, w2.to
     ));
     selectedPairs.RemoveAt(i2);
     selectedPairs.Insert(i2, new(
-        w1.to, w2.to
+        w2.from, w1.to
     ));
+    Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
 }
 
-List<WarpNode> remapped_gates = new();
-while (unconnected_gates.Count > 0)
+void swap_warp_ex(Warp w1, Warp w2)
 {
-    foreach (var i in warp_infos)
-    {
-        var node = i.fog_wall_name;
-        Graph g = new Graph();
-        if (group.Contains(node))
-        {
-            Console.WriteLine($"[INFO] {node} already reached skipping.");
-            continue;
-        }
-        else
-        {
-            Console.WriteLine($"[INFO] {node} tree.");
-        }
-        Console.WriteLine($"[INFO] Found unconnected gate: {node}");
-        // connect the looped gate with unconnected ones
-        Debug.Assert(potential_nodes.Count > 0);
-        var pot_node = pop(potential_nodes, rand.Next(potential_nodes.Count));
-        swap_warp(pot_node, node);
+    var i1 = selectedPairs.IndexOf(w1);
+    var i2 = selectedPairs.IndexOf(w2);
+    Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
+    selectedPairs.RemoveAt(i1);
+    selectedPairs.Insert(i1, new(
+        w1.from, w2.to
+    ));
+    selectedPairs.RemoveAt(i2);
+    selectedPairs.Insert(i2, new(
+        w2.from, w1.to
+    ));
+    Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
+}
 
-        potential_nodes.Clear();
-        segments_reached.Clear();
-        group.items.Clear();
-        walk_through(WarpNode.GameStartSpawnSrc, 0);
-        foreach (var item in group.items)
+Dictionary<WarpNode, List<WarpNode>> tree = new();
+void add_edge(WarpNode n1, WarpNode n2)
+{
+    if (tree.ContainsKey(n1)) tree[n1].Add(n2);
+    else tree[n1] = new() { n2};
+}
+
+WarpNode next_edge(WarpNode node)
+{
+    var segment = get_segment(node);
+    foreach (var s in segment)
+    {
+        if (s.n1 == node && s.condition_n2 != Cond.OneWay)
         {
-            foreach (var inner_item in item.Value)
-            {
-                g.AddEdge(item.Key, inner_item.to, inner_item.type);
-            }
+            if (tree.ContainsKey(s.n2)) continue;
+            return s.n2;
         }
-        var tree = TreeNode.BuildTraversalTree(g, WarpNode.GameStartSpawnSrc, CType.Walk);
-        Debug.Assert(tree != null);
-        StringBuilder sb = new();
-        TreeNode.PrintTree(tree, sb);
-        Console.WriteLine("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        unconnected_gates.Clear();
-        foreach (var j in warp_infos)
+        else if (s.n2 == node && s.condition_n1 != Cond.OneWay)
         {
-            var n1 = j.fog_wall_name;
-            if (group.Contains(n1)) continue;
-            unconnected_gates.Add(n1);
+            if (tree.ContainsKey(s.n1)) continue;
+            return s.n1;
         }
-        break;
+    }
+    Debug.Assert(false);
+    return WarpNode.Lone;
+}
+
+void travel_through(WarpNode warp_dst)
+{
+    var seg = get_segment(warp_dst);
+    foreach (var s in seg)
+    {
+        WarpNode end_node = WarpNode.Lone;
+        if (s.n1 == warp_dst && s.condition_n2 != Cond.OneWay)
+        {
+            if (tree.ContainsKey(s.n2)) continue;
+            end_node = s.n2;
+        }
+        else if (s.n2 == warp_dst && s.condition_n1 != Cond.OneWay)
+        {
+            if (tree.ContainsKey(s.n1)) continue;
+            end_node = s.n1;
+        }
+        else continue;
+        add_edge(warp_dst, end_node);
     }
 }
+
+
+bool is_one_way_node(WarpNode node)
+{
+    var segment = get_segment(node);
+    foreach (var s in segment)
+    {
+        if (s.n1 == node && s.condition_n2 != Cond.OneWay) return false;
+        else if (s.n2 == node && s.condition_n1 != Cond.OneWay) return false;
+    }
+    return true;
+}
+
+uint get_no_of_access_pts(WarpNode node)
+{
+    var segment = get_segment(node);
+    uint count = 0;
+    foreach (var s in segment)
+    {
+        if (s.n1 == node && s.condition_n1 != Cond.OneWay)
+        {
+            count++;
+        }
+        else if (s.n2 == node && s.condition_n2 != Cond.OneWay)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+List<WarpNode> recursive_travelled_list = new();
+List<WarpNode> looped_gates = new();
+List<WarpNode> visited_nodes = new();
+void recursive_travel(WarpNode node)
+{
+    recursive_travelled_list.Add(node);
+    if (!tree.ContainsKey(node))
+    {
+        return;
+    }
+    foreach (var child in tree[node])
+    {
+        if (child == WarpNode.Lone) return;
+        var warp_dst = get_warp_pair(child);
+        if (!visited_nodes.Contains(child) 
+            && !has_predefined_warp.Contains(child)) visited_nodes.Add(child);
+        //if (!visited_nodes.Contains(warp_dst) 
+        //    && !has_predefined_warp.Contains(warp_dst)) visited_nodes.Add(warp_dst);
+        add_edge(child, warp_dst);
+        travel_through(warp_dst);
+        if (recursive_travelled_list.Contains(warp_dst))
+        {
+            //Graph g = new();
+            //foreach (var kv in tree)
+            //{
+            //    foreach (var item in kv.Value)
+            //    {
+            //        g.AddEdge(kv.Key, item, CType.Walk);
+            //    }
+            //}
+            //var travel_tree = TreeNode.BuildTraversalTree(g, WarpNode.GameStartSpawnSrc, CType.Walk);
+            //Debug.Assert(travel_tree != null);
+            //StringBuilder sb = new();
+            //TreeNode.PrintTree(travel_tree, sb);
+            // child is looping? maybe?
+            var n = get_no_of_access_pts(child);
+            if (n > 1)
+            {
+                looped_gates.Add(child);
+            }
+            return;
+        }
+        recursive_travel(warp_dst);
+    }
+
+}
+
+Dictionary<WarpNode, List<WarpNode>> tree_copy = new();
+void copy_tree()
+{
+    tree_copy.Clear();
+    foreach (var kv in tree)
+    {
+        tree_copy[kv.Key] = new();
+        foreach (var child in kv.Value)
+        {
+            tree_copy[kv.Key].Add(child);
+        }
+    }
+}
+
+List<WarpNode> get_valid_neighbours(WarpNode node)
+{
+    var seg = get_segment(node);
+    List<WarpNode> neighbours = new();
+    foreach (var s in seg)
+    {
+        WarpNode end_node = WarpNode.Lone;
+        if (s.n1 == node && s.condition_n2 != Cond.OneWay)
+        {
+            if (tree.ContainsKey(s.n2)) continue;
+            end_node = s.n2;
+        }
+        else if (s.n2 == node && s.condition_n1 != Cond.OneWay)
+        {
+            if (tree.ContainsKey(s.n1)) continue;
+            end_node = s.n1;
+        }
+        else continue;
+        neighbours.Add(end_node);
+    }
+    var warp_dst = get_warp_pair(node);
+    neighbours.Add(warp_dst);
+    return neighbours;
+}
+
+List<WarpNode> run_bfs(WarpNode start_node)
+{
+    List<WarpNode> queue = new() { start_node};
+    List<WarpNode> visited_ids = new() { start_node};
+    while (queue.Count > 0)
+    {
+        var current_node = queue[0];
+        queue.RemoveAt(0);
+        var neighbours = get_valid_neighbours(current_node);
+        foreach (var neighbour in neighbours)
+        {
+            if (!visited_ids.Contains(neighbour))
+            {
+                visited_ids.Add(neighbour);
+                queue.Add(neighbour);
+            }
+        }
+    }
+    return visited_ids;
+}
+
+Warp find_warp_edge_in(List<WarpNode> reachable_nodes_set)
+{
+    foreach (var sp in selectedPairs)
+    {
+        var a_is_reachable = reachable_nodes_set.Contains(sp.from.fog_wall_name);
+        var b_is_reachable = reachable_nodes_set.Contains(sp.to.fog_wall_name);
+        if (a_is_reachable && b_is_reachable)
+        {
+            if (!has_predefined_warp.Contains(sp.from.fog_wall_name)) return sp;
+        }
+    }
+    Debug.Assert(false);
+    return new Warp();
+}
+
+Warp find_warp_edge_in_island(List<WarpNode> unreachable_nodes_set)
+{
+    foreach (var sp in selectedPairs)
+    {
+        if (unreachable_nodes_set.Contains(sp.from.fog_wall_name))
+        {
+            if (!has_predefined_warp.Contains(sp.from.fog_wall_name)) return sp;
+        }
+    }
+    Debug.Assert(false);
+    return new Warp();
+
+}
+
+List<WarpNode> get_unreachable_ids(List<WarpNode> visited_ids)
+{
+    List<WarpNode> unreachable_ids = new();
+    foreach (var wi in warp_infos)
+    {
+        if (visited_ids.Contains(wi.fog_wall_name)) continue;
+        unreachable_ids.Add(wi.fog_wall_name);
+    }
+    foreach (var warp in has_predefined_warp)
+    {
+        if (visited_ids.Contains(warp)) continue;
+        unreachable_ids.Add(warp);
+    }
+    return unreachable_ids;
+}
+
+Warp find_valid_warp(List<WarpNode> node_set, List<Warp> ignore_set)
+{
+    List<Warp> candidates = new();
+    foreach (var edge in selectedPairs)
+    {
+        if (ignore_set.Contains(edge)) continue;
+        if (node_set.Contains(edge.from.fog_wall_name) && node_set.Contains(edge.to.fog_wall_name))
+        {
+            if (has_predefined_warp.Contains(edge.from.fog_wall_name)) continue;
+            candidates.Add(edge);
+        }
+    }
+    Debug.Assert(candidates.Count > 0);
+    return candidates[rand.Next(candidates.Count)];
+}
+
+List<Warp> cooldown_edges = new();
+while (true)
+{
+    var reachable_nodes = run_bfs(WarpNode.GameStartSpawnSrc);
+    var unreachable_nodes = get_unreachable_ids(reachable_nodes);
+    if (unreachable_nodes.Count == 0)
+    {
+        break;
+    }
+    var warp_main = find_valid_warp(reachable_nodes, cooldown_edges);
+    var warp_island = find_valid_warp(unreachable_nodes, cooldown_edges);
+    swap_warp_ex(warp_main, warp_island);
+    cooldown_edges.Add(warp_main);
+    cooldown_edges.Add(warp_island);
+}
+
+add_edge(WarpNode.GameStartSpawnSrc, WarpNode.GameStartSpawnDst);
+travel_through(WarpNode.GameStartSpawnDst);
+recursive_travel(WarpNode.GameStartSpawnDst);
+
+Graph g = new();
+foreach (var kv in tree)
+{
+    foreach (var item in kv.Value)
+    {
+        g.AddEdge(kv.Key, item, CType.Walk);
+    }
+}
+var travel_tree = TreeNode.BuildTraversalTree(g, WarpNode.GameStartSpawnSrc, CType.Walk);
+Debug.Assert(travel_tree != null);
+StringBuilder sb = new();
+TreeNode.PrintTree(travel_tree, sb);
+write_string_to_file(sb.ToString(), "./log.txt");
 
 //List<Warp> new_warps = WarpScrambler.Scramble(warps);
 foreach (var warp in selectedPairs)
@@ -2331,3 +2436,4 @@ run_external_command(esdtool_path, arguments);
 // 3. cannot access the majula to copse gate
 // 4. Activate ruin sentinels when approached from hidden gates
 // 5. i can leave the dark chasm from castle? (with havel) without defeating all enemies
+// 6. if ivory king dies, the dlc3 wont be unfrozen before speaking with alsanna

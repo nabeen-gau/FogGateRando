@@ -468,6 +468,7 @@ namespace FogWallNS
         ShipBellRang,
         IronKeyToFireLizards,
         DragonStone,
+        BossKilled,
     }
 
     [DebuggerDisplay("{n1} <-> {n2}")]
@@ -1076,6 +1077,7 @@ namespace FogWallNS
             new(Cond.FragrantBranchOfYore, WarpNode.AncientDragonFront), // in a chest near the egg
             new(Cond.FragrantBranchOfYore, WarpNode.DukesDearFreyjaExitBack), // in the chest
             new(Cond.FragrantBranchOfYore, WarpNode.ForestOfFallenGiantsAfterFirstBonfireBack), // melentia's shop
+            new(Cond.FragrantBranchOfYore, WarpNode.SmeltorDemonEntryFront), // magerold's shop
 
             new(Cond.RotundaLockstone, WarpNode.DragonriderExitBack), // licia
 
@@ -1090,14 +1092,33 @@ namespace FogWallNS
             }),
 
             new(Cond.KingsRingFirstFourSouls, Cond.KingsRing, Cond.FirstFourSouls),
-            // cat's ring is always accessible
+            new(Cond.Catring, Cond.BossKilled, Cond.BossKilled), // two bosses? killed to buy cat ring
             new(Cond.AshenMistHeart, WarpNode.AncientDragonBack),
             new(Cond.AshenMistHeartSoldiersKey, Cond.AshenMistHeart, Cond.SoldiersKey),
             new(Cond.AshenMistHeartSoldiersKeyKingsRing, Cond.AshenMistHeartSoldiersKey, Cond.KingsRing),
             new(Cond.AshenMistHeartKingMemory, Cond.AshenMistHeart, Cond.KingsRing), // TODO: right now if you reached the king and have ashen mist heart you might have to kill vendrick to proceed
             new(Cond.OldKeyInBastille, WarpNode.NearPursuerBirdExit),
             new(Cond.BastilleKey, WarpNode.RuinSentinelsExitBack),
-            new(Cond.PharrosLockstone, WarpNode.Lone), // TODO:
+            new(Cond.PharrosLockstone, new List<WarpNode>() {
+                WarpNode.ForestOfFallenGiantsToCaleFront, // melentia
+                WarpNode.ForestOfFallenGiantsToCaleBack, // cale->house key->majula
+                // in the well
+                WarpNode.ChariotEntryFront, // below the bridge
+                WarpNode.LostBastilleToSinnersRiseBack, // bottom floor left cell
+                WarpNode.EarthenPeakNearWindmillBurnLocationFront, // below gilligan
+                WarpNode.EarthenPeakNearWindmillBurnLocationBack, // trapped chest near pate's 2nd location
+                WarpNode.ShadedWoodsToMistyAreaFront, // on a corpse on the path to ruined forked road bonfire
+                WarpNode.SmeltorDemonEntryFront, // upstairs from magerold
+                WarpNode.ScorpionessNajkaEntryFront, // near tark
+                WarpNode.ShadedWoodsToMistyAreaBack, // up in the ruins next to lion warriors
+                WarpNode.DoorOfPharrosToRatKingDomainBack, // up the ladder behind the stairs
+                WarpNode.CongregationExitBack, // near ornifex shop
+                WarpNode.CongregationExitBack, // before freya in a pot cannot go from bottom
+                WarpNode.RoyalRatVanguardExitBack, // near the fountain after rat king
+                WarpNode.DrangleicCastleToShadedWoodsBack, // ruin sentinels in drangleic castle room middle left
+                WarpNode.AldiasKeepEntranceBack, // behind bookshelf in the bonfire room
+                WarpNode.DragonAerieToAldiasKeepBack, // after 2nd dragon below on the ledge requires dropdown
+            }),
             new(Cond.ScorchingIronSceptor, WarpNode.BrumeTowerToScorchingIronSceptorKeyBack),
             new(Cond.ActivateBrumeTower, Cond.ScorchingIronSceptor, WarpNode.BrumeTowerToFoyerBonfireFromOutsideBack),
             new(Cond.DarkCovenentJoined, new List<WarpNode>(){

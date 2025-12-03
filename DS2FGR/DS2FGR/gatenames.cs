@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace FogWallNS
@@ -495,33 +489,6 @@ namespace FogWallNS
             if (n1 == other.n1 || n2 == other.n1 || n1 == other.n2 || n2 == other.n2) return true;
             return false;
         }
-    }
-
-    public struct CondOr2(Cond c1, Cond c2)
-    {
-        public Cond c1 = c1;
-        public Cond c2 = c2;
-    }
-
-    public struct CondAnd2(Cond c1, Cond c2)
-    {
-        public Cond c1 = c1;
-        public Cond c2 = c2;
-    }
-
-    public enum CondType
-    {
-        Single,
-        Or2,
-        And2,
-    }
-
-    public struct Condition
-    {
-        CondType type;
-        Cond val;
-        CondOr2 or2;
-        CondAnd2 and2;
     }
 
     public struct KeyCond

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -1409,10 +1410,116 @@ namespace FogWallNS
 
         public void Use(Cond name)
         {
-            Debug.Assert(this.Contains(name));
+            if (!this.Contains(name)) return;
             int idx = this.IndexOf(name);
-            Debug.Assert(this[idx].count > 0);
-            this[idx].count -= 1;
+            if (this[idx].count == 0) return;
+            if (KeyInfo.consumable_keys.Contains(name)) this[idx].count -= 1; // use it if it is consumable
         }
+
+        public bool HasKey(HashSet<Node> visited_ids, Cond key)
+        {
+            bool ret = true;
+            if (key == Cond.FirstFourSouls)
+            {
+                foreach(var item in GateConnections.key_reqs)
+                {
+                    if (item.cond == key)
+                    {
+                        foreach (var node in item.access_nodes)
+                        {
+                            bool contains = false;
+                            foreach (var id in visited_ids)
+                            {
+                                if (id.name == node)
+                                {
+                                    contains = true;
+                                    break;
+                                }
+                            }
+                            ret = ret & contains;
+                        }
+                    }
+                }
+                return ret;
+            }
+            else if (KeyInfo.consumable_keys.Contains(key))
+            {
+                foreach (var item in this)
+                {
+                    if (item.name == key) return item.count > 0;
+                }
+                return false;
+
+            }
+            List<Cond> prereqs = new(0);
+            foreach(var item in GateConnections.key_reqs)
+            {
+                if (item.cond == key) prereqs = item.prereqs;
+            }
+            if (prereqs.Count == 0)
+            {
+                foreach (var item in this)
+                {
+                    if (item.name == key) return true;
+                }
+                return false;
+            }
+            foreach (var prereq in prereqs)
+            {
+                ret = ret & HasKey(visited_ids, prereq);
+            }
+            return ret;
+        }
+
+        public void Update(Node node)
+        {
+            foreach (var key in node.keys)
+            {
+                Add(key);
+            }
+        }
+    }
+
+    [DebuggerDisplay("{name}")]
+    public class Node
+    {
+        public WarpNode name;
+        public List<Cond> keys;
+
+        public Node(WarpNode node, List<Cond> keys)
+        {
+            name = node;
+            this.keys = keys;
+        }
+    }
+
+    [DebuggerDisplay("{n1}-{n2}({cn1},{cn2})")]
+    public class Edge
+    {
+        public Node n1;
+        public Node n2;
+        public Cond cn1; // for n2 -> n1
+        public Cond cn2; // for n1 -> n2
+
+        public Edge(WarpNode n1, WarpNode n2)
+        {
+            this.n1 = new(n1, new());
+            this.n2 = new(n2, new());
+        }
+
+        public Edge(Node n1, Node n2, Cond cn1, Cond cn2)
+        {
+            this.n1 = n1;
+            this.n2 = n2;
+            this.cn1 = cn1;
+            this.cn2 = cn2;
+        }
+    }
+
+    [DebuggerDisplay("{node}({cond})")]
+    public struct CondNode(Node node, Cond cond)
+    {
+        public Node node = node;
+        public Cond cond = cond;
     }
 }

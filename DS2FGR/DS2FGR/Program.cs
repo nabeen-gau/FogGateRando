@@ -1,6 +1,7 @@
 ﻿using FogWallNS;
 using SoulsFormats;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Numerics;
 using System.Text;
 using static SoulsFormats.PARAM;
@@ -595,7 +596,7 @@ fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
     //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
     //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
     new FogWall(WarpNode.MajulaToForestOfFallenGiantsFront, "o00_0501_0100", pvp: true),
-    new FogWall(WarpNode.MajulaToGraveOfSaintsFront, "o00_0501_0101", pvp: true), // y_offset = 43.455 - 42.057
+    new FogWall(WarpNode.MajulaToGraveOfSaintsFront, "o00_0501_0101", pvp: true, reverse: true), // y_offset = 43.455 - 42.057
     new FogWall(WarpNode.MajulaToHuntsmanCopseFront, "o00_0501_0102", pvp: true), // y_offset = 1.390f - 0.413f
     new FogWall(WarpNode.MajulaToRotundaLockstoneFront, "o00_0501_0103", pvp: true),
     new FogWall(WarpNode.MajulaToGutterFront, "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
@@ -637,9 +638,9 @@ fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> 
     new FogWall(WarpNode.RuinSentinelsHiddenDoor2ExitFront, "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
     new FogWall(WarpNode.RuinSentinelsHiddenDoor3ExitFront, "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
     new FogWall(WarpNode.RuinSentinelsHiddenDoor4ExitFront, "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
-    new FogWall(WarpNode.RuinSentinesUpperExitFront, "o00_0500_0011", reverse: true), 
-    new FogWall(WarpNode.LostBastilleToShipFromWharfFront, "o00_0500_0012", pvp: true),
-    new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true), // TODO: cannot access when lockstone is not used but can be used from the other side
+    new FogWall(WarpNode.RuinSentinesUpperExitBack, "o00_0500_0011", reverse: true), 
+    new FogWall(WarpNode.LostBastilleToShipFromWharfFront, "o00_0500_0012", pvp: true, reverse: true),
+    new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true, reverse: true), // TODO: cannot access when lockstone is not used but can be used from the other side
     new FogWall(WarpNode.RuinSentinelsEntryFront, "o00_0501_0000", boss_name: BossName.RuinSentinels, back_blocked: true),
     new FogWall(WarpNode.LostSinnerEntryFront, "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
     new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003", boss_name: BossName.TheLostSinner, boss_exit: true, cutscene: true),
@@ -668,14 +669,14 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
     new FogWall(WarpNode.SmeltorDemonToBonfireFront, "o00_0500_0008", pvp: true),
     new FogWall(WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, "o00_0500_0010", pvp: true, front_blocked: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
 //    new FogWall("IK_belfry_entry", "o00_0500_0011"), // duplicate of another maybe for pvp
-    new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true),
+    new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true, reverse: true),
 };
 fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
     new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords, use_second_death_check_impl: true),
     new FogWall(WarpNode.ChariotEntryFront, "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
     new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
     new FogWall(WarpNode.ChariotExitFront, "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true),
+    new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true, reverse: true),
 };
 fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
     new FogWall(WarpNode.GutterNearAntQueenFront, "o00_0500_0000"),
@@ -685,7 +686,7 @@ fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
     new FogWall(WarpNode.TheRottenEntryFront, "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
 };
 fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
-    new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0000"),
+    new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0000", reverse: true),
     new FogWall(WarpNode.AncientDragonFront, "o00_0502_0000", boss_name: BossName.AncientDragon), // TODO: hostile determination
 };
 fog_wall_dict[map_names[MapName.MajulaShadedWoods]] = new List<FogWall> {
@@ -701,7 +702,7 @@ fog_wall_dict[map_names[MapName.HeidesTowerofFlame]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
     new FogWall(WarpNode.ScorpionessNajkaExitFront, "o00_0500_0000", boss_name: BossName.ScorpionessNajka, boss_exit: true),
-    new FogWall(WarpNode.ShadedWoodsToMistyAreaFront, "o00_0501_0001", pvp: true),
+    new FogWall(WarpNode.ShadedWoodsToMistyAreaFront, "o00_0501_0001", pvp: true, reverse: true),
     new FogWall(WarpNode.ScorpionessNajkaEntryFront, "o00_0503_0000", boss_name: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
 };
 fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
@@ -736,7 +737,7 @@ fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall
     new FogWall(WarpNode.LookingGlassKnightExitFront, "o00_0501_0005", boss_name: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
     new FogWall(WarpNode.FinalFightArenaFront, "o00_0501_0006", boss_name: BossName.ThroneWatcherAndDefender, cutscene: true),
     new FogWall(WarpNode.DrangleicCastleToChasmPortalFront, "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
-    new FogWall(WarpNode.DrangleicCastleToShadedWoodsFront, "o00_0504_0000", pvp: true),
+    new FogWall(WarpNode.DrangleicCastleToShadedWoodsFront, "o00_0504_0000", pvp: true, reverse: true),
 };
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
 fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
@@ -1682,7 +1683,9 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 // TODO: add prevention for connection gates that dont lead to any where
 // Example the final fight arena connected to outside the exit of rat authority fight
 
-Random rand = new Random(83754);
+//Random rand = new Random();
+Random rand = new Random(9842);
+//Random rand = new Random(83754);
 //Random rand = new Random(247);
 
 // by default weight will be 1 for full random
@@ -2195,6 +2198,14 @@ void swap_warp_ex(Warp w1, Warp w2)
     Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
 }
 
+void swap_warp_ex2(Edge w1, Edge w2)
+{
+    Console.WriteLine($"Swapping {w1} with {w2}");
+    (w2.n2, w1.n1) = (w1.n1, w2.n2);
+    (w2.cn2, w1.cn1) = (w1.cn1, w2.cn2);
+}
+
+
 Dictionary<WarpNode, List<WarpNode>> tree = new();
 void add_edge(WarpNode n1, WarpNode n2)
 {
@@ -2376,158 +2387,80 @@ List<Cond> get_node_items(WarpNode node)
     return items;
 }
 
-bool inventory_has_key(List<WarpNode> visited_ids, Inventory inventory, Cond key)
+List<CondNode> get_neighbors(Node node, List<Edge> all_edges)
 {
-    bool ret = true;
-    if (key == Cond.FirstFourSouls)
+    List<CondNode> neighbors = new();
+    foreach (var edge in all_edges)
     {
-        foreach(var item in GateConnections.key_reqs)
-        {
-            if (item.cond == key)
-            {
-                foreach (var node in item.access_nodes)
-                {
-                    ret = ret & visited_ids.Contains(node);
-                }
-            }
-        }
-        return ret;
+        if (edge.n1.name == node.name)
+            neighbors.Add(
+                new(edge.n2, edge.cn2)
+            );
+        else if (edge.n2.name == node.name)
+            neighbors.Add(
+                new(edge.n1, edge.cn1)
+            );
     }
-    else if (key == Cond.FragrantBranchOfYore || key == Cond.PharrosLockstone)
-    {
-        foreach (var item in inventory)
-        {
-            if (item.name == key) return item.count > 0;
-        }
-        return false;
-
-    }
-    List<Cond> prereqs = new(0);
-    foreach(var item in GateConnections.key_reqs)
-    {
-        if (item.cond == key) prereqs = item.prereqs;
-    }
-    if (prereqs.Count == 0)
-    {
-        foreach (var item in inventory)
-        {
-            if (item.name == key) return true;
-        }
-        return false;
-    }
-    foreach (var prereq in prereqs)
-    {
-        ret = ret & inventory_has_key(visited_ids, inventory, prereq);
-    }
-    return ret;
+    return neighbors;
 }
 
-List<WarpNode> run_bfs(WarpNode start_node, List<Cond> required_keys)
+bool blocked_edges_contain(List<CondNode> blocked_edges, CondNode node)
+{
+    foreach (var be in blocked_edges)
+    {
+        if (be.node.name == node.node.name && be.cond == node.cond)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+List<Node> run_bfs(Node start_node, List<Edge> all_edges)
 {
     Inventory inventory = new();
-    List<WarpNode> queue = new() { start_node};
-    List<WarpNode> visited_ids = new() { start_node};
-    List<Connection> blocked_edges = new();
+    Queue<Node> queue = new();
+    queue.Enqueue(start_node);
+    HashSet<Node> visited_ids = [start_node];
+    List<CondNode> blocked_edges = [];
     while (queue.Count > 0)
     {
-        var current_node = queue[0];
-        queue.RemoveAt(0);
-        List<Cond> node_key_items = get_node_items(current_node);
-        foreach (var key_item in node_key_items)
+        var current_node = queue.Dequeue();
+        inventory.Update(current_node);
+        List<CondNode> still_blocked = [];
+        foreach (var be in blocked_edges)
         {
-            inventory.Add(key_item);
-        }
-        List<Connection> still_blocked = new();
-        foreach (var edge in blocked_edges)
-        {
-            //if (edge.condition_n1 == key_item)
-            if (inventory_has_key(visited_ids, inventory, edge.condition_n1))
+            if (inventory.HasKey(visited_ids, be.cond))
             {
-                if (visited_ids.Contains(edge.n2) && !visited_ids.Contains(edge.n1))
-                {
-                    if (visited_ids.Contains(edge.n1)) continue;
-                    if (KeyInfo.consumable_keys.Contains(edge.condition_n1)) 
-                        inventory.Use(edge.condition_n1);
-                    if (boss_nodes.Contains(edge.n1)) inventory.Add(Cond.BossKilled);
-                    visited_ids.Add(edge.n1);
-                    queue.Add(edge.n1);
-                }
-            }
-            //else if (edge.condition_n2 == key_item)
-            else if (inventory_has_key(visited_ids, inventory, edge.condition_n2))
-            {
-                if (visited_ids.Contains(edge.n1) && !visited_ids.Contains(edge.n2))
-                {
-                    if (visited_ids.Contains(edge.n2)) continue;
-                    if (KeyInfo.consumable_keys.Contains(edge.condition_n2)) 
-                        inventory.Use(edge.condition_n2);
-                    if (boss_nodes.Contains(edge.n2)) inventory.Add(Cond.BossKilled);
-                    visited_ids.Add(edge.n2);
-                    queue.Add(edge.n2);
-                }
+                inventory.Use(be.cond);
+                if (visited_ids.Contains(be.node)) continue;
+                queue.Enqueue(be.node);
+                visited_ids.Add(be.node);
             }
             else
             {
-                if (visited_ids.Contains(edge.n1) && visited_ids.Contains(edge.n2)) continue;
-                still_blocked.Add(edge);
+                still_blocked.Add(be);
             }
         }
         blocked_edges = still_blocked;
-
-        var valid_outgoing_edges = get_outgoing_edges(current_node);
-        foreach (var (edge, neighbour) in valid_outgoing_edges)
+        var neighbors = get_neighbors(current_node, all_edges);
+        foreach (var neighbor in neighbors)
         {
-            if (neighbour == WarpNode.Lone) continue;
-            if (visited_ids.Contains(neighbour)) continue;
-            if (edge.n1 == neighbour)
+            if (neighbor.cond == Cond.OneWay) continue;
+            if (visited_ids.Contains(neighbor.node)) continue;
+            if (neighbor.cond != Cond.None && !inventory.HasKey(visited_ids, neighbor.cond))
             {
-                bool has_key = inventory_has_key(visited_ids, inventory, edge.condition_n1);
-                if (edge.condition_n1 != Cond.None && !has_key)
-                    //&& !inventory.Contains(edge.condition_n1))
+                if (!blocked_edges_contain(blocked_edges, neighbor))
                 {
-                    blocked_edges.Add(edge);
+                    blocked_edges.Add(neighbor);
                 }
-                else
-                {
-                    if (has_key && KeyInfo.consumable_keys.Contains(edge.condition_n1))
-                        inventory.Use(edge.condition_n1);
-                    visited_ids.Add(neighbour);
-                    if (boss_nodes.Contains(neighbour)) inventory.Add(Cond.BossKilled);
-                    queue.Add(neighbour);
-                }
+                continue;
             }
-            else
-            {
-                bool has_key = inventory_has_key(visited_ids, inventory, edge.condition_n2);
-                if (edge.condition_n2 != Cond.None && !has_key)
-                    //&& !inventory.Contains(edge.condition_n2))
-                {
-                    blocked_edges.Add(edge);
-                }
-                else
-                {
-                    if (has_key && KeyInfo.consumable_keys.Contains(edge.condition_n2))
-                        inventory.Use(edge.condition_n2);
-                    visited_ids.Add(neighbour);
-                    if (boss_nodes.Contains(neighbour)) inventory.Add(Cond.BossKilled);
-                    queue.Add(neighbour);
-                }
-
-            }
+            queue.Enqueue(neighbor.node);
+            visited_ids.Add(neighbor.node);
         }
     }
-    foreach (var edge in blocked_edges)
-    {
-        var cond = edge.condition_n1;
-        if (cond != Cond.None 
-            && cond != Cond.OneWay
-            && !required_keys.Contains(cond)) required_keys.Add(cond);
-        cond = edge.condition_n2;
-        if (cond != Cond.None 
-            && cond != Cond.OneWay
-            && !required_keys.Contains(cond)) required_keys.Add(cond);
-    }
-    return visited_ids;
+    return visited_ids.ToList();
 }
 
 Warp find_warp_edge_in(List<WarpNode> reachable_nodes_set)
@@ -2559,35 +2492,49 @@ Warp find_warp_edge_in_island(List<WarpNode> unreachable_nodes_set)
 
 }
 
-List<WarpNode> get_unreachable_ids(List<WarpNode> visited_ids)
+List<Node> get_unreachable_ids(List<Node> visited_ids_node)
 {
-    List<WarpNode> unreachable_ids = new();
+    var visited_ids = visited_ids_node.Select(x => x.name).ToList();
+    List<Node> unreachable_ids = new();
     foreach (var wi in warp_infos)
     {
         if (visited_ids.Contains(wi.fog_wall_name)) continue;
-        unreachable_ids.Add(wi.fog_wall_name);
+        unreachable_ids.Add(node_from_name(wi.fog_wall_name));
     }
     foreach (var warp in has_predefined_warp)
     {
         if (visited_ids.Contains(warp)) continue;
-        unreachable_ids.Add(warp);
+        unreachable_ids.Add(node_from_name(warp));
     }
     return unreachable_ids;
 }
 
-Warp find_valid_warp(List<WarpNode> node_set, List<Warp> ignore_set)
+Edge find_valid_warp(List<Edge> warp_edges, List<Node> node_set, List<Node> ignore_set)
 {
-    List<Warp> candidates = new();
-    foreach (var edge in selectedPairs)
+    List<Edge> candidates = new();
+    foreach (var edge in warp_edges)
     {
-        if (ignore_set.Contains(edge)) continue;
-        if (node_set.Contains(edge.from.fog_wall_name) && node_set.Contains(edge.to.fog_wall_name))
-        {
-            if (has_predefined_warp.Contains(edge.from.fog_wall_name)) continue;
-            candidates.Add(edge);
-        }
+        if (ignore_set.Contains(edge.n1)) continue;
+        if (ignore_set.Contains(edge.n2)) continue;
+        if (has_predefined_warp.Contains(edge.n1.name) 
+            || has_predefined_warp.Contains(edge.n2.name)) continue;
+        if (node_set.Contains(edge.n1) && node_set.Contains(edge.n2)) candidates.Add(edge);
     }
-    Debug.Assert(candidates.Count > 0);
+    Console.WriteLine($"Found {candidates.Count} candidates that can be swapped.");
+    return candidates[rand.Next(candidates.Count)];
+}
+
+Edge find_valid_unreachable_warp(List<Edge> warp_edges, List<Node> node_set, List<Node> ignore_set)
+{
+    List<Edge> candidates = new();
+    foreach (var edge in warp_edges)
+    {
+        if (ignore_set.Contains(edge.n1)) continue;
+        if (ignore_set.Contains(edge.n2)) continue;
+        if (has_predefined_warp.Contains(edge.n1.name) 
+            || has_predefined_warp.Contains(edge.n2.name)) continue;
+        if (node_set.Contains(edge.n1) || node_set.Contains(edge.n2)) candidates.Add(edge);
+    }
     return candidates[rand.Next(candidates.Count)];
 }
 
@@ -2608,21 +2555,62 @@ Warp find_valid_warp_ex(WarpNode node, List<WarpNode> node_set, List<Warp> ignor
     return candidates[rand.Next(candidates.Count)];
 }
 
-List<Warp> cooldown_edges = new();
+List<Node> cooldown_edges = new();
+List<WarpNode> all_warp_nodes = warp_infos
+    .Select(x => x.fog_wall_name)
+    .Distinct()
+    .Concat(has_predefined_warp)
+    .ToList();
+List<Node> all_nodes = new(all_warp_nodes.Count + 1);
+all_nodes.Add(new(WarpNode.Lone, new()));
+foreach (var node in all_warp_nodes)
+{
+    var keys = get_node_items(node);
+    all_nodes.Add(
+        new(node, keys)
+    );
+}
+Node node_from_name(WarpNode name)
+{
+    foreach (var node in all_nodes)
+    {
+        if (node.name == name) return node;
+    }
+    throw new Exception($"Invalid node name {name}");
+}
+List<Edge> all_edges = new();
+List<Edge> warp_edges = new();
+foreach (var edge in selectedPairs)
+{
+    var new_edge = new Edge(
+        node_from_name(edge.from.fog_wall_name),
+        node_from_name(edge.to.fog_wall_name),
+        cn1: edge.cond,
+        cn2: edge.cond
+    );
+    all_edges.Add(new_edge);
+    warp_edges.Add(new_edge);
+}
+foreach (var edge in GateConnections.items)
+{
+    all_edges.Add(new Edge(
+        node_from_name(edge.n1),
+        node_from_name(edge.n2), 
+        cn1: edge.condition_n1,
+        cn2: edge.condition_n2
+    ));
+}
+var start_node = node_from_name(WarpNode.GameStartSpawnSrc);
+List<Node> reachable_nodes = [];
+List<Node> ignore_set = [];
 while (true)
 {
-    List<Cond> required_keys = new();
-    var reachable_nodes = run_bfs(WarpNode.GameStartSpawnSrc, required_keys);
-    var unreachable_nodes = get_unreachable_ids(reachable_nodes);
-    if (unreachable_nodes.Count == 0)
-    {
-        break;
-    }
-    var warp_main = find_valid_warp(reachable_nodes, cooldown_edges);
-    var warp_island = find_valid_warp(unreachable_nodes, cooldown_edges);
-    swap_warp_ex(warp_main, warp_island);
-    cooldown_edges.Add(warp_main);
-    cooldown_edges.Add(warp_island);
+    reachable_nodes = run_bfs(start_node, all_edges);
+    if (reachable_nodes.Count == all_nodes.Count) break;
+    var unreachable_nodes = all_nodes.Except(reachable_nodes).ToList();
+    var main_candidate = find_valid_warp(warp_edges, reachable_nodes, ignore_set);
+    var unre_candidate = find_valid_unreachable_warp(warp_edges, unreachable_nodes, ignore_set);
+    swap_warp_ex2(main_candidate, unre_candidate);
 }
 
 add_edge(WarpNode.GameStartSpawnSrc, WarpNode.GameStartSpawnDst);
@@ -2644,6 +2632,16 @@ TreeNode.PrintTree(travel_tree, sb);
 write_string_to_file(sb.ToString(), "./log.txt");
 
 //List<Warp> new_warps = WarpScrambler.Scramble(warps);
+selectedPairs.Clear();
+foreach (var edge in warp_edges)
+{
+    if (has_predefined_warp.Contains(edge.n1.name)) continue;
+    selectedPairs.Add(new(
+        get_warp_info_from_name(edge.n1.name),
+        get_warp_info_from_name(edge.n2.name),
+        cond: edge.cn2
+    ));
+}
 foreach (var warp in selectedPairs)
 {
     if (has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
@@ -2677,3 +2675,4 @@ run_external_command(esdtool_path, arguments);
 // 6. if ivory king dies, the dlc3 wont be unfrozen before speaking with alsanna
 // 7. add conditional warp for pirate ship
 // 8. darklurker fight begins from outside the foggate
+// 9. old iron king fight is also scuffed.

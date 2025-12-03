@@ -105,7 +105,7 @@ namespace FogWallNS
         MajulaToGutterBack,
         MajulaToShadedWoodsBack,
         // Forest of the fallen giants
-        LastGiantFront,
+        LastGiantEntryFront,
         PursuerEntryFront,
         PursuerExitFront,
         ForestOfFallenGiantsBalconyFront,
@@ -113,7 +113,7 @@ namespace FogWallNS
         ForestOfFallenGiantsAfterFirstBonfireFront,
         ForestOfFallenGiantsFromMajulaFront,
         ForestOfFallenGiantsToPursuerArenaFront,
-        LastGiantBack,
+        LastGiantEntryBack,
         PursuerEntryBack,
         PursuerExitBack,
         ForestOfFallenGiantsBalconyBack,
@@ -144,10 +144,10 @@ namespace FogWallNS
         GargoylesExitFront,
         RuinSentinelsEntryFront,
         RuinSentinelsExitFront,
-        RuinSentinelsHiddenDoor1Front,
-        RuinSentinelsHiddenDoor2Front,
-        RuinSentinelsHiddenDoor3Front,
-        RuinSentinelsHiddenDoor4Front,
+        RuinSentinelsHiddenDoor1ExitFront,
+        RuinSentinelsHiddenDoor2ExitFront,
+        RuinSentinelsHiddenDoor3ExitFront,
+        RuinSentinelsHiddenDoor4ExitFront,
         RuinSentinesUpperExitFront,
         LostBastilleToSinnersRiseFront,
         LostBastilleToShipFromWharfFront,
@@ -158,10 +158,10 @@ namespace FogWallNS
         GargoylesExitBack,
         RuinSentinelsEntryBack,
         RuinSentinelsExitBack,
-        RuinSentinelsHiddenDoor1Back,
-        RuinSentinelsHiddenDoor2Back,
-        RuinSentinelsHiddenDoor3Back,
-        RuinSentinelsHiddenDoor4Back,
+        RuinSentinelsHiddenDoor1ExitBack,
+        RuinSentinelsHiddenDoor2ExitBack,
+        RuinSentinelsHiddenDoor3ExitBack,
+        RuinSentinelsHiddenDoor4ExitBack,
         RuinSentinesUpperExitBack,
         LostBastilleToSinnersRiseBack,
         LostBastilleToShipFromWharfBack,
@@ -329,8 +329,8 @@ namespace FogWallNS
         DarkChasmFromShadedWoodsExitBack,
         DarkLurkerExitBack,
         // Shulva sanctum city
-        SihnTheSlumberingDragonFront,
-        ElanaTheSqualidQueenFront,
+        SihnTheSlumberingDragonEntryFront,
+        ElanaTheSqualidQueenEntryFront,
         GankSquadBossEntryFront,
         GankSquadBossExitFront,
         ShulvaToGankFight1Front,
@@ -338,8 +338,8 @@ namespace FogWallNS
         BetweenElanaAndSihnFront,
         NearJesterThomasFront,
         ShulvaEntranceFront,
-        SihnTheSlumberingDragonBack,
-        ElanaTheSqualidQueenBack,
+        SihnTheSlumberingDragonEntryBack,
+        ElanaTheSqualidQueenEntryBack,
         GankSquadBossEntryBack,
         GankSquadBossExitBack,
         ShulvaToGankFight1Back,
@@ -469,6 +469,7 @@ namespace FogWallNS
         IronKeyToFireLizards,
         DragonStone,
         BossKilled,
+        LudAndZallenDead,
     }
 
     [DebuggerDisplay("{n1} <-> {n2}")]
@@ -572,17 +573,27 @@ namespace FogWallNS
         }
     }
 
+    public static class KeyInfo
+    {
+        public static IReadOnlyList<Cond> consumable_keys = new List<Cond>() 
+        { 
+            Cond.FragrantBranchOfYore,
+            Cond.PharrosLockstone
+        };
+    }
+
     public static class GateConnections
     {
         public static IReadOnlyList<Connection> items { get; } = new List<Connection> {
             // start connections
             new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial1EntryFront, n1:Cond.OneWay),
             new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial2EntryFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial3EntryFront, n1:Cond.OneWay, n2: Cond.FragrantBranchOfYore),
             new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToForestOfFallenGiantsFront, n1:Cond.OneWay),
             new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToShadedWoodsFront, n1:Cond.OneWay),
-            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGraveOfSaintsFront, n1:Cond.OneWay),
-            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGutterFront, n1:Cond.OneWay),
-            new(WarpNode.GameStartSpawnDst, WarpNode.Tutorial3EntryFront, n1:Cond.OneWay),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGraveOfSaintsFront, n1:Cond.OneWay, n2: Cond.Catring),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToGutterFront, n1:Cond.OneWay, n2: Cond.Catring),
+            new(WarpNode.GameStartSpawnDst, WarpNode.MajulaToRotundaLockstoneFront, n1:Cond.OneWay),
 
             // things betwixt
             new(WarpNode.Tutorial1EntryFront, WarpNode.Tutorial2EntryFront),
@@ -667,13 +678,13 @@ namespace FogWallNS
             new(WarpNode.GiantLordMemoryExitDst, WarpNode.GiantLordMemoryEntrySrc, n1: Cond.OneWay),
 
             new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.ForestOfFallenGiantsBalconyBack, n2: Cond.OneWay),
-            new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.LastGiantFront, n2: Cond.OneWay),
+            new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.LastGiantEntryFront, n2: Cond.OneWay),
             new(WarpNode.ForestOfFallenGiantsToCaleFront, WarpNode.GiantLordMemoryEntrySrc, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
 
-            new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.LastGiantFront),
+            new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.LastGiantEntryFront),
             new(WarpNode.ForestOfFallenGiantsBalconyBack, WarpNode.GiantLordMemoryEntrySrc, n1: Cond.OneWay, n2: Cond.AshenMistHeartSoldiersKeyKingsRing),
 
-            new(WarpNode.LastGiantBack, WarpNode.Lone),
+            new(WarpNode.LastGiantEntryBack, WarpNode.Lone),
 
             new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.ForestOfFallenGiantsBalconyFront),
             new(WarpNode.ForestOfFallenGiantsToCaleBack, WarpNode.ForestOfFallenGiantsToPursuerArenaFront, n1: Cond.OneWay, n2: Cond.SoldiersKey),
@@ -725,41 +736,41 @@ namespace FogWallNS
             new(WarpNode.LostSinnerEntryBack, WarpNode.LostSinnerExitFront, n1: Cond.OneWay),
             new(WarpNode.LostSinnerExitBack, WarpNode.Lone),
 
-            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor1Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor2Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor3Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor4Front, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor1ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor2ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor3ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsHiddenDoor4ExitFront, n1: Cond.OneWay),
             new(WarpNode.RuinSentinelsEntryBack, WarpNode.RuinSentinelsExitFront, n1: Cond.OneWay),
 
-            new(WarpNode.RuinSentinelsHiddenDoor1Front, WarpNode.RuinSentinelsHiddenDoor2Front),
-            new(WarpNode.RuinSentinelsHiddenDoor1Front, WarpNode.RuinSentinelsHiddenDoor3Front),
-            new(WarpNode.RuinSentinelsHiddenDoor1Front, WarpNode.RuinSentinelsHiddenDoor4Front),
-            new(WarpNode.RuinSentinelsHiddenDoor1Front, WarpNode.RuinSentinelsExitFront),
-            new(WarpNode.RuinSentinelsHiddenDoor1Front, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitFront, WarpNode.RuinSentinelsHiddenDoor2ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitFront, WarpNode.RuinSentinelsHiddenDoor3ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitFront, WarpNode.RuinSentinelsHiddenDoor4ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitFront, WarpNode.RuinSentinelsExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitFront, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.RuinSentinelsHiddenDoor2Front, WarpNode.RuinSentinelsHiddenDoor3Front),
-            new(WarpNode.RuinSentinelsHiddenDoor2Front, WarpNode.RuinSentinelsHiddenDoor4Front),
-            new(WarpNode.RuinSentinelsHiddenDoor2Front, WarpNode.RuinSentinelsExitFront),
-            new(WarpNode.RuinSentinelsHiddenDoor2Front, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
+            new(WarpNode.RuinSentinelsHiddenDoor2ExitFront, WarpNode.RuinSentinelsHiddenDoor3ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor2ExitFront, WarpNode.RuinSentinelsHiddenDoor4ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor2ExitFront, WarpNode.RuinSentinelsExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor2ExitFront, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.RuinSentinelsHiddenDoor3Front, WarpNode.RuinSentinelsHiddenDoor4Front),
-            new(WarpNode.RuinSentinelsHiddenDoor3Front, WarpNode.RuinSentinelsExitFront),
-            new(WarpNode.RuinSentinelsHiddenDoor3Front, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
+            new(WarpNode.RuinSentinelsHiddenDoor3ExitFront, WarpNode.RuinSentinelsHiddenDoor4ExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor3ExitFront, WarpNode.RuinSentinelsExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor3ExitFront, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.RuinSentinelsHiddenDoor4Front, WarpNode.RuinSentinelsExitFront),
-            new(WarpNode.RuinSentinelsHiddenDoor4Front, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
+            new(WarpNode.RuinSentinelsHiddenDoor4ExitFront, WarpNode.RuinSentinelsExitFront),
+            new(WarpNode.RuinSentinelsHiddenDoor4ExitFront, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
 
             new(WarpNode.RuinSentinelsExitFront, WarpNode.RuinSentinelsExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.RuinSentinelsHiddenDoor1Back, WarpNode.Lone),
-            new(WarpNode.RuinSentinelsHiddenDoor2Back, WarpNode.Lone),
-            new(WarpNode.RuinSentinelsHiddenDoor3Back, WarpNode.Lone),
-            new(WarpNode.RuinSentinelsHiddenDoor4Back, WarpNode.Lone),
+            new(WarpNode.RuinSentinelsHiddenDoor1ExitBack, WarpNode.Lone),
+            new(WarpNode.RuinSentinelsHiddenDoor2ExitBack, WarpNode.Lone),
+            new(WarpNode.RuinSentinelsHiddenDoor3ExitBack, WarpNode.Lone),
+            new(WarpNode.RuinSentinelsHiddenDoor4ExitBack, WarpNode.Lone),
 
-            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor1Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor2Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor3Front, n1: Cond.OneWay),
-            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor4Front, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor1ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor2ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor3ExitFront, n1: Cond.OneWay),
+            new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsHiddenDoor4ExitFront, n1: Cond.OneWay),
             new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsExitFront, n1: Cond.OneWay),
             new(WarpNode.RuinSentinesUpperExitFront, WarpNode.RuinSentinelsExitBack),
 
@@ -914,11 +925,11 @@ namespace FogWallNS
             new(WarpNode.ShulvaEntranceBack, WarpNode.ShulvaToGankFight1Front, n1: Cond.OneWay, n2: Cond.ShulvaSanctumKey),
 
             new(WarpNode.NearJesterThomasBack, WarpNode.ShulvaEntranceBack, n1: Cond.OneWay),
-            new(WarpNode.NearJesterThomasBack, WarpNode.ElanaTheSqualidQueenFront, n1: Cond.OneWay, n2: Cond.ActivateDragonStone),
+            new(WarpNode.NearJesterThomasBack, WarpNode.ElanaTheSqualidQueenEntryFront, n1: Cond.OneWay, n2: Cond.ActivateDragonStone),
 
-            new(WarpNode.ElanaTheSqualidQueenBack, WarpNode.BetweenElanaAndSihnFront, n1: Cond.OneWay),
-            new(WarpNode.BetweenElanaAndSihnBack, WarpNode.SihnTheSlumberingDragonFront),
-            new(WarpNode.SihnTheSlumberingDragonBack, WarpNode.Lone),
+            new(WarpNode.ElanaTheSqualidQueenEntryBack, WarpNode.BetweenElanaAndSihnFront, n1: Cond.OneWay),
+            new(WarpNode.BetweenElanaAndSihnBack, WarpNode.SihnTheSlumberingDragonEntryFront),
+            new(WarpNode.SihnTheSlumberingDragonEntryBack, WarpNode.Lone),
 
             new(WarpNode.ShulvaToGankFight1Back, WarpNode.ShulvaToGankFight2Front),
             new(WarpNode.ShulvaToGankFight2Back, WarpNode.GankSquadBossEntryFront, n1: Cond.OneWay),
@@ -1066,6 +1077,8 @@ namespace FogWallNS
         };
 
         public static IReadOnlyList<KeyCond> key_reqs { get; } = new List<KeyCond> {
+            // catring
+            //new(Cond.Catring, WarpNode.GameStartSpawnDst), // just farm the souls
             // fragrant branches locations
             new(Cond.FragrantBranchOfYore, WarpNode.LostSinnerExitBack), // in the chest
             new(Cond.FragrantBranchOfYore, WarpNode.SkeletonLordsExitBack), // near gavlan
@@ -1081,7 +1094,7 @@ namespace FogWallNS
 
             new(Cond.RotundaLockstone, WarpNode.DragonriderExitBack), // licia
 
-            new(Cond.SoldiersKey, WarpNode.LastGiantBack),
+            new(Cond.SoldiersKey, WarpNode.LastGiantEntryBack),
             new(Cond.KingsRing, WarpNode.VendrickBack),
             new(Cond.KingsRingFragrantBranch, Cond.KingsRing, Cond.FragrantBranchOfYore),
             new(Cond.FirstFourSouls, new List<WarpNode>(){
@@ -1132,7 +1145,7 @@ namespace FogWallNS
             new(Cond.ForgottenKey, WarpNode.TheRottenEntryFront),
             new(Cond.IronKeyToFireLizards, WarpNode.SmeltorDemonEntryFront),
             new(Cond.DLC1Key, Cond.ForgottenKey, Cond.Catring),
-            new(Cond.DLC2Key, Cond.IronKeyToFireLizards, WarpNode.LastGiantFront), // has two conds
+            new(Cond.DLC2Key, Cond.IronKeyToFireLizards, WarpNode.LastGiantEntryFront), // has two conds
             new(Cond.DLC2Key, Cond.Catring, WarpNode.ForestOfFallenGiantsToCaleFront), // has two conds
             new(Cond.DLC3Key, WarpNode.TwinDragonridersEntryFront),
             new(Cond.ShulvaSanctumKey, WarpNode.ShulvaEntranceBack),
@@ -1141,6 +1154,8 @@ namespace FogWallNS
             new(Cond.DLC3Unfreezed, WarpNode.EleumLoyceCathedraEntranceBack, WarpNode.IvoryKingFightEndDst),
             new(Cond.FrigidOutskirtsKey, Cond.DLC3Unfreezed, WarpNode.AavaTheKingsPetEntryFront),
             new(Cond.ShipBellRang, WarpNode.NoMansWharfToHeidesBack),
+            // for frigid outskits exit warp
+            new(Cond.LudAndZallenDead, WarpNode.LudAndZallenEntryBack),
         };
 
         public static IReadOnlyList<WarpNode> cannot_warp_from = new List<WarpNode>
@@ -1185,6 +1200,14 @@ namespace FogWallNS
         {
             WarpNode.FinalFightArenaBack,
             WarpNode.GiantLordEntryBack,
+        };
+
+        public static IReadOnlyList<WarpNode> pirate_ship_nodes = new List<WarpNode>() 
+        { 
+            WarpNode.FlexileSentryEntryFront,
+            WarpNode.FlexileSentryEntryBack,
+            WarpNode.FlexileSentryExitFront,
+            WarpNode.FlexileSentryExitBack,
         };
     }
 
@@ -1334,6 +1357,62 @@ namespace FogWallNS
                 if (c.to == child) return true;
             }
             return false;
+        }
+    }
+
+
+    [DebuggerDisplay("{name}({count})")]
+    public class InventoryItem
+    {
+        public Cond name;
+        public int count;
+
+        public InventoryItem(Cond name)
+        {
+            this.name = name;
+            count = 1;
+        }
+    }
+
+    public class Inventory: List<InventoryItem>
+    {
+        public bool Contains(Cond name)
+        {
+            foreach (var i in this)
+            {
+                if (i.name == name) return true;
+            }
+            return false;
+        }
+
+        public void Add(Cond name)
+        {
+            for (int i=0; i<this.Count; i++)
+            {
+                if (this[i].name == name)
+                {
+                    this[i].count++;
+                    return;
+                }
+            }
+            this.Add(new InventoryItem(name));
+        }
+
+        public int IndexOf(Cond name)
+        {
+            for (int i=0; i<this.Count; i++)
+            {
+                if (this[i].name == name) return i;
+            }
+            throw new ArgumentOutOfRangeException();
+        }
+
+        public void Use(Cond name)
+        {
+            Debug.Assert(this.Contains(name));
+            int idx = this.IndexOf(name);
+            Debug.Assert(this[idx].count > 0);
+            this[idx].count -= 1;
         }
     }
 }

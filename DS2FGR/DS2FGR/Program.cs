@@ -605,7 +605,7 @@ fog_wall_dict[map_names[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f -
 fog_wall_dict[map_names[MapName.Majula]][2].offset = new Vector3(0.0f,  1.390f -  0.413f, 0.0f);
 fog_wall_dict[map_names[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
 fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall(WarpNode.LastGiantFront, "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
+    new FogWall(WarpNode.LastGiantEntryFront, "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
     new FogWall(WarpNode.PursuerEntryFront, "o00_0501_0003", boss_name: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
     new FogWall(WarpNode.PursuerExitFront, "o00_0500_0004", boss_name: BossName.ThePursuer, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.ForestOfFallenGiantsBalconyFront, "o00_0500_0000"),
@@ -633,10 +633,10 @@ fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> 
     new FogWall(WarpNode.LostBastilleToSinnersRiseFront, "o00_0500_0005"),
     new FogWall(WarpNode.GargoylesExitFront, "o00_0500_0006", boss_name: BossName.BelfryGargoyles, boss_exit: true),
     // TODO: add boss fight triggers near hidden fog gates
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor1Front, "o00_0500_0007", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor2Front, "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor3Front, "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor4Front, "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
+    new FogWall(WarpNode.RuinSentinelsHiddenDoor1ExitFront, "o00_0500_0007", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall(WarpNode.RuinSentinelsHiddenDoor2ExitFront, "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall(WarpNode.RuinSentinelsHiddenDoor3ExitFront, "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+    new FogWall(WarpNode.RuinSentinelsHiddenDoor4ExitFront, "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
     new FogWall(WarpNode.RuinSentinesUpperExitFront, "o00_0500_0011", reverse: true), 
     new FogWall(WarpNode.LostBastilleToShipFromWharfFront, "o00_0500_0012", pvp: true),
     new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true), // TODO: cannot access when lockstone is not used but can be used from the other side
@@ -755,8 +755,8 @@ fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
 fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
-    new FogWall(WarpNode.SihnTheSlumberingDragonFront, "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
-    new FogWall(WarpNode.ElanaTheSqualidQueenFront, "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
+    new FogWall(WarpNode.SihnTheSlumberingDragonEntryFront, "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
+    new FogWall(WarpNode.ElanaTheSqualidQueenEntryFront, "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
     new FogWall(WarpNode.GankSquadBossEntryFront, "o00_0501_0002", boss_name: BossName.Gankfight),
     new FogWall(WarpNode.GankSquadBossExitFront, "o00_0501_0003", boss_name: BossName.Gankfight, boss_exit: true),
     new FogWall(WarpNode.ShulvaToGankFight1Front, "o00_0501_0005", pvp: true),
@@ -1513,6 +1513,17 @@ foreach (var warp in warps)
     warp_infos.Add(warp.to);
 }
 
+List<WarpNode> boss_nodes = new();
+foreach (var wi in warp_infos)
+{
+    if (wi.boss.name != BossName.None 
+        && (wi.fog_wall_name.ToString().Contains("EntryBack")
+            || wi.fog_wall_name.ToString().Contains("ExitFront")))
+    {
+        boss_nodes.Add(wi.fog_wall_name);
+    }
+}
+
 List<WarpNode> has_predefined_warp = new() 
 { 
     WarpNode.GameStartSpawnSrc,
@@ -1627,7 +1638,7 @@ bool check_lone_to_lone_connection(WarpNode to)
             fail_count++;
             continue;
         }
-        var pair_dst = get_warp_pair(pair_src);
+        var (pair_dst, cond) = get_warp_pair(pair_src);
         if (starting_gates.Contains(pair_dst)) return true;
         if (pair_dst == WarpNode.Lone) continue;
         if (!check_lone_to_lone_connection(pair_dst)) fail_count++;
@@ -1671,7 +1682,7 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 // TODO: add prevention for connection gates that dont lead to any where
 // Example the final fight arena connected to outside the exit of rat authority fight
 
-Random rand = new Random();
+Random rand = new Random(83754);
 //Random rand = new Random(247);
 
 // by default weight will be 1 for full random
@@ -1711,12 +1722,14 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
-    WarpNode.LudAndZallenExitWarpSrc, WarpNode.LudAndZallenExitWarpDst
+    WarpNode.LudAndZallenExitWarpSrc, WarpNode.LudAndZallenExitWarpDst,
+    cond: Cond.LudAndZallenDead
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
-    WarpNode.IvoryKingFightEndSrc, WarpNode.IvoryKingFightEndDst
+    WarpNode.IvoryKingFightEndSrc, WarpNode.IvoryKingFightEndDst,
+    cond: Cond.DLC3Unfreezed
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1736,17 +1749,20 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.TheGutterBlackGulch, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.ChasmPortalFromBlackGulchDst
+    WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.ChasmPortalFromBlackGulchDst,
+    cond: Cond.DarkCovenentJoined
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.DrangleicCastleThroneofWant, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromCastleSrc, WarpNode.ChasmPortalFromCastleDst
+    WarpNode.ChasmPortalFromCastleSrc, WarpNode.ChasmPortalFromCastleDst,
+    cond: Cond.DarkCovenentJoined
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.ShadedWoodsShrineofWinter, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ChasmPortalFromShadedWoodsDst
+    WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ChasmPortalFromShadedWoodsDst,
+    cond: Cond.DarkCovenentJoined
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1756,22 +1772,26 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.NearPateGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntryDst
+    WarpNode.NearPateGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPursuerGiantMemoryEntryDst
+    WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPursuerGiantMemoryEntryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.GiantLordMemoryEntrySrc, WarpNode.GiantLordMemoryEntryDst
+    WarpNode.GiantLordMemoryEntrySrc, WarpNode.GiantLordMemoryEntryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
     MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
-    WarpNode.NearPateGiantMemoryExitSrc, WarpNode.NearPateGiantMemoryExitDst
+    WarpNode.NearPateGiantMemoryExitSrc, WarpNode.NearPateGiantMemoryExitDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1786,7 +1806,8 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.BrightstoneCoveTseldora, MapName.DragonMemories,
-    WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst
+    WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1796,7 +1817,8 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.BrumeTower, MapName.BrumeTower,
-    WarpNode.SirAlonneArmorDLCEntrySrc, WarpNode.SirAlonneArmorDLCEntryDst
+    WarpNode.SirAlonneArmorDLCEntrySrc, WarpNode.SirAlonneArmorDLCEntryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1826,7 +1848,8 @@ selectedPairs.Add(get_default_warp(
 
 selectedPairs.Add(get_default_warp(
     MapName.UndeadCrypt, MapName.MemoryoftheKing,
-    WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst
+    WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst,
+    cond: Cond.AshenMistHeart
 ));
 
 selectedPairs.Add(get_default_warp(
@@ -1873,9 +1896,16 @@ foreach (var segment in segments)
         {
             if (!segments_flat[i1].Contains(to.n1)) continue;
             if (to.condition_n1 == Cond.OneWay) goto Top;
+            var cond = Cond.None;
+            if (GateConnections.pirate_ship_nodes.Contains(node)
+                ||GateConnections.pirate_ship_nodes.Contains(to.n1))
+            {
+                cond = Cond.ShipBellRang;
+            }
             selectedPairs.Add(new(
                 get_warp_info_from_name(node),
-                get_warp_info_from_name(to.n1)
+                get_warp_info_from_name(to.n1),
+                cond: cond
             ));
             skip_list.Add(node);
             skip_list.Add(to.n1);
@@ -1886,9 +1916,16 @@ foreach (var segment in segments)
         {
             if (!segments_flat[i1].Contains(to.n2)) continue;
             if (to.condition_n2 == Cond.OneWay) goto Top;
+            var cond = Cond.None;
+            if (GateConnections.pirate_ship_nodes.Contains(node)
+                ||GateConnections.pirate_ship_nodes.Contains(to.n1))
+            {
+                cond = Cond.ShipBellRang;
+            }
             selectedPairs.Add(new(
                 get_warp_info_from_name(node),
-                get_warp_info_from_name(to.n2)
+                get_warp_info_from_name(to.n2),
+                cond: cond
             ));
             skip_list.Add(node);
             skip_list.Add(to.n2);
@@ -1959,9 +1996,16 @@ while (true)
     segments_flat[idx].Remove(frm_s);
     segments_flat[seg_grp_idx].Remove(to_s);
 
+    var cond = Cond.None;
+    if (GateConnections.pirate_ship_nodes.Contains(frm_s)
+        ||GateConnections.pirate_ship_nodes.Contains(to_s))
+    {
+        cond = Cond.ShipBellRang;
+    }
     selectedPairs.Add(new(
         get_warp_info_from_name(frm_s), 
-        get_warp_info_from_name(to_s)
+        get_warp_info_from_name(to_s),
+        cond: cond
     ));
 
     cur_iter = 0;
@@ -1970,13 +2014,13 @@ while (true)
     else if (selectedPairs.Count - fix_warps_count  == warp_infos.Count / 2) break;
 }
 
-Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst)
+Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst, Cond cond = Cond.None)
 {
     FogWall fw_src = new(warp_node_src, map_names[map_name_src]);
     WarpInfo warpinfo_src = new(map_names[map_name_src], -1, -1, -1, -1, fw_src);
     FogWall fw_dst = new(warp_node_dst, map_names[map_name_dst]);
     WarpInfo warpinfo_dst = new(map_names[map_name_dst], -1, -1, -1, -1, fw_dst);
-    return new Warp(warpinfo_src, warpinfo_dst);
+    return new Warp(warpinfo_src, warpinfo_dst, cond: cond);
 }
 
 List<WarpInfo> flattened_list = selectedPairs
@@ -1999,20 +2043,20 @@ var duplicates2 = flattened_list
     .ToList();
 Debug.Assert(duplicates2.Count == 0);
 
-WarpNode get_warp_pair(WarpNode pt_from)
+(WarpNode, Cond) get_warp_pair(WarpNode pt_from)
 {
     foreach (var p in selectedPairs)
     {
         if (p.from.fog_wall_name == pt_from)
         {
-            return p.to.fog_wall_name;
+            return (p.to.fog_wall_name, p.cond);
         }
         else if (p.to.fog_wall_name == pt_from)
         {
-            return p.from.fog_wall_name;
+            return (p.from.fog_wall_name, p.cond);
         }
     }
-    return WarpNode.Lone;
+    return (WarpNode.Lone, Cond.None);
 }
 List<Connection> get_segment(WarpNode point)
 {
@@ -2091,7 +2135,7 @@ T pop<T>(List<T> list, int index)
     return item;
 }
 
-void swap_warp(WarpNode n1, WarpNode n2)
+void swap_warp(WarpNode n1, WarpNode n2, List<Warp> cooldown_edges)
 {
     var i1 = get_selected_pair_idx_from_name(n1);
     var i2 = get_selected_pair_idx_from_name(n2);
@@ -2099,13 +2143,27 @@ void swap_warp(WarpNode n1, WarpNode n2)
     var w2 = selectedPairs[i2];
     Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
     selectedPairs.RemoveAt(i1);
+    var cond = Cond.None;
+    if (GateConnections.pirate_ship_nodes.Contains(w1.from.fog_wall_name)
+        ||GateConnections.pirate_ship_nodes.Contains(w2.to.fog_wall_name))
+    {
+        cond = Cond.ShipBellRang;
+    }
     selectedPairs.Insert(i1, new(
-        w1.from, w2.to
+        w1.from, w2.to, cond: cond
     ));
     selectedPairs.RemoveAt(i2);
+    cond = Cond.None;
+    if (GateConnections.pirate_ship_nodes.Contains(w2.from.fog_wall_name)
+        ||GateConnections.pirate_ship_nodes.Contains(w1.to.fog_wall_name))
+    {
+        cond = Cond.ShipBellRang;
+    }
     selectedPairs.Insert(i2, new(
-        w2.from, w1.to
+        w2.from, w1.to, cond: cond
     ));
+    cooldown_edges.Add(selectedPairs[i1]);
+    cooldown_edges.Add(selectedPairs[i2]);
     Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
 }
 
@@ -2115,12 +2173,24 @@ void swap_warp_ex(Warp w1, Warp w2)
     var i2 = selectedPairs.IndexOf(w2);
     Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
     selectedPairs.RemoveAt(i1);
+    var cond = Cond.None;
+    if (GateConnections.pirate_ship_nodes.Contains(w1.from.fog_wall_name)
+        ||GateConnections.pirate_ship_nodes.Contains(w2.to.fog_wall_name))
+    {
+        cond = Cond.ShipBellRang;
+    }
     selectedPairs.Insert(i1, new(
-        w1.from, w2.to
+        w1.from, w2.to, cond: cond
     ));
     selectedPairs.RemoveAt(i2);
+    cond = Cond.None;
+    if (GateConnections.pirate_ship_nodes.Contains(w2.from.fog_wall_name)
+        ||GateConnections.pirate_ship_nodes.Contains(w1.to.fog_wall_name))
+    {
+        cond = Cond.ShipBellRang;
+    }
     selectedPairs.Insert(i2, new(
-        w2.from, w1.to
+        w2.from, w1.to, cond: cond
     ));
     Console.WriteLine($"Swapped: {selectedPairs[i1].from.fog_wall_name} - {selectedPairs[i1].to.fog_wall_name} & {selectedPairs[i2].from.fog_wall_name} - {selectedPairs[i2].to.fog_wall_name}");
 }
@@ -2216,7 +2286,7 @@ void recursive_travel(WarpNode node)
     foreach (var child in tree[node])
     {
         if (child == WarpNode.Lone) return;
-        var warp_dst = get_warp_pair(child);
+        var (warp_dst, cond) = get_warp_pair(child);
         if (!visited_nodes.Contains(child) 
             && !has_predefined_warp.Contains(child)) visited_nodes.Add(child);
         //if (!visited_nodes.Contains(warp_dst) 
@@ -2264,10 +2334,10 @@ void copy_tree()
     }
 }
 
-List<WarpNode> get_valid_neighbours(WarpNode node)
+List<(Connection, WarpNode)> get_outgoing_edges(WarpNode node)
 {
     var seg = get_segment(node);
-    List<WarpNode> neighbours = new();
+    List<(Connection, WarpNode)> neighbours = new();
     foreach (var s in seg)
     {
         WarpNode end_node = WarpNode.Lone;
@@ -2282,30 +2352,180 @@ List<WarpNode> get_valid_neighbours(WarpNode node)
             end_node = s.n1;
         }
         else continue;
-        neighbours.Add(end_node);
+        neighbours.Add((s, end_node));
     }
-    var warp_dst = get_warp_pair(node);
-    neighbours.Add(warp_dst);
+    var (warp_dst, cond) = get_warp_pair(node);
+    Connection c = new(node, warp_dst, n1: cond, n2: cond);
+    neighbours.Add((c, warp_dst));
     return neighbours;
 }
 
-List<WarpNode> run_bfs(WarpNode start_node)
+List<Cond> get_node_items(WarpNode node)
 {
+    List<Cond> items = new();
+    foreach (var item in GateConnections.key_reqs)
+    {
+        foreach (var access_node in item.access_nodes)
+        {
+            if (node == access_node && item.prereqs.Count == 0)
+            {
+                items.Add(item.cond);
+            }
+        }
+    }
+    return items;
+}
+
+bool inventory_has_key(List<WarpNode> visited_ids, Inventory inventory, Cond key)
+{
+    bool ret = true;
+    if (key == Cond.FirstFourSouls)
+    {
+        foreach(var item in GateConnections.key_reqs)
+        {
+            if (item.cond == key)
+            {
+                foreach (var node in item.access_nodes)
+                {
+                    ret = ret & visited_ids.Contains(node);
+                }
+            }
+        }
+        return ret;
+    }
+    else if (key == Cond.FragrantBranchOfYore || key == Cond.PharrosLockstone)
+    {
+        foreach (var item in inventory)
+        {
+            if (item.name == key) return item.count > 0;
+        }
+        return false;
+
+    }
+    List<Cond> prereqs = new(0);
+    foreach(var item in GateConnections.key_reqs)
+    {
+        if (item.cond == key) prereqs = item.prereqs;
+    }
+    if (prereqs.Count == 0)
+    {
+        foreach (var item in inventory)
+        {
+            if (item.name == key) return true;
+        }
+        return false;
+    }
+    foreach (var prereq in prereqs)
+    {
+        ret = ret & inventory_has_key(visited_ids, inventory, prereq);
+    }
+    return ret;
+}
+
+List<WarpNode> run_bfs(WarpNode start_node, List<Cond> required_keys)
+{
+    Inventory inventory = new();
     List<WarpNode> queue = new() { start_node};
     List<WarpNode> visited_ids = new() { start_node};
+    List<Connection> blocked_edges = new();
     while (queue.Count > 0)
     {
         var current_node = queue[0];
         queue.RemoveAt(0);
-        var neighbours = get_valid_neighbours(current_node);
-        foreach (var neighbour in neighbours)
+        List<Cond> node_key_items = get_node_items(current_node);
+        foreach (var key_item in node_key_items)
         {
-            if (!visited_ids.Contains(neighbour))
+            inventory.Add(key_item);
+        }
+        List<Connection> still_blocked = new();
+        foreach (var edge in blocked_edges)
+        {
+            //if (edge.condition_n1 == key_item)
+            if (inventory_has_key(visited_ids, inventory, edge.condition_n1))
             {
-                visited_ids.Add(neighbour);
-                queue.Add(neighbour);
+                if (visited_ids.Contains(edge.n2) && !visited_ids.Contains(edge.n1))
+                {
+                    if (visited_ids.Contains(edge.n1)) continue;
+                    if (KeyInfo.consumable_keys.Contains(edge.condition_n1)) 
+                        inventory.Use(edge.condition_n1);
+                    if (boss_nodes.Contains(edge.n1)) inventory.Add(Cond.BossKilled);
+                    visited_ids.Add(edge.n1);
+                    queue.Add(edge.n1);
+                }
+            }
+            //else if (edge.condition_n2 == key_item)
+            else if (inventory_has_key(visited_ids, inventory, edge.condition_n2))
+            {
+                if (visited_ids.Contains(edge.n1) && !visited_ids.Contains(edge.n2))
+                {
+                    if (visited_ids.Contains(edge.n2)) continue;
+                    if (KeyInfo.consumable_keys.Contains(edge.condition_n2)) 
+                        inventory.Use(edge.condition_n2);
+                    if (boss_nodes.Contains(edge.n2)) inventory.Add(Cond.BossKilled);
+                    visited_ids.Add(edge.n2);
+                    queue.Add(edge.n2);
+                }
+            }
+            else
+            {
+                if (visited_ids.Contains(edge.n1) && visited_ids.Contains(edge.n2)) continue;
+                still_blocked.Add(edge);
             }
         }
+        blocked_edges = still_blocked;
+
+        var valid_outgoing_edges = get_outgoing_edges(current_node);
+        foreach (var (edge, neighbour) in valid_outgoing_edges)
+        {
+            if (neighbour == WarpNode.Lone) continue;
+            if (visited_ids.Contains(neighbour)) continue;
+            if (edge.n1 == neighbour)
+            {
+                bool has_key = inventory_has_key(visited_ids, inventory, edge.condition_n1);
+                if (edge.condition_n1 != Cond.None && !has_key)
+                    //&& !inventory.Contains(edge.condition_n1))
+                {
+                    blocked_edges.Add(edge);
+                }
+                else
+                {
+                    if (has_key && KeyInfo.consumable_keys.Contains(edge.condition_n1))
+                        inventory.Use(edge.condition_n1);
+                    visited_ids.Add(neighbour);
+                    if (boss_nodes.Contains(neighbour)) inventory.Add(Cond.BossKilled);
+                    queue.Add(neighbour);
+                }
+            }
+            else
+            {
+                bool has_key = inventory_has_key(visited_ids, inventory, edge.condition_n2);
+                if (edge.condition_n2 != Cond.None && !has_key)
+                    //&& !inventory.Contains(edge.condition_n2))
+                {
+                    blocked_edges.Add(edge);
+                }
+                else
+                {
+                    if (has_key && KeyInfo.consumable_keys.Contains(edge.condition_n2))
+                        inventory.Use(edge.condition_n2);
+                    visited_ids.Add(neighbour);
+                    if (boss_nodes.Contains(neighbour)) inventory.Add(Cond.BossKilled);
+                    queue.Add(neighbour);
+                }
+
+            }
+        }
+    }
+    foreach (var edge in blocked_edges)
+    {
+        var cond = edge.condition_n1;
+        if (cond != Cond.None 
+            && cond != Cond.OneWay
+            && !required_keys.Contains(cond)) required_keys.Add(cond);
+        cond = edge.condition_n2;
+        if (cond != Cond.None 
+            && cond != Cond.OneWay
+            && !required_keys.Contains(cond)) required_keys.Add(cond);
     }
     return visited_ids;
 }
@@ -2371,10 +2591,28 @@ Warp find_valid_warp(List<WarpNode> node_set, List<Warp> ignore_set)
     return candidates[rand.Next(candidates.Count)];
 }
 
+Warp find_valid_warp_ex(WarpNode node, List<WarpNode> node_set, List<Warp> ignore_set)
+{
+    List<Warp> candidates = new();
+    foreach (var edge in selectedPairs)
+    {
+        if (edge.from.fog_wall_name != node && edge.to.fog_wall_name != node) continue;
+        if (ignore_set.Contains(edge)) continue;
+        if (node_set.Contains(edge.from.fog_wall_name) && node_set.Contains(edge.to.fog_wall_name))
+        {
+            if (has_predefined_warp.Contains(edge.from.fog_wall_name)) continue;
+            candidates.Add(edge);
+        }
+    }
+    Debug.Assert(candidates.Count > 0);
+    return candidates[rand.Next(candidates.Count)];
+}
+
 List<Warp> cooldown_edges = new();
 while (true)
 {
-    var reachable_nodes = run_bfs(WarpNode.GameStartSpawnSrc);
+    List<Cond> required_keys = new();
+    var reachable_nodes = run_bfs(WarpNode.GameStartSpawnSrc, required_keys);
     var unreachable_nodes = get_unreachable_ids(reachable_nodes);
     if (unreachable_nodes.Count == 0)
     {
@@ -2437,3 +2675,5 @@ run_external_command(esdtool_path, arguments);
 // 4. Activate ruin sentinels when approached from hidden gates
 // 5. i can leave the dark chasm from castle? (with havel) without defeating all enemies
 // 6. if ivory king dies, the dlc3 wont be unfrozen before speaking with alsanna
+// 7. add conditional warp for pirate ship
+// 8. darklurker fight begins from outside the foggate

@@ -394,6 +394,7 @@ def event_{map_id}_x505(flag8=_):
 	{
 		public WarpInfo from;
 		public WarpInfo to;
+		public Cond cond = Cond.None;
 
 		public Warp(FogGateInfo fgi)
 		{
@@ -419,10 +420,11 @@ def event_{map_id}_x505(flag8=_):
 				boss_locked: boss_locked_to, cutscene_script_id: cutscene_script_id, front: false);
 		}
 
-        public Warp(WarpInfo from, WarpInfo to)
+        public Warp(WarpInfo from, WarpInfo to, Cond cond = Cond.None)
         {
             this.from = from;
             this.to = to;
+			this.cond = cond;
         }
 
 		public bool contains_common_point(Warp other)

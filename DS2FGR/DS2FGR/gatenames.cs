@@ -1473,17 +1473,22 @@ namespace FogWallNS
         {
             foreach (var key in node.keys)
             {
+                bool found = false;
                 for (int i=0; i<this.Count; i++)
                 {
                     if (this[i].name == key)
                     {
                         this[i].count++;
                         check_blocked_edges(queue, visited_ids, blocked_edges, still_blocked);
-                        return; // TODO: this return may be wrong here
+                        found = true;
+                        break;
                     }
                 }
-                this.Add(new InventoryItem(key));
-                check_blocked_edges(queue, visited_ids, blocked_edges, still_blocked);
+                if (!found)
+                {
+                    this.Add(new InventoryItem(key));
+                    check_blocked_edges(queue, visited_ids, blocked_edges, still_blocked);
+                }
             }
         }
     }

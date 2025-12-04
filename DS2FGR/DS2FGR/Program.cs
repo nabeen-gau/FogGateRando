@@ -625,7 +625,7 @@ fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
 fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
     new FogWall(WarpNode.GuardianDragonEntryFront, "o00_0501_0000", boss_name: BossName.GuardianDragon),
     new FogWall(WarpNode.GuardianDragonExitFront, "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
-    new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true),
+    new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true, reverse: true),
 };
 fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
     new FogWall(WarpNode.GargoylesEntryFront, "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
@@ -712,7 +712,7 @@ fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
     new FogWall(WarpNode.RoyalRatAuthorityEntryFront, "o00_0501_0000", boss_name: BossName.RoyalRatAuthority),
 };
 fog_wall_dict[map_names[MapName.GraveofSaints]] = new List<FogWall> {
-    new FogWall(WarpNode.GraveOfSaintsFromPitFront, "o00_0500_0000", pvp: true),
+    new FogWall(WarpNode.GraveOfSaintsFromPitFront, "o00_0500_0000", pvp: true, reverse: true),
     new FogWall(WarpNode.GraveOfSaintsNearUpperBonfireFront, "o00_0501_0000", pvp: true),
     new FogWall(WarpNode.RoyalRatVanguardEntryFront, "o00_0501_0001", boss_name: BossName.RoyalRatVanguard),
     new FogWall(WarpNode.RoyalRatVanguardExitFront, "o00_0501_0002", boss_name: BossName.RoyalRatVanguard, boss_exit: true),
@@ -1684,7 +1684,7 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 
 Random rand_gen = new Random();
 int seed = rand_gen.Next(1000, 10000);
-//int seed = 4144;
+seed = 2216;
 Console.WriteLine($"Current Seed: {seed}");
 Random rand = new Random(seed);
 //Random rand = new Random(247);
@@ -2083,7 +2083,7 @@ List<Connection> get_segment(WarpNode point)
     return new();
 }
 
-void swap_warp(Edge w1, Edge w2, Dictionary<Node, List<CondNode>> cache, List<Edge> all_edges)
+void swap_warp(Edge w1, Edge w2, Dictionary<Node, List<CondNode>> cache)
 {
     // in cache[i] the first element is always the warp that is swapped
     (w2.n2, w1.n1) = (w1.n1, w2.n2);
@@ -2280,7 +2280,7 @@ while (true)
     }
     var main_candidate = find_valid_warp(warp_edges, reachable_nodes);
     var unre_candidate = find_valid_unreachable_warp(warp_edges, unreachable_nodes);
-    swap_warp(main_candidate, unre_candidate, adjacency_cache, all_edges);
+    swap_warp(main_candidate, unre_candidate, adjacency_cache);
     if (cnt > 100000)
     {
         throw new Exception("Could not connect all the gates.");
@@ -2328,7 +2328,6 @@ StringBuilder sb = new();
 TreeNode.PrintTree(travel_tree, sb);
 write_string_to_file(sb.ToString(), "./log.txt");
 
-//List<Warp> new_warps = WarpScrambler.Scramble(warps);
 foreach (var warp in selectedPairs)
 {
     if (has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
@@ -2363,3 +2362,5 @@ run_external_command(esdtool_path, arguments);
 // 7. add conditional warp for pirate ship
 // 8. darklurker fight begins from outside the foggate
 // 9. old iron king fight is also scuffed.
+// 10. all cutscenees bosses are not working it might be because the event id of the dst is not triggering the boss start flag
+// 11. last giant does not start

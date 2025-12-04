@@ -119,7 +119,8 @@ PARAMDEF get_event_loc_def_paramdef_ex(PARAM param, Vector3 position, Vector3 ro
     return pd;
 }
 
-PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 position, Vector3 rotation)
+PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 position, Vector3 rotation, UInt16 unk2a = 2567,
+    float sy = 1.0f, float sx = 1.0f, float sz = 1.0f)
 {
     PARAMDEF pd = new_paramdef(param);
     pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "pos_x", position.X));
@@ -132,12 +133,12 @@ PARAMDEF get_event_loc_def_paramdef_boss_spawn_point(PARAM param, Vector3 positi
     pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk19", 255));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1A", 255));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u8, "Unk1B", 255));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_x", 1.0f));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_y", 1.0f));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", 1.0f));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_x", sx));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_y", sy));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "scale_z", sz));
     pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk28", 0));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", 2567));
-    pd.Fields.Add(new_field(PARAMDEF.DefType.u32, "Unk2C", 0));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.u16, "Unk2A", unk2a));
+    pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "Unk2C", 0));
     return pd;
 }
 
@@ -472,7 +473,7 @@ Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
 {
     {BossName.TheDukesDearFreja, 100000 },
     {BossName.OldIronKing, 1500000 },
-    {BossName.Darklurker, 200000 }
+    {BossName.Darklurker, 200000 },
 };
 
 Dictionary<BossName, EventID> boss_quitout_event_loc = new ()
@@ -642,7 +643,7 @@ fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> 
     new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true, reverse: true), // TODO: cannot access when lockstone is not used but can be used from the other side
     new FogWall(WarpNode.RuinSentinelsEntryFront, "o00_0501_0000", boss_name: BossName.RuinSentinels, back_blocked: true),
     new FogWall(WarpNode.LostSinnerEntryFront, "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
-    new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003", boss_name: BossName.TheLostSinner, boss_exit: true, cutscene: true),
+    new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003"),
 };
 fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
     new FogWall(WarpNode.CovetousDemonEntryFront, "o00_0500_0000", boss_name: BossName.CovetousDemon),
@@ -751,7 +752,7 @@ fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall(WarpNode.DarkChasmFromBlackGulchExitFront, "o00_0501_0000"),
     new FogWall(WarpNode.DarkChasmFromDrangleicCastleExitFront, "o00_0501_0001"),
     new FogWall(WarpNode.DarkChasmFromShadedWoodsExitFront, "o00_0501_0002"),
-    new FogWall(WarpNode.DarkLurkerExitFront, "o00_0501_0003", boss_name: BossName.Darklurker, boss_exit: true), // y_offset = 13.792f - 11.966f
+    new FogWall(WarpNode.DarkLurkerExitBack, "o00_0501_0003", boss_name: BossName.Darklurker, reverse: true), // y_offset = 13.792f - 11.966f
 };
 fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
 fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
@@ -981,7 +982,7 @@ Dictionary<String,String> esd_script_fn(Warp warp)
     } 
     if (warp.from.boss.cutscene && warp.from.boss_locked)
     {
-        int fog_gate_id = warp.to.fog_gate_id;
+        int fog_gate_id = warp.from.fog_gate_id;
         if (warp.from.boss.exit)
         {
             fog_gate_id = warp.from.twin_fog_gate_id;
@@ -1402,12 +1403,21 @@ foreach (var pair in map_names)
                         var row = param_event_loc.Rows[j];
                         if (row.ID == boss_spawn_event_loc[fw.boss_name])
                         {
+                            UInt16 unk2a = (ushort)row.Cells[14].Value;
+                            var sy = (float)row.Cells[11].Value;
+                            var py = new Vector3(
+                                pos_fog_walls[i].X - pos_offs_event_loc.X,
+                                (float)row.Cells[1].Value,
+                                pos_fog_walls[i].Z - pos_offs_event_loc.Z
+                            );
                             var new_row = new Row(
                                 row.ID,
                                 $"eventloc_{row.ID}",
                                 get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
-                                    vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], -1),
-                                    rot_fog_walls[i]
+                                    vector3_move(py, rot_fog_walls[i], -1),
+                                    rot_fog_walls[i],
+                                    unk2a: unk2a,
+                                    sy: sy
                                 )
                             );
                             param_event_loc.Rows.Remove(row);
@@ -2353,14 +2363,7 @@ Debug.Assert(File.Exists(esdtool_path));
 run_external_command(esdtool_path, arguments);
 
 // BUGS:
-// 1. frejya does not spawn when coming from back gate
-// 2. lost sinner cutscene not playing when coming from front gate but activates from back door
-// 3. cannot access the majula to copse gate
 // 4. Activate ruin sentinels when approached from hidden gates
-// 5. i can leave the dark chasm from castle? (with havel) without defeating all enemies
+// 5. i can leave the dark chasm without defeating all enemies if approached from behind
 // 6. if ivory king dies, the dlc3 wont be unfrozen before speaking with alsanna
 // 7. add conditional warp for pirate ship
-// 8. darklurker fight begins from outside the foggate
-// 9. old iron king fight is also scuffed.
-// 10. all cutscenees bosses are not working it might be because the event id of the dst is not triggering the boss start flag
-// 11. last giant does not start

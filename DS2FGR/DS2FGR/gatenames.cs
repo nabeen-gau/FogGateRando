@@ -694,9 +694,9 @@ namespace FogWallNS
             new(WarpNode.RuinSentinelsEntryFront, WarpNode.RuinSentinesUpperExitBack, n2: Cond.OneWay),
 
             new(WarpNode.LostBastilleToShipFromWharfBack, WarpNode.LostBastilleToSinnersRiseFront, n1: Cond.OneWay, n2: Cond.OldKeyInBastille),
-            new(WarpNode.LostBastilleToShipFromWharfBack, WarpNode.RuinSentinesUpperExitBack, n1: Cond.OldKeyInBastille, n2: Cond.OneWay),
+            new(WarpNode.LostBastilleToShipFromWharfBack, WarpNode.RuinSentinesUpperExitBack, n2: Cond.OneWay),
 
-            new(WarpNode.LostBastilleToSinnersRiseFront, WarpNode.RuinSentinesUpperExitBack, n1: Cond.OldKeyInBastille, n2: Cond.OneWay),
+            new(WarpNode.LostBastilleToSinnersRiseFront, WarpNode.RuinSentinesUpperExitBack, n2: Cond.OneWay),
 
             new(WarpNode.PirateShipBastille, WarpNode.LostBastilleToShipFromWharfFront, n1: Cond.OneWay),
 
@@ -1079,6 +1079,8 @@ namespace FogWallNS
             new(Cond.AshenMistHeartSoldiersKeyKingsRing, Cond.AshenMistHeartSoldiersKey, Cond.KingsRing),
             new(Cond.AshenMistHeartKingMemory, Cond.AshenMistHeart, Cond.KingsRing), // TODO: right now if you reached the king and have ashen mist heart you might have to kill vendrick to proceed
             new(Cond.OldKeyInBastille, WarpNode.NearPursuerBirdExit),
+            new(Cond.OldKeyInBastille, WarpNode.RuinSentinesUpperExitBack),
+            new(Cond.OldKeyInBastille, WarpNode.LostBastilleToShipFromWharfBack),
             new(Cond.BastilleKey, WarpNode.RuinSentinelsExitBack),
             new(Cond.PharrosLockstone, new List<WarpNode>() {
                 WarpNode.ForestOfFallenGiantsToCaleFront, // melentia
@@ -1418,6 +1420,16 @@ namespace FogWallNS
                 return false;
 
             }
+            else if (key == Cond.Catring)
+            {
+                // TODO: catring is always accessible
+                return true;
+            }
+            else if (key == Cond.DropDownPath)
+            {
+                // TODO: dropdown path is always enabled
+                return true;
+            }
             List<Cond> prereqs = new(0);
             foreach(var item in GateConnections.key_reqs)
             {
@@ -1438,11 +1450,40 @@ namespace FogWallNS
             return ret;
         }
 
-        public void Update(Node node)
+        void check_blocked_edges(Queue<Node> queue, HashSet<Node> visited_ids, List<CondNode> blocked_edges,  List<CondNode> still_blocked)
+        {
+            foreach (var be in blocked_edges)
+            {
+                if (this.HasKey(visited_ids, be.cond))
+                {
+                    this.Use(be.cond);
+                    if (visited_ids.Contains(be.node)) continue;
+                    queue.Enqueue(be.node);
+                    visited_ids.Add(be.node);
+                }
+                else
+                {
+                    still_blocked.Add(be);
+                }
+            }
+            (still_blocked, blocked_edges) = (blocked_edges, still_blocked);
+        }
+
+        public void Update(Node node, Queue<Node> queue, HashSet<Node> visited_ids, List<CondNode> blocked_edges, List<CondNode> still_blocked)
         {
             foreach (var key in node.keys)
             {
-                Add(key);
+                for (int i=0; i<this.Count; i++)
+                {
+                    if (this[i].name == key)
+                    {
+                        this[i].count++;
+                        check_blocked_edges(queue, visited_ids, blocked_edges, still_blocked);
+                        return; // TODO: this return may be wrong here
+                    }
+                }
+                this.Add(new InventoryItem(key));
+                check_blocked_edges(queue, visited_ids, blocked_edges, still_blocked);
             }
         }
     }

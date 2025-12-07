@@ -279,6 +279,10 @@ def event_{map_id}_x505(flag8=_):
 		public const int giant_lord_defeat_flag = 100972;
 		public const int nashandra_cutscene_flag = 12010;
 		public const int vendricks_hostility_flag = 224000088;
+		public const int ship_global_event_flag = 102002;
+		public const int ship_arrival_msg_id = 1214;
+		public const int ship_arrival_local_flag = 118000010;
+		public const int ship_event_id = 1007;
 	}
 
 	public struct FogGateInfo

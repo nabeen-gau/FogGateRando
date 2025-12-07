@@ -162,7 +162,6 @@ def event_{map_id}_{script_id}():
 String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id,
     BossName boss_name, String name, int destruction_flag)
 {
-    Debug.Assert(boss_name != BossName.None);
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
@@ -182,7 +181,6 @@ def event_{map_id}_{script_id}():
 String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id, 
     BossName boss_name, String name, int destruction_flag)
 {
-    Debug.Assert(boss_name != BossName.None);
     String map_id = map_name.Substring(0, 6);
     return @$"
 def event_{map_id}_{script_id}():
@@ -199,7 +197,6 @@ def event_{map_id}_{script_id}():
 String generate_vendrick_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id,
     int dst_map_id, BossName boss_name, String name, int destruction_flag)
 {
-    Debug.Assert(boss_name == BossName.Vendrick);
     String map_id = map_name.Substring(0, 6);
     return $@"
 def event_{map_id}_{script_id}():
@@ -297,6 +294,68 @@ def event_{map_id}_{script_id}():
 ";
 }
 
+// this should be where wharf's gate links to
+String generate_ship_check_event_script(String map_name, int warp_src_id, int warp_dest_id, int dst_map_id)
+{
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_x506():
+    """"""[Preset] check ship condition and warp""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
+    if ConditionGroup(0):
+        # activated warp
+        ProhibitInGameMenu(1)
+        ProhibitPlayerOperation(1)
+        SetPlayerInvincible(1)
+        PlayCutsceneAndWarpToMap(0, 0, {dst_map_id}, {warp_dest_id}, 0)
+        assert CutsceneWarpEnded() != 0
+        DisableObjKeyGuide({warp_src_id}, 0)
+        ProhibitInGameMenu(0)
+        ProhibitPlayerOperation(0)
+        SetPlayerInvincible(0)
+    else:
+        # not activated msg
+        DisplayEventMessage({Constants.ship_arrival_msg_id}, 0, 0, 0)
+    assert EventMessageDisplay() != 1
+    DisableObjKeyGuide({warp_src_id}, 0)
+    return 0
+";
+}
+
+// this should be in wharf's script
+String generate_ship_global_event_flag_set_script(String map_name, int script_id = Constants.ship_event_id)
+{
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Wharf ship fog gate event""""""
+    if GetEventFlag({Constants.ship_arrival_local_flag}) != 0:
+        SetEventFlag({Constants.ship_global_event_flag}, 1)
+        CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
+        assert ConditionGroup(0)
+        EndMachine()
+        Quit()
+    else:
+        RestartMachine()
+        Quit()
+";
+}
+
+// this should be where wharf's gate links to
+String generate_to_wharf_warp_event_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id)
+{
+    String map_id = map_name.Substring(0, 6);
+    return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Wharf fog gate event""""""
+    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
+    assert event_{map_id}_x506();
+    RestartMachine()
+    Quit()
+";
+}
+
 void write_string_to_file(String str, String file_path)
 {
     try
@@ -347,8 +406,7 @@ String format_int_to_str(int value, int size)
 {
     if (value > Math.Pow(10, size))
     {
-        Console.WriteLine("[ERROR] invalid value for given size");
-        Debug.Assert(false);
+        throw new Exception("[ERROR] invalid value for given size");
     }
     String s = "";
     for (int i = 0; i < size; i++)
@@ -444,7 +502,7 @@ var duplicates = flat_connection_list
     .Where(g => g.Count() > 1)
     .Select(g => g.Key)
     .ToList();
-Debug.Assert(duplicates.Count == 0);
+if (duplicates.Count != 0) throw new Exception("Got duplicates!!");
 
 // TODO: change these before the final version
 String mod_folder = Path.GetFullPath(@"..\..\..\..\..\mod");
@@ -866,35 +924,50 @@ Dictionary<String,String> esd_script_fn(Warp warp)
             );
         }
     }
+    else if (warp.from.map_name == map_names[MapName.DarkChasmofOld] 
+        && warp.from.boss.name == BossName.None
+        && chasm_enemy_ids.ContainsKey(warp.from.fog_wall_name)
+    )
+    {
+        scripts[warp.from.map_name]+= generate_dark_chasm_fog_gate_script(
+            warp.from.map_name,
+            warp.from.script_id,
+            warp.from.warp_src_id,
+            warp.to.location_id,
+            Util.parse_map_name(warp.to.map_name),
+            chasm_enemy_ids[warp.from.fog_wall_name],
+            chasm_event_flags[warp.from.fog_wall_name],
+            warp.from.fog_wall_name.ToString()
+        );
+
+    }
+    // if the warp is to wharf check if the bell has been ringed
+    // TODO: if from is inside the boss gate this will not work
+    else if (warp.to.map_name == map_names[MapName.NomansWharf])
+    {
+        scripts[warp.from.map_name] += generate_ship_check_event_script(
+            warp.from.map_name,
+            warp.from.warp_src_id,
+            warp.to.location_id,
+            Util.parse_map_name(warp.to.map_name)
+        );
+        scripts[warp.from.map_name] += generate_to_wharf_warp_event_script(
+            warp.from.map_name,
+            warp.from.script_id,
+            warp.from.warp_src_id,
+            warp.to.location_id,
+            Util.parse_map_name(warp.to.map_name)
+        );
+    }
     else
     {
-        if (warp.from.map_name == map_names[MapName.DarkChasmofOld] 
-            && warp.from.boss.name == BossName.None
-            && chasm_enemy_ids.ContainsKey(warp.from.fog_wall_name)
-        )
-        {
-            scripts[warp.from.map_name]+= generate_dark_chasm_fog_gate_script(
-                warp.from.map_name,
-                warp.from.script_id,
-                warp.from.warp_src_id,
-                warp.to.location_id,
-                Util.parse_map_name(warp.to.map_name),
-                chasm_enemy_ids[warp.from.fog_wall_name],
-                chasm_event_flags[warp.from.fog_wall_name],
-                warp.from.fog_wall_name.ToString()
-            );
-
-        } 
-        else
-        {
-            scripts[warp.from.map_name] += generate_esd_script(
-                warp.from.map_name,
-                warp.from.script_id,
-                warp.from.warp_src_id,
-                warp.to.location_id,
-                Util.parse_map_name(warp.to.map_name)
-            );
-        }
+        scripts[warp.from.map_name] += generate_esd_script(
+            warp.from.map_name,
+            warp.from.script_id,
+            warp.from.warp_src_id,
+            warp.to.location_id,
+            Util.parse_map_name(warp.to.map_name)
+        );
     }
 
     scripts[warp.to.map_name] += $"\n##{warp.to.fog_wall_name}({fb2})-{warp.from.fog_wall_name}({fb})##";
@@ -914,45 +987,60 @@ Dictionary<String,String> esd_script_fn(Warp warp)
                 warp.to.boss.destruction_flag
             );
         }
+        else if (warp.to.boss.name == BossName.Vendrick)
+        {
+            scripts[warp.to.map_name] += generate_vendrick_fog_gate_script(
+                warp.to.map_name,
+                warp.to.script_id,
+                warp.to.warp_src_id,
+                warp.from.location_id,
+                Util.parse_map_name(warp.from.map_name),
+                warp.to.boss.name,
+                warp.to.boss.name_str.ToString(),
+                warp.to.boss.destruction_flag
+            );
+        }
+        else if (warp.to.boss.name == BossName.ThroneWatcherAndDefender)
+        {
+            scripts[warp.to.map_name] += generate_throne_room_exit_script(
+                warp.to.map_name,
+                warp.to.script_id,
+                warp.to.warp_src_id,
+                warp.from.location_id,
+                Util.parse_map_name(warp.from.map_name)
+            );
+        }
         else
         {
-            if (warp.to.boss.name == BossName.Vendrick)
-            {
-                scripts[warp.to.map_name] += generate_vendrick_fog_gate_script(
-                    warp.to.map_name,
-                    warp.to.script_id,
-                    warp.to.warp_src_id,
-                    warp.from.location_id,
-                    Util.parse_map_name(warp.from.map_name),
-                    warp.to.boss.name,
-                    warp.to.boss.name_str.ToString(),
-                    warp.to.boss.destruction_flag
-                );
-            }
-            else if (warp.to.boss.name == BossName.ThroneWatcherAndDefender)
-            {
-                scripts[warp.to.map_name] += generate_throne_room_exit_script(
-                    warp.to.map_name,
-                    warp.to.script_id,
-                    warp.to.warp_src_id,
-                    warp.from.location_id,
-                    Util.parse_map_name(warp.from.map_name)
-                );
-            }
-            else
-            {
-                scripts[warp.to.map_name] += generate_esd_script_boss_from_behind(
-                    warp.to.map_name,
-                    warp.to.script_id,
-                    warp.to.warp_src_id,
-                    warp.from.location_id,
-                    Util.parse_map_name(warp.from.map_name),
-                    warp.to.boss.name,
-                    warp.to.boss.name_str.ToString(),
-                    warp.to.boss.destruction_flag
-                );
-            }
+            scripts[warp.to.map_name] += generate_esd_script_boss_from_behind(
+                warp.to.map_name,
+                warp.to.script_id,
+                warp.to.warp_src_id,
+                warp.from.location_id,
+                Util.parse_map_name(warp.from.map_name),
+                warp.to.boss.name,
+                warp.to.boss.name_str.ToString(),
+                warp.to.boss.destruction_flag
+            );
         }
+    }
+    // if the warp is from wharf check if the bell has been ringed
+    // TODO: if to is inside the boss gate this will not work
+    else if (warp.from.map_name == map_names[MapName.NomansWharf])
+    {
+        scripts[warp.to.map_name] += generate_ship_check_event_script(
+            warp.to.map_name,
+            warp.to.warp_src_id,
+            warp.from.location_id,
+            Util.parse_map_name(warp.from.map_name)
+        );
+        scripts[warp.to.map_name] += generate_to_wharf_warp_event_script(
+            warp.to.map_name,
+            warp.to.script_id,
+            warp.to.warp_src_id,
+            warp.from.location_id,
+            Util.parse_map_name(warp.from.map_name)
+        );
     }
     else
     {
@@ -1113,16 +1201,19 @@ foreach (var pair in map_names)
     else // for maps other than Things Betwixt
     {
         // add warp_model to the map model list
-        Debug.Assert(warp_model != null);
+        if (warp_model == null) throw new Exception("Warp Model not found");
         map.Models.Add(warp_model);
     }
 
     // check if the object was found
-    Debug.Assert(warp_model != null);
-    Debug.Assert(warp_obj_idx >= 0);
-    Debug.Assert(warp_obj_inst_idx >= 0);
-    Debug.Assert(warp_obj != null);
-    Debug.Assert(warp_obj_inst != null);
+    if ((warp_model == null) ||
+        (warp_obj_idx < 0) ||
+        (warp_obj_inst_idx < 0) ||
+        (warp_obj == null) ||
+        (warp_obj_inst == null)) 
+    {
+        throw new Exception("Warp Model not valid");
+    }
 
     // get all the fog walls in the map and create a list of their
     // postion, rotation and draw groups
@@ -1143,8 +1234,7 @@ foreach (var pair in map_names)
         }
         if (fog_wall == null)
         {
-            Console.WriteLine($"[ERROR] failed to find fog_wall_id: {fw.name}");
-            Debug.Assert(false);
+            throw new Exception($"[ERROR] failed to find fog_wall_id: {fw.name}");
         }
         if (fw.offset != null)
         {
@@ -1203,11 +1293,10 @@ foreach (var pair in map_names)
         }
         else
         {
-            // Unreachable
-            Debug.Assert(false);
+            throw new Exception("Unreachable");
         }
     }
-    Debug.Assert(warp_point_begin >= 0);
+    if (warp_point_begin < 0) throw new Exception("Failed to find warp_point");
 
     // calculate warp_obj_inst_begin and
     // calculate the obj instance insert location
@@ -1233,12 +1322,14 @@ foreach (var pair in map_names)
         }
         else
         {
-            // Unreachable
-            Debug.Assert(false);
+            throw new Exception("Unreachable");
         }
     }
-    Debug.Assert(warp_obj_inst_begin >= 0);
-    Debug.Assert(obj_inst_insert_loc >= 0);
+    if ((warp_obj_inst_begin < 0) ||
+        (obj_inst_insert_loc < 0))
+    {
+        throw new Exception("Failed to get warp_obj_ist");
+    }
 
     // calculate event_loc_insert_loc
     int event_loc_insert_loc = -1;
@@ -1251,7 +1342,7 @@ foreach (var pair in map_names)
             break;
         }
     }
-    Debug.Assert(event_loc_insert_loc >= 0);
+    if (event_loc_insert_loc < 0) throw new Exception("Failed to get event_loc");
 
     // calculate the no. of boss cutscenes in a map
     int n_cutscenes = 0;
@@ -1276,9 +1367,9 @@ foreach (var pair in map_names)
                 break;
             }
         }
-        else Debug.Assert(false); //unreachable
+        else throw new Exception("Unreachable");
     }
-    Debug.Assert(esd_script_begin >= 0);
+    if (esd_script_begin < 0) throw new Exception("Failed to get esd_script_begin");
     int event_param_begin = esd_script_begin;
 
     Vector3 pos_offs_event_loc;
@@ -1288,6 +1379,21 @@ foreach (var pair in map_names)
     } else
     {
         pos_offs_event_loc = new Vector3(0.0f);
+    }
+
+    // create and add event for checking ringing of bell
+    if (map_name == map_names[MapName.NomansWharf])
+    {
+        var warp_event_row = new Row(
+            Constants.ship_event_id,
+            $"event_{Constants.ship_event_id}",
+            get_event_param_def_paramdef_ex(
+                param_event,
+                Constants.ship_event_id,
+                0
+            )
+        );
+        param_event.Rows.Add(warp_event_row);
     }
 
     // generate the objects and events for all the fog walls in the map
@@ -1302,7 +1408,7 @@ foreach (var pair in map_names)
         }
         // create and add new map peice in front of the fog door
         var obj = (MSB2.Part.Object)warp_obj.DeepCopy();
-        Debug.Assert(obj != null);
+        if (obj == null) throw new Exception("Null object");
         obj.Position = pos_fog_walls[i];
         obj.Rotation = rot_fog_walls[i];
         obj.Name = "o02_1050_" + format_int_to_str(warp_obj_begin, 4);
@@ -1320,7 +1426,7 @@ foreach (var pair in map_names)
 
         // create and add new map peice in behind of the fog door
         var obj2 = (MSB2.Part.Object)warp_obj.DeepCopy();
-        Debug.Assert(obj2 != null);
+        if (obj2 == null) throw new Exception("Null object");
         obj2.Position = pos_fog_walls[i];
         obj2.Rotation = vector3_flip_y(rot_fog_walls[i]);
         obj2.Name = "o02_1050_" + format_int_to_str(warp_obj_begin+1, 4);
@@ -1506,9 +1612,9 @@ foreach (var map_name_kv in map_names)
     {
         String esd_tool = Path.GetFullPath("./esdtool/esdtool.exe");
         String argus = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i\"{get_esd_file_path(map_name)}\" -writepy \"{esd_script_path}\"";
-        Debug.Assert(File.Exists(esd_tool));
+        if (!File.Exists(esd_tool)) throw new Exception($"Tool not found {esd_tool}");
         run_external_command(esd_tool, argus);   // decomplie esd into .py files
-        Debug.Assert(File.Exists(esd_script_path));
+        if (!File.Exists(esd_script_path)) throw new Exception($"file not found {esd_script_path}");
     }
     String path = Util.check_backup(esd_script_path);
     String esd_script = Util.read_string_from_file(path);
@@ -1612,8 +1718,7 @@ Connection get_connection_from_name(WarpNode name)
     {
         if (i.n1 == name || i.n2 == name) return i;
     }
-    Debug.Assert(false);
-    return new Connection(WarpNode.Lone, WarpNode.Lone);
+    throw new Exception("Failed to get_connection_from_name");
 }
 
 List<WarpNode> starting_gates = new() 
@@ -1628,8 +1733,10 @@ List<WarpNode> starting_gates = new()
 };
 
 // from's pair is lone
-bool check_lone_to_lone_connection(WarpNode to)
+bool check_lone_to_lone_connection(WarpNode to, List<WarpNode> stack)
 {
+    if (stack.Contains(to)) return false;
+    else stack.Add(to);
     var segs = get_segment(to);
     int idx = -1;
     int fail_count = 0;
@@ -1651,11 +1758,12 @@ bool check_lone_to_lone_connection(WarpNode to)
         var (pair_dst, cond) = get_warp_pair(pair_src);
         if (starting_gates.Contains(pair_dst)) return true;
         if (pair_dst == WarpNode.Lone) continue;
-        if (!check_lone_to_lone_connection(pair_dst)) fail_count++;
+        if (!check_lone_to_lone_connection(pair_dst, stack)) fail_count++;
     }
     if (fail_count == total_count) return false;
     return true;
 }
+List<WarpNode> stack = new();
 bool is_this_warp_allowed(WarpNode from, WarpNode to)
 {
     if (from == WarpNode.Lone || to == WarpNode.Lone) return false;
@@ -1677,13 +1785,14 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
     if (con_a.n2 == WarpNode.Lone && con_b.n1 == WarpNode.Lone) return false;
 
     // check if a lone <-> pair of possilbe gate <-> lone
+    stack.Clear();
     if (con_a.n1 == WarpNode.Lone || con_a.n2 == WarpNode.Lone)
     {
-        if (!check_lone_to_lone_connection(to)) return false;
+        if (!check_lone_to_lone_connection(to, stack)) return false;
     }
     else if (con_b.n1 == WarpNode.Lone || con_b.n2 == WarpNode.Lone) 
     {
-        if (!check_lone_to_lone_connection(from)) return false;
+        if (!check_lone_to_lone_connection(from, stack)) return false;
     }
 
     return true;
@@ -1693,25 +1802,14 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 // Example the final fight arena connected to outside the exit of rat authority fight
 
 Random rand_gen = new Random();
-int seed = rand_gen.Next(1000, 10000);
-seed = 2216;
+int seed = rand_gen.Next(1000, 100000);
+//seed = 2216; // slow example
+seed = 80528; // fast example
 Console.WriteLine($"Current Seed: {seed}");
 Random rand = new Random(seed);
 //Random rand = new Random(247);
 //Random rand = new Random(9842);
 //Random rand = new Random(83754);
-
-// by default weight will be 1 for full random
-// increasing weight will reduce its likelihood of being selected
-int weighted_random_number(int start, int end, int odd, int weight)
-{
-    Debug.Assert(start <= odd && end >= odd);
-    int total_factor = (end - start - 1) * weight + 1;
-    int r = rand.Next(total_factor);
-    if (r == 0) return odd;
-    else if ((r - 1) / weight + 1 + start == odd) return start;
-    else return (r - 1) / weight + 1 + start;
-}
 
 WarpInfo get_warp_info_from_name(WarpNode name)
 {
@@ -1719,8 +1817,7 @@ WarpInfo get_warp_info_from_name(WarpNode name)
     {
         if (wi.fog_wall_name == name) return wi;
     }
-    Debug.Assert(false);
-    return new WarpInfo();
+    throw new Exception("Failed to get_warp_info_from_name");
 }
 
 List<Warp> selectedPairs = new(warps.Count);
@@ -1925,8 +2022,8 @@ foreach (var segment in segments)
             ));
             skip_list.Add(node);
             skip_list.Add(to.n1);
-            Debug.Assert(segments_flat[count].Remove(node));
-            Debug.Assert(segments_flat[i1].Remove(to.n1));
+            if (!segments_flat[count].Remove(node)) throw new Exception("Failed to remove node");
+            if (!segments_flat[i1].Remove(to.n1)) throw new Exception("Failed to remove node");
         }
         else if (is_this_warp_allowed(node, to.n2))
         {
@@ -1945,8 +2042,8 @@ foreach (var segment in segments)
             ));
             skip_list.Add(node);
             skip_list.Add(to.n2);
-            Debug.Assert(segments_flat[count].Remove(node));
-            Debug.Assert(segments_flat[i1].Remove(to.n2));
+            if (!segments_flat[count].Remove(node)) throw new Exception("Failed to remove node");
+            if (!segments_flat[i1].Remove(to.n2)) throw new Exception("Failed to remove node");
         }
         else
         {
@@ -1976,7 +2073,7 @@ while (true)
         if (idx != 0) idx--;
         continue;
     }
-    int seg_grp_idx = weighted_random_number(0, segments_flat.Count, idx, 1);
+    int seg_grp_idx = rand.Next(segments_flat.Count);//weighted_random_number(0, segments_flat.Count, idx, 1);
     var to_seg = segments_flat[seg_grp_idx];
     if (to_seg.Count == 0)
     {
@@ -2057,7 +2154,7 @@ var duplicates2 = flattened_list
     .Where(g => g.Count() > 1)
     .Select(g => g.Key)
     .ToList();
-Debug.Assert(duplicates2.Count == 0);
+if (duplicates2.Count != 0) throw new Exception("Got duplicates!!");
 
 (WarpNode, Cond) get_warp_pair(WarpNode pt_from)
 {
@@ -2089,8 +2186,7 @@ List<Connection> get_segment(WarpNode point)
         }
 
     }
-    Debug.Assert(false);
-    return new();
+    throw new Exception("Failed to get_segment");
 }
 
 void swap_warp(Edge w1, Edge w2, Dictionary<Node, List<CondNode>> cache)
@@ -2290,6 +2386,7 @@ while (true)
     }
     var main_candidate = find_valid_warp(warp_edges, reachable_nodes);
     var unre_candidate = find_valid_unreachable_warp(warp_edges, unreachable_nodes);
+    //Console.WriteLine($"Iter:: {cnt}: Swapping {main_candidate.n1.name} - {main_candidate.n2.name} with {unre_candidate.n1.name} - {unre_candidate.n2.name}");
     swap_warp(main_candidate, unre_candidate, adjacency_cache);
     if (cnt > 100000)
     {
@@ -2333,7 +2430,7 @@ while (queue.Count > 0)
     }
 }
 var travel_tree = TreeNode.BuildTraversalTree(g, WarpNode.GameStartSpawnSrc, CType.Walk);
-Debug.Assert(travel_tree != null);
+if (travel_tree == null) throw new Exception("Failed to BuildTraversalTree");
 StringBuilder sb = new();
 TreeNode.PrintTree(travel_tree, sb);
 write_string_to_file(sb.ToString(), "./log.txt");
@@ -2349,6 +2446,9 @@ foreach (var warp in selectedPairs)
     }
 }
 
+// add bell ringing global event handler to No-Man's Wharf
+esd_script_dict[map_names[MapName.NomansWharf]] += generate_ship_global_event_flag_set_script(map_names[MapName.NomansWharf]);
+
 foreach (var map_script_kv in esd_script_dict)
 {
     String script_path = get_esd_script_path(map_script_kv.Key);
@@ -2359,7 +2459,6 @@ foreach (var map_script_kv in esd_script_dict)
 // run the esdtool.exe to generate esd files from python files
 String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
 String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i{py_files_list} -writeloose \"{Path.Join(ezstate_path, "%e.esd")}\"";
-Debug.Assert(File.Exists(esdtool_path));
 run_external_command(esdtool_path, arguments);
 
 // BUGS:

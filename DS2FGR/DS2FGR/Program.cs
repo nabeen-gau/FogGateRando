@@ -6,6 +6,39 @@ using System.Text;
 using static SoulsFormats.PARAM;
 using static SoulsFormats.PARAMDEF;
 
+Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
+{
+    { MapName.ThingsBetwixt,                "m10_02_00_00"},
+    { MapName.Majula,                       "m10_04_00_00"},
+    { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
+    { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
+    { MapName.AldiasKeep,                   "m10_15_00_00"},
+    { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
+    { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
+    { MapName.NomansWharf,                  "m10_18_00_00"},
+    { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
+    { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
+    { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
+    { MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
+    { MapName.MajulaShadedWoods,            "m10_29_00_00"},
+    ////{ MapName.HeidesToNoMansWharf,          "m10_30_00_00"}, // disabled (no fog gates)
+    { MapName.HeidesTowerofFlame,           "m10_31_00_00"},
+    { MapName.ShadedWoodsShrineofWinter,    "m10_32_00_00"},
+    { MapName.DoorsofPharros,               "m10_33_00_00"},
+    { MapName.GraveofSaints,                "m10_34_00_00"},
+    { MapName.MemoryofVammarOrroandJeigh,   "m20_10_00_00"},
+    { MapName.ShrineofAmana,                "m20_11_00_00"},
+    { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
+    { MapName.UndeadCrypt,                  "m20_24_00_00"},
+    { MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
+    { MapName.DarkChasmofOld,               "m40_03_00_00"},
+    { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
+    { MapName.BrumeTower,                   "m50_36_00_00"},
+    { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
+    { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
+};
+
+
 MSB2 load_map(String path)
 {
     String new_path = Util.check_backup(path);
@@ -159,10 +192,28 @@ def event_{map_id}_{script_id}():
 ";
 }
 
-String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id,
+String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, String dst_map_name,
     BossName boss_name, String name, int destruction_flag)
 {
     String map_id = map_name.Substring(0, 6);
+    int dst_map_id = Util.parse_map_name(dst_map_name);
+    if (dst_map_name == map_names[MapName.NomansWharf])
+    {
+        return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Wharf fog gate event with boss flag""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    call = event_{map_id}_x505(flag8={destruction_flag})
+    if call.Get() == 1:
+        DisableObjKeyGuide({warp_src_id}, 0)
+        assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
+        assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
+    elif call.Get() == 0:
+        pass
+    RestartMachine()
+    Quit()
+";
+    }
     return @$"
 def event_{map_id}_{script_id}():
     """"""State 0,2: [Preset] Boss({name}) fog gate event""""""
@@ -178,10 +229,25 @@ def event_{map_id}_{script_id}():
 ";
 }
 
-String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id, 
+String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, String dst_map_name, 
     BossName boss_name, String name, int destruction_flag)
 {
     String map_id = map_name.Substring(0, 6);
+    int dst_map_id = Util.parse_map_name(dst_map_name);
+    if (dst_map_name == map_names[MapName.NomansWharf])
+    {
+        return $@"
+def event_{map_id}_{script_id}():
+    """"""State 0,2: [Preset] Wharf fog gate event with boss flag v2""""""
+    DisableObjKeyGuide({warp_src_id}, 1)
+    assert event_{map_id}_x504(battle_id={destruction_flag})
+    DisableObjKeyGuide({warp_src_id}, 0)
+    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
+    assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
+    RestartMachine()
+    Quit()
+";
+    }
     return @$"
 def event_{map_id}_{script_id}():
     """"""State 0,2: [Preset] Boss({name}) fog gate event""""""
@@ -294,35 +360,6 @@ def event_{map_id}_{script_id}():
 ";
 }
 
-// this should be where wharf's gate links to
-String generate_ship_check_event_script(String map_name, int warp_src_id, int warp_dest_id, int dst_map_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_x506():
-    """"""[Preset] check ship condition and warp""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
-    if ConditionGroup(0):
-        # activated warp
-        ProhibitInGameMenu(1)
-        ProhibitPlayerOperation(1)
-        SetPlayerInvincible(1)
-        PlayCutsceneAndWarpToMap(0, 0, {dst_map_id}, {warp_dest_id}, 0)
-        assert CutsceneWarpEnded() != 0
-        DisableObjKeyGuide({warp_src_id}, 0)
-        ProhibitInGameMenu(0)
-        ProhibitPlayerOperation(0)
-        SetPlayerInvincible(0)
-    else:
-        # not activated msg
-        DisplayEventMessage({Constants.ship_arrival_msg_id}, 0, 0, 0)
-    assert EventMessageDisplay() != 1
-    DisableObjKeyGuide({warp_src_id}, 0)
-    return 0
-";
-}
-
 // this should be in wharf's script
 String generate_ship_global_event_flag_set_script(String map_name, int script_id = Constants.ship_event_id)
 {
@@ -350,7 +387,7 @@ String generate_to_wharf_warp_event_script(String map_name, int script_id, int w
 def event_{map_id}_{script_id}():
     """"""State 0,2: [Preset] Wharf fog gate event""""""
     assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-    assert event_{map_id}_x506();
+    assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
     RestartMachine()
     Quit()
 ";
@@ -607,38 +644,6 @@ Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>
     {BossName.LudAndZallen,                 537000091},
 };
 
-
-Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
-{
-    { MapName.ThingsBetwixt,                "m10_02_00_00"},
-    { MapName.Majula,                       "m10_04_00_00"},
-    { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
-    { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
-    { MapName.AldiasKeep,                   "m10_15_00_00"},
-    { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
-    { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
-    { MapName.NomansWharf,                  "m10_18_00_00"},
-    { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
-    { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
-    { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
-    { MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
-    { MapName.MajulaShadedWoods,            "m10_29_00_00"},
-    ////{ MapName.HeidesToNoMansWharf,          "m10_30_00_00"}, // disabled (no fog gates)
-    { MapName.HeidesTowerofFlame,           "m10_31_00_00"},
-    { MapName.ShadedWoodsShrineofWinter,    "m10_32_00_00"},
-    { MapName.DoorsofPharros,               "m10_33_00_00"},
-    { MapName.GraveofSaints,                "m10_34_00_00"},
-    { MapName.MemoryofVammarOrroandJeigh,   "m20_10_00_00"},
-    { MapName.ShrineofAmana,                "m20_11_00_00"},
-    { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
-    { MapName.UndeadCrypt,                  "m20_24_00_00"},
-    { MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
-    { MapName.DarkChasmofOld,               "m40_03_00_00"},
-    { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
-    { MapName.BrumeTower,                   "m50_36_00_00"},
-    { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
-    { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
-};
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
 fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
@@ -905,7 +910,7 @@ Dictionary<String,String> esd_script_fn(Warp warp)
                 warp.from.script_id,
                 warp.from.warp_src_id,
                 warp.to.location_id,
-                Util.parse_map_name(warp.to.map_name),
+                warp.to.map_name,
                 warp.from.boss.name,
                 warp.from.boss.name_str.ToString(),
                 warp.from.boss.destruction_flag
@@ -917,7 +922,7 @@ Dictionary<String,String> esd_script_fn(Warp warp)
                 warp.from.script_id,
                 warp.from.warp_src_id,
                 warp.to.location_id,
-                Util.parse_map_name(warp.to.map_name),
+                warp.to.map_name,
                 warp.from.boss.name,
                 warp.from.boss.name_str.ToString(),
                 warp.from.boss.destruction_flag
@@ -943,14 +948,10 @@ Dictionary<String,String> esd_script_fn(Warp warp)
     }
     // if the warp is to wharf check if the bell has been ringed
     // TODO: if from is inside the boss gate this will not work
-    else if (warp.to.map_name == map_names[MapName.NomansWharf])
+    else if (warp.to.map_name == map_names[MapName.NomansWharf] 
+            && (warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
+                && warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
     {
-        scripts[warp.from.map_name] += generate_ship_check_event_script(
-            warp.from.map_name,
-            warp.from.warp_src_id,
-            warp.to.location_id,
-            Util.parse_map_name(warp.to.map_name)
-        );
         scripts[warp.from.map_name] += generate_to_wharf_warp_event_script(
             warp.from.map_name,
             warp.from.script_id,
@@ -981,7 +982,7 @@ Dictionary<String,String> esd_script_fn(Warp warp)
                 warp.to.script_id,
                 warp.to.warp_src_id,
                 warp.from.location_id,
-                Util.parse_map_name(warp.from.map_name),
+                warp.from.map_name,
                 warp.to.boss.name,
                 warp.to.boss.name_str.ToString(),
                 warp.to.boss.destruction_flag
@@ -1017,23 +1018,42 @@ Dictionary<String,String> esd_script_fn(Warp warp)
                 warp.to.script_id,
                 warp.to.warp_src_id,
                 warp.from.location_id,
-                Util.parse_map_name(warp.from.map_name),
+                warp.from.map_name,
                 warp.to.boss.name,
                 warp.to.boss.name_str.ToString(),
                 warp.to.boss.destruction_flag
             );
         }
     }
-    // if the warp is from wharf check if the bell has been ringed
-    // TODO: if to is inside the boss gate this will not work
-    else if (warp.from.map_name == map_names[MapName.NomansWharf])
+    else if (warp.to.map_name == map_names[MapName.DarkChasmofOld] 
+        && warp.to.boss.name == BossName.None
+        && chasm_enemy_ids.ContainsKey(warp.to.fog_wall_name)
+    )
     {
-        scripts[warp.to.map_name] += generate_ship_check_event_script(
+        scripts[warp.to.map_name]+= generate_dark_chasm_fog_gate_script(
             warp.to.map_name,
+            warp.to.script_id,
             warp.to.warp_src_id,
             warp.from.location_id,
-            Util.parse_map_name(warp.from.map_name)
+            Util.parse_map_name(warp.from.map_name),
+            chasm_enemy_ids[warp.to.fog_wall_name],
+            chasm_event_flags[warp.to.fog_wall_name],
+            warp.to.fog_wall_name.ToString()
         );
+
+    }
+    // if the warp is from wharf check if the bell has been ringed
+    // TODO: if to is inside the boss gate this will not work
+    else if (warp.from.map_name == map_names[MapName.NomansWharf]
+            && (warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
+                && warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
+    {
+        //scripts[warp.to.map_name] += generate_ship_check_event_script(
+        //    warp.to.map_name,
+        //    warp.to.warp_src_id,
+        //    warp.from.location_id,
+        //    Util.parse_map_name(warp.from.map_name)
+        //);
         scripts[warp.to.map_name] += generate_to_wharf_warp_event_script(
             warp.to.map_name,
             warp.to.script_id,
@@ -1803,8 +1823,9 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 
 Random rand_gen = new Random();
 int seed = rand_gen.Next(1000, 100000);
+seed = 23704; // boss to wharf
 //seed = 2216; // slow example
-seed = 80528; // fast example
+//seed = 80528; // fast example
 Console.WriteLine($"Current Seed: {seed}");
 Random rand = new Random(seed);
 //Random rand = new Random(247);
@@ -2463,6 +2484,4 @@ run_external_command(esdtool_path, arguments);
 
 // BUGS:
 // 4. Activate ruin sentinels when approached from hidden gates
-// 5. i can leave the dark chasm without defeating all enemies if approached from behind
 // 6. if ivory king dies, the dlc3 wont be unfrozen before speaking with alsanna
-// 7. add conditional warp for pirate ship

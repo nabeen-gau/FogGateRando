@@ -253,6 +253,20 @@ def event_{map_id}_x505(flag8=_):
         """"""State 2: the boss is not dead""""""
         return 0
 
+def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
+    """"""[Preset] check ship condition and warp""""""
+    DisableObjKeyGuide(warp_obj_inst_id, 1)
+    CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
+    if ConditionGroup(0):
+        # activated warp
+        assert event_{map_id}_x503(warp_obj_inst_id=warp_obj_inst_id, event_loc=event_loc, map_id=map_id)
+    else:
+        # not activated msg
+        DisplayEventMessage({Constants.ship_arrival_msg_id}, 0, 0, 0)
+    assert EventMessageDisplay() != 1
+    DisableObjKeyGuide(warp_obj_inst_id, 0)
+    return 0
+
 ";
         }
 

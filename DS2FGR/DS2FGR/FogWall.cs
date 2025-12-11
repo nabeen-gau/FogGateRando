@@ -297,6 +297,8 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int ship_arrival_msg_id = 1214;
 		public const int ship_arrival_local_flag = 118000010;
 		public const int ship_event_id = 1007;
+		public const int dlc_unfreeze_event_id = 1075;
+		public const int alsanna_talk_flag = 537000011;
 	}
 
 	public struct FogGateInfo

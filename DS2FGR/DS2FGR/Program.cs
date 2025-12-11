@@ -84,7 +84,6 @@ Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>
     {BossName.LudAndZallen,                 537000091},
 };
 
-
 MSB2 load_map(String path)
 {
     String new_path = Util.check_backup(path);
@@ -1450,6 +1449,45 @@ foreach (var pair in map_names)
             )
         );
         param_event.Rows.Add(warp_event_row);
+    }
+
+    // adjust the ruin sentinels boss spawn event loc
+    if (map_name == map_names[MapName.TheLostBastilleBelfryLuna])
+    {
+        for (int j = 0; j < param_event_loc.Rows.Count; j++)
+        {
+            var row = param_event_loc.Rows[j];
+            if (row.ID == Constants.ruin_sentinels_spawn_event_loc_id)
+            {
+                Vector3 position = new( 
+                    (float)row.Cells[0].Value,
+                    Constants.ruin_sentinels_spawn_event_posy,
+                    (float)row.Cells[2].Value
+                );
+                Vector3 rotation = new( 
+                    (float)row.Cells[3].Value,
+                    (float)row.Cells[4].Value,
+                    (float)row.Cells[5].Value
+                );
+                UInt16 unk2a = (ushort)row.Cells[14].Value;
+                var new_row = new Row(
+                    row.ID,
+                    $"eventloc_{row.ID}",
+                    get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
+                        position,
+                        rotation,
+                        unk2a: unk2a,
+                        sx: (float)row.Cells[10].Value,
+                        sy: Constants.ruin_sentinels_spawn_event_scaley,
+                        sz: (float)row.Cells[12].Value
+                    )
+                );
+                param_event_loc.Rows.Remove(row);
+                param_event_loc.Rows.Insert(j, new_row);
+                break;
+            }
+        }
+
     }
 
     // generate the objects and events for all the fog walls in the map

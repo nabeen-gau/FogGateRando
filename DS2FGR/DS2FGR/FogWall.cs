@@ -299,6 +299,9 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int ship_event_id = 1007;
 		public const int dlc_unfreeze_event_id = 1075;
 		public const int alsanna_talk_flag = 537000011;
+		public const int ruin_sentinels_spawn_event_loc_id = 1400000;
+		public const float ruin_sentinels_spawn_event_posy = -4.522f;
+		public const float ruin_sentinels_spawn_event_scaley = 16.0f;
 	}
 
 	public struct FogGateInfo

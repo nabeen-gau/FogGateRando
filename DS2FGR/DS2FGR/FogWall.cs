@@ -64,7 +64,7 @@ namespace FogWallNS
 
     };
 
-	enum MapName
+	public enum MapName
 	{
 		ThingsBetwixt = 0,
 		Majula,

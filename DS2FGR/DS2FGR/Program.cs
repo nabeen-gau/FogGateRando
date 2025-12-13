@@ -2558,5 +2558,31 @@ String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
 String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i{py_files_list} -writeloose \"{Path.Join(ezstate_path, "%e.esd")}\"";
 run_external_command(esdtool_path, arguments);
 
-// BUGS:
-// 4. Activate ruin sentinels when approached from hidden gates
+var editor = new ESDEditor();
+
+foreach (var warp in selectedPairs)
+{
+    if (has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
+    if (!editor.is_map_loaded(warp.from.map_name))
+    {
+        editor.load_map(warp.from.map_name, $"{get_esd_file_path(warp.from.map_name)}.bak");
+    }
+    if (!editor.is_map_loaded(warp.to.map_name))
+    {
+        editor.load_map(warp.to.map_name, $"{get_esd_file_path(warp.to.map_name)}.bak");
+    }
+    editor.add_normal_fog_gate_event(
+        warp.from.map_name, warp.from.script_id, warp.from.warp_src_id,
+        warp.to.location_id, Util.parse_map_name(warp.to.map_name)
+    );
+    editor.add_normal_fog_gate_event(
+        warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
+        warp.from.location_id, Util.parse_map_name(warp.from.map_name)
+    );
+}
+
+foreach (var map_name in map_names.Values)
+{
+    editor.save_map(map_name, get_esd_file_path(map_name));
+}
+Console.WriteLine("Done");

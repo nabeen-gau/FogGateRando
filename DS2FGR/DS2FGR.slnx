@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../ESDLang/ESDLang/ESDLang.csproj" />
   <Project Path="../SoulsFormatsNEXT/SoulsFormats/SoulsFormats.csproj" />
   <Project Path="DS2FGR/DS2FGR.csproj" />
 </Solution>

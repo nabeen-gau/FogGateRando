@@ -2,3 +2,6 @@
 	path = SoulsFormatsNEXT
 	url = https://github.com/soulsmods/SoulsFormatsNEXT.git
 	branch = Aqua-Additions
+[submodule "ESDLang"]
+	path = ESDLang
+	url = https://github.com/thefifthmatt/ESDLang.git

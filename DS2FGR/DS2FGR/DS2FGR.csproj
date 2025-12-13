@@ -18,7 +18,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ESDLang\ESDLang\ESDLang.csproj" />
     <ProjectReference Include="..\..\SoulsFormatsNEXT\SoulsFormats\SoulsFormats.csproj" />
   </ItemGroup>
+
+	<Target Name="CopyResFolder" AfterTargets="Build">
+		<ItemGroup>
+			<ResFiles Include="$(ProjectDir)res\**\*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(ResFiles)"
+			DestinationFiles="@(ResFiles->'$(TargetDir)res\%(RecursiveDir)%(Filename)%(Extension)')"
+			SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>

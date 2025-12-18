@@ -2586,6 +2586,15 @@ foreach (var warp in selectedPairs)
             warp.to.location_id, Util.parse_map_name(warp.to.map_name)
         );
     }
+    // if inside boss fight prevent player from leaving before killing the boss
+    else if (warp.from.boss_locked && warp.from.boss.name != BossName.None)
+    {
+        editor.add_boss_alive_fog_gate_event(
+            warp.from.map_name, warp.from.script_id, warp.from.warp_src_id,
+            warp.to.location_id, Util.parse_map_name(warp.to.map_name),
+            warp.from.boss.destruction_flag
+        );
+    }
     else
     {
         editor.add_normal_fog_gate_event(
@@ -2604,11 +2613,50 @@ foreach (var warp in selectedPairs)
             warp.from.location_id, Util.parse_map_name(warp.from.map_name)
         );
     }
+    // if inside boss fight prevent player from leaving before killing the boss
+    else if (warp.to.boss_locked && warp.to.boss.name != BossName.None)
+    {
+        editor.add_boss_alive_fog_gate_event(
+            warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
+            warp.from.location_id, Util.parse_map_name(warp.from.map_name),
+            warp.to.boss.destruction_flag
+        );
+    }
     else
     {
         editor.add_normal_fog_gate_event(
             warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
             warp.from.location_id, Util.parse_map_name(warp.from.map_name)
+        );
+    }
+
+    // if the fogdoor has cutscene it must run the cutscene when the player spawns
+    if (warp.to.boss.cutscene && warp.to.boss_locked)
+    {
+        int fog_gate_id = warp.to.fog_gate_id;
+        if (warp.to.boss.exit)
+        {
+            fog_gate_id = warp.to.twin_fog_gate_id;
+        }
+        editor.add_play_cutscene_event(
+            warp.to.map_name,
+            warp.to.cutscene_script_id,
+            warp.to.location_id,
+            fog_gate_id
+        );
+    } 
+    if (warp.from.boss.cutscene && warp.from.boss_locked)
+    {
+        int fog_gate_id = warp.from.fog_gate_id;
+        if (warp.from.boss.exit)
+        {
+            fog_gate_id = warp.from.twin_fog_gate_id;
+        }
+        editor.add_play_cutscene_event(
+            warp.from.map_name,
+            warp.from.cutscene_script_id,
+            warp.from.location_id,
+            fog_gate_id
         );
     }
 }

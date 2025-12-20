@@ -49,7 +49,7 @@ Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>
     {BossName.RuinSentinels,                116000081},
     {BossName.TheLostSinner,                116000086},
     {BossName.BelfryGargoyles,              116000091},
-    {BossName.SkeletonLords,                1023000},
+    {BossName.SkeletonLords,                123000086},
     {BossName.ExecutionersChariot,          123000081},
     {BossName.CovetousDemon,                117000081},
     {BossName.MythaTheBanefulQueen,         117000091},
@@ -756,9 +756,9 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
     new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true, reverse: true),
 };
 fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
-    new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords, use_second_death_check_impl: true),
+    new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords),
     new FogWall(WarpNode.ChariotEntryFront, "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
-    new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true, use_second_death_check_impl: true),
+    new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true),
     new FogWall(WarpNode.ChariotExitFront, "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true, reverse: true),
 };

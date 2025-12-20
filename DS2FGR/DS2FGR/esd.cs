@@ -272,6 +272,40 @@ namespace FogWallNS
             return states;
         }
 
+        ESDL.State create_state_zero2147483143(long id)
+        {
+            ESDL.State state = new();
+            ESDL.Condition c0 = new();
+            c0.Evaluator = "ConditionGroup(0)";
+            c0.TargetState = 1;
+            state.Conditions.Add(c0);
+            state.Name = $"State{id}-3";
+            state.EntryScript = $"IsEventBossKill(0, StateGroupArg[0], 0, 1);";
+            state.ID = 0;
+            return state;
+        }
+
+        ESDL.State create_state_one2147483143(long id)
+        {
+            ESDL.State state = new();
+            ESDL.Condition c0 = new();
+            c0.Evaluator = "1";
+            c0.PassScript = "7:-1(0);";
+            state.Conditions.Add(c0);
+            state.Name = $"State{id}-3";
+            state.EntryScript = $"IsEventBossKill(0, StateGroupArg[0], 0, 1);";
+            state.ID = 1;
+            return state;
+        }
+
+        public Dictionary<long, ESDL.State>  create_state2147483143(long id)
+        {
+            Dictionary<long, ESDL.State> states = new();
+            states[0] = create_state_zero2147483143(id);
+            states[1] = create_state_one2147483143(id);
+            return states;
+        }
+
         ESDL.State create_ship_check_state_one(long id, int global_flag)
         {
             ESDL.Condition condition = new();
@@ -473,6 +507,19 @@ namespace FogWallNS
             return state;
         }
 
+        ESDL.State create_boss_back_state_two_2nd_impl(long id,
+            int warp_obj_inst_id, int event_loc, int map_id, int boss_destruction_id
+        )
+        {
+            ESDL.State state = new();
+            ESDL.Condition c1 = B9neBA(1);
+            state.Conditions.Add(c1);
+            state.EntryScript = $"DisableObjKeyGuide({warp_obj_inst_id}, 1);\n6:2147483143({boss_destruction_id});";
+            state.Name = $"State{id}-1";
+            state.ID = 2;
+            return state;
+        }
+
         public Dictionary<long, ESDL.State> create_boss_back_fog_gate_event(long id,
             int warp_obj_inst_id, int event_loc, int map_id, int boss_destruction_id
         )
@@ -481,6 +528,18 @@ namespace FogWallNS
             states[0] = create_boss_back_state_zero(id);
             states[1] = create_boss_back_state_one(id, warp_obj_inst_id, event_loc, map_id);
             states[2] = create_boss_back_state_two(id, warp_obj_inst_id, event_loc, map_id, boss_destruction_id);
+            states[3] = restart_machine_state(3);
+            return states;
+        }
+
+        public Dictionary<long, ESDL.State> create_boss_back_fog_gate_event_2nd_impl(long id,
+            int warp_obj_inst_id, int event_loc, int map_id, int boss_destruction_id
+        )
+        {
+            Dictionary<long, ESDL.State> states = new();
+            states[0] = create_state_init(id, 2);
+            states[1] = create_boss_back_state_one(id, warp_obj_inst_id, event_loc, map_id);
+            states[2] = create_boss_back_state_two_2nd_impl(id, warp_obj_inst_id, event_loc, map_id, boss_destruction_id);
             states[3] = restart_machine_state(3);
             return states;
         }
@@ -577,12 +636,15 @@ namespace FogWallNS
 			var state2147483146 = fns.create_state2147483146(2147483146);
 			var state2147483145 = fns.create_state2147483145(2147483145);
 			var state2147483144 = fns.create_state2147483144(2147483144);
+            var state2147483143 = fns.create_state2147483143(2147483143);
             var state2147483142 = fns.create_state2147483142(2147483142);
             var state2147483141 = fns.create_state2147483141(2147483141, 102002, 1214);
             esds[map_name].StateGroupNames[2147483141] = "StateGroup2147483141";
 			esds[map_name].StateGroups[2147483141] = state2147483141;
             esds[map_name].StateGroupNames[2147483142] = "StateGroup2147483142";
 			esds[map_name].StateGroups[2147483142] = state2147483142;
+            esds[map_name].StateGroupNames[2147483143] = "StateGroup2147483143";
+			esds[map_name].StateGroups[2147483143] = state2147483143;
             esds[map_name].StateGroupNames[2147483144] = "StateGroup2147483144";
 			esds[map_name].StateGroups[2147483144] = state2147483144;
 			esds[map_name].StateGroupNames[2147483145] = "StateGroup2147483145";
@@ -624,6 +686,16 @@ namespace FogWallNS
         )
         {
             var state = fns.create_boss_back_fog_gate_event(id, warp_obj_inst_id, event_loc, map_id, boss_destruction_id);
+            esds[map_name].StateGroupNames[id] = $"StateGroup{id}";
+            esds[map_name].StateGroups[id] = state;
+        }
+
+        // checks if boss is dead or not and prevent warp (for skelelords)
+        public void add_boss_alive_fog_gate_event_2nd_impl(String map_name, long id,
+            int warp_obj_inst_id, int event_loc, int map_id, int boss_destruction_id
+        )
+        {
+            var state = fns.create_boss_back_fog_gate_event_2nd_impl(id, warp_obj_inst_id, event_loc, map_id, boss_destruction_id);
             esds[map_name].StateGroupNames[id] = $"StateGroup{id}";
             esds[map_name].StateGroups[id] = state;
         }

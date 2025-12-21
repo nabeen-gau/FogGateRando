@@ -42,6 +42,21 @@ namespace FogWallNS
 			this.state[state.ID] = state;
 		}
 
+		public void wait_until_boss_is_aggro(long state_id, long target_state_if_true, long target_state_if_false, int boss_hostility_flag)
+		{
+			ESDL.Condition c1 = new();
+			c1.Evaluator = "ConditionGroup(0)";
+			c1.TargetState = target_state_if_true;
+			ESDL.Condition c2 = new();
+			c2.TargetState = target_state_if_false;
+			ESDL.State state = new();
+			state.Conditions.Add(c1);
+			state.Conditions.Add(c2);
+			state.EntryScript = $"CompareEventFlag(0, {boss_hostility_flag}, 1);";
+			state.ID = state_id;
+			this.state[state.ID] = state;
+		}
+
 		public void wait_until_all_enemies_dead(long state_id, long target_state, List<int> enemy_ids)
 		{
             ESDL.State state = new();
@@ -257,6 +272,15 @@ namespace FogWallNS
 			// if it is a boss door disable interact and wait until boss is dead
 			if (from.boss.name != BossName.None && from.boss_locked)
 			{
+				// if the boss is vendrick only disable the key guide if he is aggro
+				if (from.boss.name == BossName.Vendrick)
+				{
+					int n_states_to_skip = 3;
+					state.wait_until_boss_is_aggro(state_id++,
+						target_state_if_true: state_id,
+						target_state_if_false: state_id + n_states_to_skip,
+						Constants.vendricks_hostility_flag);
+				}
 				state.disable_obj_key_guide(state_id++, state_id, from.warp_src_id);
 				state.wait_until_boss_is_dead(state_id++, state_id, from.boss.destruction_flag);
 				state.enable_obj_key_guide(state_id++, state_id, from.warp_src_id);
@@ -268,9 +292,21 @@ namespace FogWallNS
 				state.wait_until_all_enemies_dead(state_id++, state_id, Constants.chasm_enemy_ids[from.fog_wall_name]);
 				state.enable_obj_key_guide(state_id++, state_id, from.warp_src_id);
 			}
-			// TODO: vendrick gate check goes here
 			// wait until interact is pressed
             state.wait_until_interact_with_obj(state_id++, state_id, from.warp_src_id);
+            // if the boss is vendrick only disable the key guide if he is aggro and enable back after he is dead
+			if (from.boss.name == BossName.Vendrick)
+			{
+				long n_states_to_skip = 4;
+				state.wait_until_boss_is_aggro(state_id++,
+                    target_state_if_true:  state_id, 
+                    target_state_if_false: state_id + n_states_to_skip, 
+                    Constants.vendricks_hostility_flag);
+				state.disable_obj_key_guide(state_id++, state_id, from.warp_src_id);
+				state.wait_until_boss_is_dead(state_id++, state_id, from.boss.destruction_flag);
+				state.enable_obj_key_guide(state_id++, state_id, from.warp_src_id);
+                state.wait_until_interact_with_obj(state_id++, state_id, from.warp_src_id);
+			}
 			//// if it is from chasm set the dungeon complete flag
 			if (is_chasm_door)
 			{

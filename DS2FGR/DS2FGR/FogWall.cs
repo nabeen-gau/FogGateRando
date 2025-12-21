@@ -344,9 +344,22 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int ruin_sentinels_spawn_event_loc_id = 1400000;
 		public const float ruin_sentinels_spawn_event_posy = -4.522f;
 		public const float ruin_sentinels_spawn_event_scaley = 16.0f;
-	}
+        public readonly static Dictionary<WarpNode, List<int>> chasm_enemy_ids = new Dictionary<WarpNode, List<int>>()
+        {
+            {WarpNode.DarkChasmFromBlackGulchExitFront, new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
+            {WarpNode.DarkChasmFromDrangleicCastleExitFront, new List<int>(){1004, 1009, 1012, 3100} },
+            {WarpNode.DarkChasmFromShadedWoodsExitFront, new List<int>(){1000, 1002, 1003, 3000} },
+        };
+        public readonly static Dictionary<WarpNode, int> chasm_event_flags = new()
+        {
+            {WarpNode.DarkChasmFromShadedWoodsExitFront, 403000001},
+            {WarpNode.DarkChasmFromDrangleicCastleExitFront, 403000002},
+            {WarpNode.DarkChasmFromBlackGulchExitFront, 403000003},
+        };
 
-	public struct FogGateInfo
+    }
+
+    public struct FogGateInfo
 	{
 		public String map_name;
 		public FogGateType type;

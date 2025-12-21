@@ -786,5 +786,10 @@ namespace FogWallNS
 			BinaryWriterEx writer = new(false, file);
 			esds[map_name].WriteWithContext(writer, ctx);
 		}
+
+        public void add_aio_fog_wall_event(Warp warp)
+        {
+            Event.add_aio_fog_wall_event(esds, warp);
+        }
 	}
 }

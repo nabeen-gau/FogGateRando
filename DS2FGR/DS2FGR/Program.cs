@@ -2575,61 +2575,9 @@ foreach (var warp in selectedPairs)
     {
         editor.load_map(warp.to.map_name, $"{get_esd_file_path(warp.to.map_name)}.bak");
     }
+
     // TODO: add the option for chasm exit gates
-
-    // if warping to no mans wharf check if ship has arrived before warping
-    if (warp.to.map_name == map_names[MapName.NomansWharf] 
-            && (warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
-                && warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
-    {
-        editor.add_ship_check_from_fog_gate_event(
-            warp.from.map_name, warp.from.script_id, warp.from.warp_src_id,
-            warp.to.location_id, Util.parse_map_name(warp.to.map_name)
-        );
-    }
-    // if inside boss fight prevent player from leaving before killing the boss
-    else if (warp.from.boss_locked && warp.from.boss.name != BossName.None)
-    {
-        editor.add_boss_alive_fog_gate_event(
-            warp.from.map_name, warp.from.script_id, warp.from.warp_src_id,
-            warp.to.location_id, Util.parse_map_name(warp.to.map_name),
-            warp.from.boss.destruction_flag
-        );
-    }
-    else
-    {
-        editor.add_normal_fog_gate_event(
-            warp.from.map_name, warp.from.script_id, warp.from.warp_src_id,
-            warp.to.location_id, Util.parse_map_name(warp.to.map_name)
-        );
-    }
-
-    // if warping from no mans wharf check if ship has arrived before warping
-    if (warp.from.map_name == map_names[MapName.NomansWharf]
-            && (warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
-                && warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
-    {
-        editor.add_ship_check_from_fog_gate_event(
-            warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
-            warp.from.location_id, Util.parse_map_name(warp.from.map_name)
-        );
-    }
-    // if inside boss fight prevent player from leaving before killing the boss
-    else if (warp.to.boss_locked && warp.to.boss.name != BossName.None)
-    {
-        editor.add_boss_alive_fog_gate_event(
-            warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
-            warp.from.location_id, Util.parse_map_name(warp.from.map_name),
-            warp.to.boss.destruction_flag
-        );
-    }
-    else
-    {
-        editor.add_normal_fog_gate_event(
-            warp.to.map_name, warp.to.script_id, warp.to.warp_src_id,
-            warp.from.location_id, Util.parse_map_name(warp.from.map_name)
-        );
-    }
+    editor.add_aio_fog_wall_event(warp);
 
     // if the fogdoor has cutscene it must run the cutscene when the player spawns
     if (warp.to.boss.cutscene && warp.to.boss_locked)

@@ -3,7 +3,41 @@ using System.Numerics;
 
 namespace FogWallNS
 {
-	public class FogWall
+	public static class MapNames
+	{
+        public static readonly Dictionary<MapName, String> get = new Dictionary<MapName, String>()
+        {
+            { MapName.ThingsBetwixt,                "m10_02_00_00"},
+            { MapName.Majula,                       "m10_04_00_00"},
+            { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
+            { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
+            { MapName.AldiasKeep,                   "m10_15_00_00"},
+            { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
+            { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
+            { MapName.NomansWharf,                  "m10_18_00_00"},
+            { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
+            { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
+            { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
+            { MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
+            { MapName.MajulaShadedWoods,            "m10_29_00_00"},
+            ////{ MapName.HeidesToNoMansWharf,          "m10_30_00_00"}, // disabled (no fog gates)
+            { MapName.HeidesTowerofFlame,           "m10_31_00_00"},
+            { MapName.ShadedWoodsShrineofWinter,    "m10_32_00_00"},
+            { MapName.DoorsofPharros,               "m10_33_00_00"},
+            { MapName.GraveofSaints,                "m10_34_00_00"},
+            { MapName.MemoryofVammarOrroandJeigh,   "m20_10_00_00"},
+            { MapName.ShrineofAmana,                "m20_11_00_00"},
+            { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
+            { MapName.UndeadCrypt,                  "m20_24_00_00"},
+            { MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
+            { MapName.DarkChasmofOld,               "m40_03_00_00"},
+            { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
+            { MapName.BrumeTower,                   "m50_36_00_00"},
+            { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
+            { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
+        };
+    }
+    public class FogWall
 	{
 		public WarpNode name;
 		public String map_name;
@@ -169,6 +203,14 @@ namespace FogWallNS
 
 	public static class Util
 	{
+		public static bool is_bell_check_required(String map_name, WarpNode node)
+		{
+			if (map_name == MapNames.get[MapName.NomansWharf]
+				&& (node != WarpNode.NoMansWharfToHeidesBack && node != WarpNode.NoMansWharfToHeidesFront)) 
+                    return true;
+			return false;
+        }
+
         public static String check_backup(String name)
         {
             if (!File.Exists(name + ".bak"))

@@ -2575,6 +2575,7 @@ foreach (var warp in selectedPairs)
     {
         editor.load_map(warp.to.map_name, $"{get_esd_file_path(warp.to.map_name)}.bak");
     }
+    // TODO: add the option for chasm exit gates
 
     // if warping to no mans wharf check if ship has arrived before warping
     if (warp.to.map_name == map_names[MapName.NomansWharf] 

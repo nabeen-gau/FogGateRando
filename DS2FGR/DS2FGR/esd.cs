@@ -608,6 +608,74 @@ namespace FogWallNS
             states[state_id] = restart_machine_state(state_id);
             return states;
         }
+
+        ESDL.State create_disable_keyguide_and_wait_for_interact_event(long id, long state_id,
+            int warp_obj_inst_id, int event_loc, int map_id
+        )
+        {
+            ESDL.Condition condition = B9neBA(3);
+            ESDL.State state = new();
+            state.EntryScript = $"DisableObjKeyGuide({warp_obj_inst_id}, 0);\n6:2147483145({warp_obj_inst_id});";
+            state.Conditions.Add(condition);
+            state.Name = $"State{id}-{state_id}";
+            state.ID = state_id;
+            return state;
+        }
+
+        ESDL.Condition create_target_condition(long target)
+        {
+            return new ESDL.Condition()
+            {
+                TargetState = target,
+                Evaluator = "1"
+            };
+        }
+
+
+        ESDL.State create_check_all_enemies_dead(long id,
+            int warp_obj_inst_id, int event_loc, int map_id, List<int> enemy_ids
+        )
+        {
+            ESDL.State state = new();
+            ESDL.Condition c1 = assert_condition_group(8, 1);
+            state.Conditions.Add(c1);
+            ESDL.Condition c2 = create_target_condition(4);
+            state.Conditions.Add(c2);
+            state.EntryScript = $"DisableObjKeyGuide({warp_obj_inst_id}, 1);";
+            foreach (var i in enemy_ids)
+            {
+                state.EntryScript += $"\nIsChrDeadOrRespawnOver(8, {i}, 1);";
+            }
+            state.Name = $"State{id}-2";
+            state.ID = 2;
+            return state;
+        }
+
+        ESDL.State create_set_chasm_complete_warp(long id, long state_id, int event_flag, int warp_obj_inst_id, int event_loc, int map_id)
+        {
+            ESDL.State state = new();
+            ESDL.Condition c1 = B9neBA(4);
+            state.Conditions.Add(c1);
+            state.EntryScript = $"SetEventFlag({event_flag}, 1);\n6:2147483144({event_loc}, {warp_obj_inst_id}, {map_id});";
+            state.Name = $"State{id}-{state_id}";
+            state.ID = state_id;
+            return state;
+        }
+
+        public void create_chasm_exit_gate_event(ESDL esd, long id,
+            int warp_obj_inst_id, int event_loc, int map_id, List<int> enemy_ids, int event_flag
+        )
+        {
+            Dictionary<long, ESDL.State> states = new();
+            states[0] = create_state_init(id, 2);
+            states[1] = create_disable_keyguide_and_wait_for_interact_event(id, 1, warp_obj_inst_id, event_loc, map_id);
+            states[2] = create_check_all_enemies_dead(id, warp_obj_inst_id, event_loc, map_id, enemy_ids);
+            states[3] = create_set_chasm_complete_warp(id, 3, event_flag, warp_obj_inst_id, event_loc, map_id);
+            states[4] = restart_machine_state(4);
+            esd.StateGroupNames[id] = $"StateGroup{id}";
+            esd.StateGroups[id] = states;
+        }
+
     }
 
     public class ESDEditor

@@ -56,6 +56,20 @@ namespace FogWallNS
 			state.ID = state_id;
 			this.state[state.ID] = state;
 		}
+		public void check_if_flag_is_set(long state_id, long target_state_if_true, long target_state_if_false, int event_flag)
+		{
+			ESDL.Condition c1 = new();
+			c1.Evaluator = $"GetEventFlag({event_flag} != 0)";
+			c1.TargetState = target_state_if_true;
+			ESDL.Condition c2 = new();
+			c2.TargetState = target_state_if_false;
+			ESDL.State state = new();
+			state.Conditions.Add(c1);
+			state.Conditions.Add(c2);
+			state.ID = state_id;
+			this.state[state.ID] = state;
+		}
+
 
 		public void wait_until_all_enemies_dead(long state_id, long target_state, List<int> enemy_ids)
 		{
@@ -283,6 +297,16 @@ namespace FogWallNS
 				}
 				state.disable_obj_key_guide(state_id++, state_id, from.warp_src_id);
 				state.wait_until_boss_is_dead(state_id++, state_id, from.boss.destruction_flag);
+				// for final boss fight you can leave the fight if giant lord is not dead else you are locked in the fight
+				if (from.boss.name == BossName.ThroneWatcherAndDefender)
+				{
+					int n_states_to_skip = 1;
+					state.check_if_flag_is_set(state_id++,
+						target_state_if_true: state_id + n_states_to_skip,
+						target_state_if_false: state_id,
+						Constants.giant_lord_defeat_flag);
+					state.restart_machine_state(state_id++);
+				}
 				state.enable_obj_key_guide(state_id++, state_id, from.warp_src_id);
 			}
 			// if it is a chasm door disable interact and wait until the dungeon is cleared

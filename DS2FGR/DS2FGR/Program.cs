@@ -6,84 +6,6 @@ using System.Text;
 using static SoulsFormats.PARAM;
 using static SoulsFormats.PARAMDEF;
 
-Dictionary<MapName, String> map_names = new Dictionary<MapName, String>()
-{
-    { MapName.ThingsBetwixt,                "m10_02_00_00"},
-    { MapName.Majula,                       "m10_04_00_00"},
-    { MapName.ForestOfTheFallenGiants,      "m10_10_00_00"},
-    { MapName.BrightstoneCoveTseldora,      "m10_14_00_00"},
-    { MapName.AldiasKeep,                   "m10_15_00_00"},
-    { MapName.TheLostBastilleBelfryLuna,    "m10_16_00_00"},
-    { MapName.HarvestValleyEarthenPeak,     "m10_17_00_00"},
-    { MapName.NomansWharf,                  "m10_18_00_00"},
-    { MapName.IronKeepBelfrySol,            "m10_19_00_00"},
-    { MapName.HuntsmanCopseUndeadPurgatory, "m10_23_00_00"},
-    { MapName.TheGutterBlackGulch,          "m10_25_00_00"},
-    { MapName.DragonAerieDragonShrine,      "m10_27_00_00"},
-    { MapName.MajulaShadedWoods,            "m10_29_00_00"},
-    ////{ MapName.HeidesToNoMansWharf,          "m10_30_00_00"}, // disabled (no fog gates)
-    { MapName.HeidesTowerofFlame,           "m10_31_00_00"},
-    { MapName.ShadedWoodsShrineofWinter,    "m10_32_00_00"},
-    { MapName.DoorsofPharros,               "m10_33_00_00"},
-    { MapName.GraveofSaints,                "m10_34_00_00"},
-    { MapName.MemoryofVammarOrroandJeigh,   "m20_10_00_00"},
-    { MapName.ShrineofAmana,                "m20_11_00_00"},
-    { MapName.DrangleicCastleThroneofWant,  "m20_21_00_00"},
-    { MapName.UndeadCrypt,                  "m20_24_00_00"},
-    { MapName.DragonMemories,               "m20_26_00_00"}, // disabled (no fog gates)
-    { MapName.DarkChasmofOld,               "m40_03_00_00"},
-    { MapName.ShulvaSanctumCity,            "m50_35_00_00"},
-    { MapName.BrumeTower,                   "m50_36_00_00"},
-    { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
-    { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
-};
-
-// GetEventFlag
-Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>()
-{
-    {BossName.TheLastGiant,                 110000081},
-    {BossName.ThePursuer,                   110000086},
-    {BossName.Dragonrider,                  131000081},
-    {BossName.OldDragonslayer,              131000086},
-    {BossName.FlexileSentry,                118000081},
-    {BossName.RuinSentinels,                116000081},
-    {BossName.TheLostSinner,                116000086},
-    {BossName.BelfryGargoyles,              116000091},
-    {BossName.SkeletonLords,                123000086},
-    {BossName.ExecutionersChariot,          123000081},
-    {BossName.CovetousDemon,                117000081},
-    {BossName.MythaTheBanefulQueen,         117000091},
-    {BossName.SmelterDemon,                 119000081},
-    {BossName.OldIronKing,                  119000086},
-    {BossName.ScorpionessNajka,             132000081},
-    {BossName.RoyalRatAuthority,            133000081},
-    {BossName.ProwlingMagusAndCongregation, 114000096},
-    {BossName.TheDukesDearFreja,            114000081},
-    {BossName.RoyalRatVanguard,             134000081},
-    {BossName.TheRotten,                    125000081},
-    {BossName.TwinDragonrider,              221000081},
-    {BossName.LookingGlassKnight,           221000086},
-    {BossName.DemonofSong,                  211000081},
-    {BossName.VelstadtTheRoyalAegis,        224000081},
-    {BossName.Vendrick,                     224000086},
-    {BossName.GuardianDragon,               115000081},
-    {BossName.AncientDragon,                127000081},
-    {BossName.GiantLord,                    210000081},
-    {BossName.ThroneWatcherAndDefender,     221000091},
-    {BossName.Nashandra,                    221000096},
-    {BossName.AldiaScholarOfTheFirstSin,    221000006},
-    {BossName.Darklurker,                   403000081},
-    {BossName.ElanaTheSqualidQueen,         535000081},
-    {BossName.SinhTheSlumberingDragon,      535000096},
-    {BossName.Gankfight,                    535000091},
-    {BossName.FumeKnight,                   536000081},
-    {BossName.SirAlonne,                    536000086},
-    {BossName.BlueSmelterDemon,             536000091},
-    {BossName.AavaTheKingsPet,              537000081},
-    {BossName.BurntIvoryKing,               537000086},
-    {BossName.LudAndZallen,                 537000091},
-};
-
 MSB2 load_map(String path)
 {
     String new_path = Util.check_backup(path);
@@ -145,7 +67,6 @@ PARAMDEF get_obj_inst_def_paramdef_ex(
 
 PARAMDEF get_obj_inst_def_paramdef(PARAM param)
 {
-
     return get_obj_inst_def_paramdef_ex(param, 100, 0, 255, 50, 255);
 }
 
@@ -225,241 +146,6 @@ PARAMDEF get_event_loc_def_paramdef(PARAM param)
     return get_event_loc_def_paramdef_ex(param, new Vector3(0), new Vector3(0));
 }
 
-String generate_esd_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return @$"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Normal fog gate event""""""
-    assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    RestartMachine()
-    Quit()
-";
-}
-
-String generate_esd_script_boss_from_behind(String map_name, int script_id, int warp_src_id, int warp_dest_id, String dst_map_name,
-    BossName boss_name, String name, int destruction_flag)
-{
-    String map_id = map_name.Substring(0, 6);
-    int dst_map_id = Util.parse_map_name(dst_map_name);
-    if (dst_map_name == map_names[MapName.NomansWharf])
-    {
-        return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Wharf fog gate event with boss flag""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    call = event_{map_id}_x505(flag8={destruction_flag})
-    if call.Get() == 1:
-        DisableObjKeyGuide({warp_src_id}, 0)
-        assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-        assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
-    elif call.Get() == 0:
-        pass
-    RestartMachine()
-    Quit()
-";
-    }
-    return @$"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Boss({name}) fog gate event""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    call = event_{map_id}_x505(flag8={destruction_flag})
-    if call.Get() == 1:
-        DisableObjKeyGuide({warp_src_id}, 0)
-        assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    elif call.Get() == 0:
-        pass
-    RestartMachine()
-    Quit()
-";
-}
-
-String generate_esd_script_boss_from_behind_v2(String map_name, int script_id, int warp_src_id, int warp_dest_id, String dst_map_name, 
-    BossName boss_name, String name, int destruction_flag)
-{
-    String map_id = map_name.Substring(0, 6);
-    int dst_map_id = Util.parse_map_name(dst_map_name);
-    if (dst_map_name == map_names[MapName.NomansWharf])
-    {
-        return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Wharf fog gate event with boss flag v2""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    assert event_{map_id}_x504(battle_id={destruction_flag})
-    DisableObjKeyGuide({warp_src_id}, 0)
-    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-    assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
-    RestartMachine()
-    Quit()
-";
-    }
-    return @$"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Boss({name}) fog gate event""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    assert event_{map_id}_x504(battle_id={destruction_flag})
-    DisableObjKeyGuide({warp_src_id}, 0)
-    assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    RestartMachine()
-    Quit()
-";
-}
-
-String generate_vendrick_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id,
-    int dst_map_id, BossName boss_name, String name, int destruction_flag)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Boss({name}) fog gate event""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-    call = event_{map_id}_x505(flag8={destruction_flag})
-    if call.Get() == 1:
-        DisableObjKeyGuide({warp_src_id}, 0)
-        assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    elif call.Get() == 0:
-        CompareEventFlag(0, {Constants.vendricks_hostility_flag}, 1)
-        if ConditionGroup(0):
-            pass
-        else:
-            DisableObjKeyGuide({warp_src_id}, 0)
-            assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    RestartMachine()
-    Quit()
-";
-}
-
-// NOTES
-//# SetEventFlag(403000001, 1) # shadedwoods
-//# SetEventFlag(403000002, 1) # castle
-//# SetEventFlag(403000003, 1) # gulch
-
-String generate_dark_chasm_fog_gate_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id,
-    List<int> enemies_ids, int chasm_event_flag, String name)
-{
-    String map_id = map_name.Substring(0, 6);
-    String ret = $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Dark chasm({name}) fog gate event""""""
-    DisableObjKeyGuide({warp_src_id}, 1)
-";
-    foreach (int id in enemies_ids)
-    {
-        ret += $"    IsChrDeadOrRespawnOver(8, {id}, 1)\n";
-    }
-    ret += @$"    if ConditionGroup(8):
-        DisableObjKeyGuide({warp_src_id}, 0)
-        assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-        SetEventFlag({chasm_event_flag}, 1)
-        assert event_{map_id}_x503(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-    else:
-        pass
-    RestartMachine()
-    Quit()
-";
-    return ret;
-}
-
-String generate_throne_room_exit_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_1010():
-    """"""State 0,2: [Preset] Throne room exit fog gate event""""""
-    # disable the prompt
-    DisableObjKeyGuide({warp_src_id}, 1)
-    # check if throne duo is dead?
-    call = event_{map_id}_x505(flag8={Constants.throne_watcher_defender_defeat_flag})
-    # if the throne duo is dead
-    if call.Get() == 1:
-        # check if the giant lord is dead
-        CompareEventFlag(0, {Constants.giant_lord_defeat_flag}, 0)
-        # if the giant lord is not dead
-        if ConditionGroup(0):
-            # enable the prompt
-            DisableObjKeyGuide({warp_src_id}, 0)
-            assert event_{map_id}_x501(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id})
-        else:
-            pass
-    elif call.Get() == 0:
-        pass
-    RestartMachine()
-    Quit()
-";
-
-}
-
-String generate_cutscene_event_script(String map_name, int script_id, int warp_dst_id, int fog_gate_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Cutscene play event""""""
-    assert InGame() != 0
-    IsPlayerInsidePoint(0, {warp_dst_id}, {warp_dst_id}, 1)
-    assert ConditionGroup(0)
-    ChangeObjState({fog_gate_id}, 100)
-    assert CompareObjStateId({fog_gate_id}, 100, 1)
-    RestartMachine()
-    Quit()
-";
-}
-
-// this should be in wharf's script
-String generate_ship_global_event_flag_set_script(String map_name, int script_id = Constants.ship_event_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Wharf ship fog gate event""""""
-    if GetEventFlag({Constants.ship_arrival_local_flag}) != 0:
-        SetEventFlag({Constants.ship_global_event_flag}, 1)
-        CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
-        assert ConditionGroup(0)
-        EndMachine()
-        Quit()
-    else:
-        RestartMachine()
-        Quit()
-";
-}
-
-// this should be where wharf's gate links to
-String generate_to_wharf_warp_event_script(String map_name, int script_id, int warp_src_id, int warp_dest_id, int dst_map_id)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{script_id}():
-    """"""State 0,2: [Preset] Wharf fog gate event""""""
-    assert event_{map_id}_x502(warp_obj_inst_id={warp_src_id})
-    assert event_{map_id}_x506(warp_obj_inst_id={warp_src_id}, event_loc={warp_dest_id}, map_id={dst_map_id});
-    RestartMachine()
-    Quit()
-";
-}
-
-
-// unfreezing dlc event
-String generate_dlc3_unfreeze_event_script(String map_name)
-{
-    String map_id = map_name.Substring(0, 6);
-    return $@"
-def event_{map_id}_{Constants.dlc_unfreeze_event_id}():
-    """"""State 0,1: Did you defeat the ivory king""""""
-    CompareEventFlag(0, {boss_destruction_flags[BossName.BurntIvoryKing]}, 1)
-    assert ConditionGroup(0)
-    """"""State 2: Have you already talked with Alsanna?""""""
-    if GetEventFlag({Constants.alsanna_talk_flag}) != 0:
-        pass
-    else:
-        """"""State 3: Not talked""""""
-        SetEventFlag({Constants.alsanna_talk_flag})
-        assert GetEventFlag({Constants.alsanna_talk_flag}) != 0
-    EndMachine()
-    Quit()
-";
-}
-
 void write_string_to_file(String str, String file_path)
 {
     try
@@ -467,38 +153,6 @@ void write_string_to_file(String str, String file_path)
         str = str.Replace("\r\n", "\n");
         File.WriteAllText(file_path, str);
         Console.WriteLine($"[SUCCESS] {file_path} created.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[ERROR] {ex.Message}");
-    }
-}
-
-static void run_external_command(string command_path, string arguments)
-{
-    Process process = new Process();
-    process.StartInfo.FileName = command_path;
-    process.StartInfo.Arguments = arguments;
-    process.StartInfo.RedirectStandardOutput = true;
-    process.StartInfo.RedirectStandardError = true;
-    process.StartInfo.UseShellExecute = false;
-    process.StartInfo.CreateNoWindow = true;
-    try
-    {
-        Console.WriteLine($"[COMMAND] {command_path} {arguments}");
-        process.Start();
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-
-        if (!string.IsNullOrEmpty(error))
-        {
-            Console.WriteLine("[Output]" + output);
-            Console.WriteLine("[Error] " + error);
-        } else
-        {
-            Console.WriteLine("[COMMAND] Exited without any error.");
-        }
     }
     catch (Exception ex)
     {
@@ -616,58 +270,8 @@ String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
 
-Dictionary<WarpNode, List<int>> chasm_enemy_ids = new Dictionary<WarpNode, List<int>>()
-{
-    {WarpNode.DarkChasmFromBlackGulchExitFront, new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
-    {WarpNode.DarkChasmFromDrangleicCastleExitFront, new List<int>(){1004, 1009, 1012, 3100} },
-    {WarpNode.DarkChasmFromShadedWoodsExitFront, new List<int>(){1000, 1002, 1003, 3000} },
-};
-
-Dictionary<WarpNode, int> chasm_event_flags = new()
-{
-    {WarpNode.DarkChasmFromShadedWoodsExitFront, 403000001},
-    {WarpNode.DarkChasmFromDrangleicCastleExitFront, 403000002},
-    {WarpNode.DarkChasmFromBlackGulchExitFront, 403000003},
-};
-
-
-Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
-{
-    {BossName.TheDukesDearFreja, 100000 },
-    {BossName.OldIronKing, 1500000 },
-    {BossName.Darklurker, 200000 },
-};
-
-Dictionary<BossName, EventID> boss_quitout_event_loc = new ()
-{
-    {BossName.Vendrick, new EventID(5000000, new Vector3(138.692612f, 19.494614f, 169.913712f)) },
-};
-
-// in event param if
-// 0x8 - 0xa = 0
-// 0xa = 1
-// 0xc = 0
-// 0xd = 5
-// 0xe - 0xf = 0
-// the event is for cutscene
-// for nashandra = 12010
-// cutscene event id: EventEnded(id)
-Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
-{
-    {BossName.TheLastGiant, 6510 },
-    {BossName.ThePursuer, 6010 },
-    {BossName.TheLostSinner, 15010 },
-    {BossName.ExecutionersChariot, 9010 },
-    {BossName.OldIronKing, 15010 },
-    {BossName.TheDukesDearFreja, 4010 },
-    {BossName.TheRotten, 5010 },
-    {BossName.VelstadtTheRoyalAegis, 4010 },
-    {BossName.ThroneWatcherAndDefender, 12010 },
-};
-
-
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
-fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall(WarpNode.Tutorial1EntryFront, "o00_0500_0001"),
     new FogWall(WarpNode.Tutorial2EntryFront, "o00_0500_0003"),
     new FogWall(WarpNode.Tutorial3EntryFront, "o00_0500_0004", front_blocked: true),
@@ -675,7 +279,7 @@ fog_wall_dict[map_names[MapName.ThingsBetwixt]] = new List<FogWall> {
     new FogWall(WarpNode.Tutorial2ExitFront,  "o00_0500_0005"),
     new FogWall(WarpNode.Tutorial3ExitFront,  "o00_0500_0002"),
 };
-fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.Majula]] = new List<FogWall> {
     //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
     //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
     //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
@@ -686,10 +290,10 @@ fog_wall_dict[map_names[MapName.Majula]] = new List<FogWall> {
     new FogWall(WarpNode.MajulaToGutterFront, "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
     new FogWall(WarpNode.MajulaToShadedWoodsFront, "o00_0502_0103", pvp: true),
 };
-fog_wall_dict[map_names[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
-fog_wall_dict[map_names[MapName.Majula]][2].offset = new Vector3(0.0f,  1.390f -  0.413f, 0.0f);
-fog_wall_dict[map_names[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
-fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.Majula]][2].offset = new Vector3(0.0f,  1.390f -  0.413f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
     new FogWall(WarpNode.LastGiantEntryFront, "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
     new FogWall(WarpNode.PursuerEntryFront, "o00_0501_0003", boss_name: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
     new FogWall(WarpNode.PursuerExitFront, "o00_0500_0004", boss_name: BossName.ThePursuer, boss_exit: true, cutscene: true),
@@ -699,20 +303,20 @@ fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
     new FogWall(WarpNode.ForestOfFallenGiantsFromMajulaFront, "o00_0501_0002", pvp: true, reverse: true),
     new FogWall(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, "o00_0500_0005", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
-fog_wall_dict[map_names[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
     new FogWall(WarpNode.CongregationEntryFront, "o00_0500_0000", boss_name: BossName.ProwlingMagusAndCongregation),
     new FogWall(WarpNode.CongregationExitFront, "o00_0500_0001", boss_name: BossName.ProwlingMagusAndCongregation, boss_exit: true),
     new FogWall(WarpNode.BrightstoneCoveToDoorsOfPharrosFront, "o00_0500_0002", pvp: true),
     new FogWall(WarpNode.DukesDearFreyjaExitFront, "o00_0501_0001", boss_name: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
     new FogWall(WarpNode.DukesDearFreyjaEntryFront, "o00_0502_0000", boss_name: BossName.TheDukesDearFreja, cutscene: true),
 };
-fog_wall_dict[map_names[MapName.AldiasKeep]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.AldiasKeep]] = new List<FogWall> {
     new FogWall(WarpNode.GuardianDragonEntryFront, "o00_0501_0000", boss_name: BossName.GuardianDragon),
     new FogWall(WarpNode.GuardianDragonExitFront, "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
     new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
     new FogWall(WarpNode.GargoylesEntryFront, "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
     new FogWall(WarpNode.RuinSentinelsExitFront, "o00_0500_0001", boss_name: BossName.RuinSentinels, boss_exit: true, reverse: true),
     new FogWall(WarpNode.LostBastilleToSinnersRiseFront, "o00_0500_0005"),
@@ -729,7 +333,7 @@ fog_wall_dict[map_names[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> 
     new FogWall(WarpNode.LostSinnerEntryFront, "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
     new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003"),
 };
-fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
     new FogWall(WarpNode.CovetousDemonEntryFront, "o00_0500_0000", boss_name: BossName.CovetousDemon),
     new FogWall(WarpNode.EarthenPeakNearWindmillBurnLocationFront, "o00_0500_0001"),
     new FogWall(WarpNode.MythaEntryFront, "o00_0500_0002", boss_name: BossName.MythaTheBanefulQueen),
@@ -737,12 +341,12 @@ fog_wall_dict[map_names[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
     new FogWall(WarpNode.MythaExitFront, "o00_0501_0000", boss_name: BossName.MythaTheBanefulQueen, boss_exit: true),
     new FogWall(WarpNode.HarvestValleyToSkeletonLordsFront, "o00_0501_0001", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.NomansWharf]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.NomansWharf]] = new List<FogWall> {
     new FogWall(WarpNode.FlexileSentryExitFront,  "o00_0500_0000", boss_name: BossName.FlexileSentry, boss_exit: true),
     new FogWall(WarpNode.FlexileSentryEntryFront, "o00_0500_0001", boss_name: BossName.FlexileSentry),
     new FogWall(WarpNode.NoMansWharfToHeidesFront,  "o00_0501_0000", pvp: true),
 };
-fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.IronKeepBelfrySol]] = new List<FogWall> {
     new FogWall(WarpNode.SmeltorDemonEntryFront, "o00_0500_0000", boss_name: BossName.SmelterDemon),
     new FogWall(WarpNode.IronKeepNearFlameThrowerAndTurtleFront, "o00_0500_0002"),
     new FogWall(WarpNode.BelfrySolExitFront, "o00_0500_0003"),
@@ -755,28 +359,28 @@ fog_wall_dict[map_names[MapName.IronKeepBelfrySol]] = new List<FogWall> {
 //    new FogWall("IK_belfry_entry", "o00_0500_0011"), // duplicate of another maybe for pvp
     new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
     new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords),
     new FogWall(WarpNode.ChariotEntryFront, "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
     new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true),
     new FogWall(WarpNode.ChariotExitFront, "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.TheGutterBlackGulch]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.TheGutterBlackGulch]] = new List<FogWall> {
     new FogWall(WarpNode.GutterNearAntQueenFront, "o00_0500_0000"),
     new FogWall(WarpNode.TheRottenExitFront, "o00_0500_0001", boss_name: BossName.TheRotten, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.BlackGulchEntranceFront, "o00_0501_0000"),
     new FogWall(WarpNode.TheGutterFromGraveOfSaintsFront, "o00_0501_0001", pvp: true, reverse: true),
     new FogWall(WarpNode.TheRottenEntryFront, "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
 };
-fog_wall_dict[map_names[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
     new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0000", reverse: true),
     new FogWall(WarpNode.AncientDragonFront, "o00_0502_0000", boss_name: BossName.AncientDragon), // TODO: hostile determination
 };
-fog_wall_dict[map_names[MapName.MajulaShadedWoods]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.MajulaShadedWoods]] = new List<FogWall> {
     new FogWall(WarpNode.ShadedWoodsFromMajulaFront, "o00_0500_0100", pvp: true),
 };
-fog_wall_dict[map_names[MapName.HeidesTowerofFlame]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.HeidesTowerofFlame]] = new List<FogWall> {
     new FogWall(WarpNode.DragonriderEntryFront, "o00_0500_0000", boss_name: BossName.Dragonrider),
     new FogWall(WarpNode.DragonriderExitFront, "o00_0500_0001", boss_name: BossName.Dragonrider, boss_exit: true),
     new FogWall(WarpNode.HeidesToMajulaFront, "o00_0500_0002", pvp: true),
@@ -784,37 +388,37 @@ fog_wall_dict[map_names[MapName.HeidesTowerofFlame]] = new List<FogWall> {
     new FogWall(WarpNode.OldDragonslayerEntryFront, "o00_0501_0000", boss_name: BossName.OldDragonslayer),
     new FogWall(WarpNode.OldDragonslayerExitFront, "o00_0501_0001", boss_name: BossName.OldDragonslayer, boss_exit: true),
 };
-fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
     new FogWall(WarpNode.ScorpionessNajkaExitFront, "o00_0500_0000", boss_name: BossName.ScorpionessNajka, boss_exit: true),
     new FogWall(WarpNode.ShadedWoodsToMistyAreaFront, "o00_0501_0001", pvp: true, reverse: true),
     new FogWall(WarpNode.ScorpionessNajkaEntryFront, "o00_0503_0000", boss_name: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
 };
-fog_wall_dict[map_names[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
-fog_wall_dict[map_names[MapName.DoorsofPharros]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.DoorsofPharros]] = new List<FogWall> {
     new FogWall(WarpNode.RoyalRatAuthorityExitFront, "o00_0500_0000", boss_name: BossName.RoyalRatAuthority, boss_exit: true),
     new FogWall(WarpNode.DoorOfPharrosToOrdealEndBonfireFront, "o00_0500_0001", pvp: true),
     new FogWall(WarpNode.DoorOfPharrosToRatKingDomainFront, "o00_0500_0002", pvp: true),
     new FogWall(WarpNode.RoyalRatAuthorityEntryFront, "o00_0501_0000", boss_name: BossName.RoyalRatAuthority),
 };
-fog_wall_dict[map_names[MapName.GraveofSaints]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.GraveofSaints]] = new List<FogWall> {
     new FogWall(WarpNode.GraveOfSaintsFromPitFront, "o00_0500_0000", pvp: true, reverse: true),
     new FogWall(WarpNode.GraveOfSaintsNearUpperBonfireFront, "o00_0501_0000", pvp: true),
     new FogWall(WarpNode.RoyalRatVanguardEntryFront, "o00_0501_0001", boss_name: BossName.RoyalRatVanguard),
     new FogWall(WarpNode.RoyalRatVanguardExitFront, "o00_0501_0002", boss_name: BossName.RoyalRatVanguard, boss_exit: true),
 };
-fog_wall_dict[map_names[MapName.MemoryofVammarOrroandJeigh]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.MemoryofVammarOrroandJeigh]] = new List<FogWall> {
     new FogWall(WarpNode.GiantLordEntryFront, "o00_0500_0000", boss_name: BossName.GiantLord),
     new FogWall(WarpNode.GiantLordExitFront, "o00_0500_0001", boss_name: BossName.GiantLord, boss_exit: true),
 };
-fog_wall_dict[map_names[MapName.ShrineofAmana]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ShrineofAmana]] = new List<FogWall> {
     new FogWall(WarpNode.DemonOfSongEntryFront, "o00_0501_0000", boss_name: BossName.DemonofSong),
     new FogWall(WarpNode.ShrineOfAmanaTo2ndBonfireFront, "o00_0501_0001"),
     new FogWall(WarpNode.ShrineOfAmanaTo3rdBonfireFront, "o00_0501_0005"),
     new FogWall(WarpNode.DemonOfSongExitFront, "o00_0501_0006", boss_name: BossName.DemonofSong, boss_exit: true), // y_offset = 32.121f - 31.336f
     new FogWall(WarpNode.ShrineOfAmanaToDrangleicCastleFront, "o00_0501_0007", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
-fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
     new FogWall(WarpNode.LookingGlassKnightEntryFront, "o00_0501_0000", boss_name: BossName.LookingGlassKnight),
     new FogWall(WarpNode.TwinDragonridersEntryFront, "o00_0501_0001", boss_name: BossName.TwinDragonrider),
     new FogWall(WarpNode.TwinDragonridersExitFront, "o00_0501_0004", boss_name: BossName.TwinDragonrider, boss_exit: true),
@@ -823,23 +427,23 @@ fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]] = new List<FogWall
     new FogWall(WarpNode.DrangleicCastleToChasmPortalFront, "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
     new FogWall(WarpNode.DrangleicCastleToShadedWoodsFront, "o00_0504_0000", pvp: true, reverse: true),
 };
-fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
-fog_wall_dict[map_names[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
-fog_wall_dict[map_names[MapName.UndeadCrypt]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.UndeadCrypt]] = new List<FogWall> {
     new FogWall(WarpNode.UndeadCryptFromAgdayneToBonfireFront, "o00_0500_0000"),
     new FogWall(WarpNode.VelsdatEntryFront, "o00_0501_0000", boss_name: BossName.VelstadtTheRoyalAegis, cutscene: true),
     new FogWall(WarpNode.VelsdatExitFront, "o00_0501_0001", boss_name: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
     new FogWall(WarpNode.UndeadCryptToShrineOfAmanaFront, "o00_0502_0000", pvp: true),
     new FogWall(WarpNode.VendrickFront, "o00_0505_0000", boss_name: BossName.Vendrick),
 };
-fog_wall_dict[map_names[MapName.DarkChasmofOld]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]] = new List<FogWall> {
     new FogWall(WarpNode.DarkChasmFromBlackGulchExitFront, "o00_0501_0000"),
     new FogWall(WarpNode.DarkChasmFromDrangleicCastleExitFront, "o00_0501_0001"),
     new FogWall(WarpNode.DarkChasmFromShadedWoodsExitFront, "o00_0501_0002"),
     new FogWall(WarpNode.DarkLurkerExitBack, "o00_0501_0003", boss_name: BossName.Darklurker, reverse: true), // y_offset = 13.792f - 11.966f
 };
-fog_wall_dict[map_names[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
-fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]] = new List<FogWall> {
     new FogWall(WarpNode.SihnTheSlumberingDragonEntryFront, "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
     new FogWall(WarpNode.ElanaTheSqualidQueenEntryFront, "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
     new FogWall(WarpNode.GankSquadBossEntryFront, "o00_0501_0002", boss_name: BossName.Gankfight),
@@ -851,11 +455,11 @@ fog_wall_dict[map_names[MapName.ShulvaSanctumCity]] = new List<FogWall> {
     new FogWall(WarpNode.ShulvaToGankFight2Front, "o00_0501_0011"),
     new FogWall(WarpNode.NearJesterThomasFront, "o00_0501_0012"), //y_offset = 41.540f - 41.289f
 };
-fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
-fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
-fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f); // this is weird because of the inclined slope
-fog_wall_dict[map_names[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
-fog_wall_dict[map_names[MapName.BrumeTower]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f); // this is weird because of the inclined slope
+fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.BrumeTower]] = new List<FogWall> {
     new FogWall(WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomFront, "o00_0500_0000"),
     new FogWall(WarpNode.BrumeTowerToFoyerBonfireFromOutsideFront, "o00_0500_0001"),
     new FogWall(WarpNode.BrumeTowerToScorchingIronSceptorKeyFront, "o00_0500_0002"),
@@ -869,10 +473,10 @@ fog_wall_dict[map_names[MapName.BrumeTower]] = new List<FogWall> {
     new FogWall(WarpNode.BrumeTowerToBlueSmelterDungeonFront, "o00_0501_0007"),
     //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
 };
-fog_wall_dict[map_names[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
-fog_wall_dict[map_names[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
-fog_wall_dict[map_names[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
-fog_wall_dict[map_names[MapName.FrozenEleumLoyce]] = new List<FogWall> {
+fog_wall_dict[MapNames.get[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]] = new List<FogWall> {
     new FogWall(WarpNode.AavaTheKingsPetExitFront, "o00_0500_0001", boss_name: BossName.AavaTheKingsPet, boss_exit: true),
     new FogWall(WarpNode.EleumLoyceAfterGettingEyeToSeeGhostsFront, "o00_0500_0002"),
     new FogWall(WarpNode.IvoryKingFront, "o00_0500_0003", boss_name: BossName.BurntIvoryKing, back_blocked: true),
@@ -881,7 +485,7 @@ fog_wall_dict[map_names[MapName.FrozenEleumLoyce]] = new List<FogWall> {
     new FogWall(WarpNode.LudAndZallenExitFront, "o00_0501_0006", boss_name: BossName.LudAndZallen, boss_exit: true),
     new FogWall(WarpNode.EleumLoyceCathedraEntranceFront, "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
 };
-fog_wall_dict[map_names[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
+fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
 
 foreach (var kvp in fog_wall_dict)
 {
@@ -896,240 +500,19 @@ foreach (var kvp in fog_wall_dict)
         {
             if (fog_wall.cutscene)
             {
-                fog_wall.event_id = boss_event_ids[fog_wall.boss_name];
+                fog_wall.event_id = Constants.boss_event_ids[fog_wall.boss_name];
             }
-            fog_wall.destruction_flag = boss_destruction_flags[fog_wall.boss_name];
+            fog_wall.destruction_flag = Constants.boss_destruction_flags[fog_wall.boss_name];
         }
     }
 }
 
 Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
-foreach(var mn in map_names)
+foreach(var mn in MapNames.get)
 {
     warp_map_id[mn.Value] = Util.parse_map_name(mn.Value);
 }
 
-Dictionary<String,String> esd_script_fn(Warp warp)
-{
-    String fb = warp.from.front ? "front" : "back";
-    String fb2 = warp.to.front ? "front" : "back";
-    Dictionary<String, String> scripts = new()
-    {
-        { warp.from.map_name , $"\n##{warp.from.fog_wall_name}({fb})-{warp.to.fog_wall_name}({fb2})##" },
-    };
-    if (warp.from.map_name != warp.to.map_name)
-    {
-        scripts[warp.to.map_name] = $"";
-    }
-    // generate and update the esd script for warping source
-    if (warp.from.boss.name != BossName.None  && warp.from.boss_locked) // add condition to prevent player from leaving
-    {
-        if (warp.from.boss.use_second_death_check_impl)
-        {
-            scripts[warp.from.map_name] += generate_esd_script_boss_from_behind_v2(
-                warp.from.map_name,
-                warp.from.script_id,
-                warp.from.warp_src_id,
-                warp.to.location_id,
-                warp.to.map_name,
-                warp.from.boss.name,
-                warp.from.boss.name_str.ToString(),
-                warp.from.boss.destruction_flag
-            );
-        } else
-        {
-            scripts[warp.from.map_name] += generate_esd_script_boss_from_behind(
-                warp.from.map_name,
-                warp.from.script_id,
-                warp.from.warp_src_id,
-                warp.to.location_id,
-                warp.to.map_name,
-                warp.from.boss.name,
-                warp.from.boss.name_str.ToString(),
-                warp.from.boss.destruction_flag
-            );
-        }
-    }
-    else if (warp.from.map_name == map_names[MapName.DarkChasmofOld] 
-        && warp.from.boss.name == BossName.None
-        && chasm_enemy_ids.ContainsKey(warp.from.fog_wall_name)
-    )
-    {
-        scripts[warp.from.map_name]+= generate_dark_chasm_fog_gate_script(
-            warp.from.map_name,
-            warp.from.script_id,
-            warp.from.warp_src_id,
-            warp.to.location_id,
-            Util.parse_map_name(warp.to.map_name),
-            chasm_enemy_ids[warp.from.fog_wall_name],
-            chasm_event_flags[warp.from.fog_wall_name],
-            warp.from.fog_wall_name.ToString()
-        );
-
-    }
-    // if the warp is to wharf check if the bell has been ringed
-    // TODO: if from is inside the boss gate this will not work
-    else if (warp.to.map_name == map_names[MapName.NomansWharf] 
-            && (warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
-                && warp.to.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
-    {
-        scripts[warp.from.map_name] += generate_to_wharf_warp_event_script(
-            warp.from.map_name,
-            warp.from.script_id,
-            warp.from.warp_src_id,
-            warp.to.location_id,
-            Util.parse_map_name(warp.to.map_name)
-        );
-    }
-    else
-    {
-        scripts[warp.from.map_name] += generate_esd_script(
-            warp.from.map_name,
-            warp.from.script_id,
-            warp.from.warp_src_id,
-            warp.to.location_id,
-            Util.parse_map_name(warp.to.map_name)
-        );
-    }
-
-    scripts[warp.to.map_name] += $"\n##{warp.to.fog_wall_name}({fb2})-{warp.from.fog_wall_name}({fb})##";
-    // generate and update the esd script for warping destination
-    if (warp.to.boss.name != BossName.None && warp.to.boss_locked) // add condition to prevent player from leaving
-    {
-        if (warp.to.boss.use_second_death_check_impl)
-        {
-            scripts[warp.to.map_name] += generate_esd_script_boss_from_behind_v2(
-                warp.to.map_name,
-                warp.to.script_id,
-                warp.to.warp_src_id,
-                warp.from.location_id,
-                warp.from.map_name,
-                warp.to.boss.name,
-                warp.to.boss.name_str.ToString(),
-                warp.to.boss.destruction_flag
-            );
-        }
-        else if (warp.to.boss.name == BossName.Vendrick)
-        {
-            scripts[warp.to.map_name] += generate_vendrick_fog_gate_script(
-                warp.to.map_name,
-                warp.to.script_id,
-                warp.to.warp_src_id,
-                warp.from.location_id,
-                Util.parse_map_name(warp.from.map_name),
-                warp.to.boss.name,
-                warp.to.boss.name_str.ToString(),
-                warp.to.boss.destruction_flag
-            );
-        }
-        else if (warp.to.boss.name == BossName.ThroneWatcherAndDefender)
-        {
-            scripts[warp.to.map_name] += generate_throne_room_exit_script(
-                warp.to.map_name,
-                warp.to.script_id,
-                warp.to.warp_src_id,
-                warp.from.location_id,
-                Util.parse_map_name(warp.from.map_name)
-            );
-        }
-        else
-        {
-            scripts[warp.to.map_name] += generate_esd_script_boss_from_behind(
-                warp.to.map_name,
-                warp.to.script_id,
-                warp.to.warp_src_id,
-                warp.from.location_id,
-                warp.from.map_name,
-                warp.to.boss.name,
-                warp.to.boss.name_str.ToString(),
-                warp.to.boss.destruction_flag
-            );
-        }
-    }
-    else if (warp.to.map_name == map_names[MapName.DarkChasmofOld] 
-        && warp.to.boss.name == BossName.None
-        && chasm_enemy_ids.ContainsKey(warp.to.fog_wall_name)
-    )
-    {
-        scripts[warp.to.map_name]+= generate_dark_chasm_fog_gate_script(
-            warp.to.map_name,
-            warp.to.script_id,
-            warp.to.warp_src_id,
-            warp.from.location_id,
-            Util.parse_map_name(warp.from.map_name),
-            chasm_enemy_ids[warp.to.fog_wall_name],
-            chasm_event_flags[warp.to.fog_wall_name],
-            warp.to.fog_wall_name.ToString()
-        );
-
-    }
-    // if the warp is from wharf check if the bell has been ringed
-    // TODO: if to is inside the boss gate this will not work
-    else if (warp.from.map_name == map_names[MapName.NomansWharf]
-            && (warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesBack
-                && warp.from.fog_wall_name != WarpNode.NoMansWharfToHeidesFront))
-    {
-        //scripts[warp.to.map_name] += generate_ship_check_event_script(
-        //    warp.to.map_name,
-        //    warp.to.warp_src_id,
-        //    warp.from.location_id,
-        //    Util.parse_map_name(warp.from.map_name)
-        //);
-        scripts[warp.to.map_name] += generate_to_wharf_warp_event_script(
-            warp.to.map_name,
-            warp.to.script_id,
-            warp.to.warp_src_id,
-            warp.from.location_id,
-            Util.parse_map_name(warp.from.map_name)
-        );
-    }
-    else
-    {
-        scripts[warp.to.map_name] += generate_esd_script(
-            warp.to.map_name,
-            warp.to.script_id,
-            warp.to.warp_src_id,
-            warp.from.location_id,
-            Util.parse_map_name(warp.from.map_name)
-        );
-    }
-
-    // if the fogdoor has cutscene it must run the cutscene when the player spawns
-    if (warp.to.boss.cutscene && warp.to.boss_locked)
-    {
-        int fog_gate_id = warp.to.fog_gate_id;
-        if (warp.to.boss.exit)
-        {
-            fog_gate_id = warp.to.twin_fog_gate_id;
-        }
-        scripts[warp.to.map_name] += generate_cutscene_event_script(
-            warp.to.map_name,
-            warp.to.cutscene_script_id,
-            warp.to.location_id,
-            fog_gate_id
-        );
-    } 
-    if (warp.from.boss.cutscene && warp.from.boss_locked)
-    {
-        int fog_gate_id = warp.from.fog_gate_id;
-        if (warp.from.boss.exit)
-        {
-            fog_gate_id = warp.from.twin_fog_gate_id;
-        }
-        scripts[warp.from.map_name] += generate_cutscene_event_script(
-            warp.from.map_name,
-            warp.from.cutscene_script_id,
-            warp.from.location_id,
-            fog_gate_id
-        );
-    }
-    return scripts;
-}
-
-String get_esd_script_path(String map_name)
-{
-    return Path.Join(mod_folder, "ezstate", $"event_{map_name}.py");
-}
 String get_esd_file_path(String map_name)
 {
     return Path.Join(mod_folder, "ezstate", $"event_{map_name}.esd");
@@ -1142,7 +525,7 @@ MSB2.Part.Object? warp_obj = null;
 MSB2.Model? warp_model = null;
 PARAM.Row? warp_obj_inst = null;
 List<Warp> warps = new();
-foreach (var pair in map_names)
+foreach (var pair in MapNames.get)
 {
     String map_name = pair.Value;
 
@@ -1204,7 +587,7 @@ foreach (var pair in map_names)
     }
 
     // do this only for things betwixt: m10_02_00_00
-    if (map_name == map_names[MapName.ThingsBetwixt])
+    if (map_name == MapNames.get[MapName.ThingsBetwixt])
     {
         // get the model out of the map
         for (int i=0; i<map.Models.Objects.Count; i++)
@@ -1423,7 +806,7 @@ foreach (var pair in map_names)
     }
 
     // create and add event for checking ringing of bell
-    if (map_name == map_names[MapName.NomansWharf])
+    if (map_name == MapNames.get[MapName.NomansWharf])
     {
         var warp_event_row = new Row(
             Constants.ship_event_id,
@@ -1437,7 +820,7 @@ foreach (var pair in map_names)
         param_event.Rows.Add(warp_event_row);
     }
     // create and add event for unfreezing the dlc3
-    else if (map_name == map_names[MapName.FrozenEleumLoyce])
+    else if (map_name == MapNames.get[MapName.FrozenEleumLoyce])
     {
         var warp_event_row = new Row(
             Constants.dlc_unfreeze_event_id,
@@ -1452,7 +835,7 @@ foreach (var pair in map_names)
     }
 
     // adjust the ruin sentinels boss spawn event loc
-    if (map_name == map_names[MapName.TheLostBastilleBelfryLuna])
+    if (map_name == MapNames.get[MapName.TheLostBastilleBelfryLuna])
     {
         for (int j = 0; j < param_event_loc.Rows.Count; j++)
         {
@@ -1594,14 +977,14 @@ foreach (var pair in map_names)
         // adjust the boss spawn event loc to the warp point if the boss should spawn
         if (fw.boss_name != BossName.None) // if the fog door contains the boss
         {
-            if (boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
+            if (Constants.boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
             {
                 if (!fw.boss_exit || fw.boss_name == BossName.Darklurker) // if it is the entry gate or Darklurker gate
                 {
                     for (int j = 0; j < param_event_loc.Rows.Count; j++)
                     {
                         var row = param_event_loc.Rows[j];
-                        if (row.ID == boss_spawn_event_loc[fw.boss_name])
+                        if (row.ID == Constants.boss_spawn_event_loc[fw.boss_name])
                         {
                             UInt16 unk2a = (ushort)row.Cells[14].Value;
                             var sy = (float)row.Cells[11].Value;
@@ -1694,26 +1077,6 @@ foreach (var pair in map_names)
     {
         Console.WriteLine($"[ERROR] Access denied. {ex.Message}");
     }
-}
-
-String py_files_list = "";
-Dictionary<String, String> esd_script_dict = new();
-foreach (var map_name_kv in map_names)
-{
-    String map_name = map_name_kv.Value;
-    String esd_script_path = get_esd_script_path(map_name);
-    if (!Path.Exists(esd_script_path))
-    {
-        String esd_tool = Path.GetFullPath("./esdtool/esdtool.exe");
-        String argus = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i\"{get_esd_file_path(map_name)}\" -writepy \"{esd_script_path}\"";
-        if (!File.Exists(esd_tool)) throw new Exception($"Tool not found {esd_tool}");
-        run_external_command(esd_tool, argus);   // decomplie esd into .py files
-        if (!File.Exists(esd_script_path)) throw new Exception($"file not found {esd_script_path}");
-    }
-    String path = Util.check_backup(esd_script_path);
-    String esd_script = Util.read_string_from_file(path);
-    esd_script += Util.get_script_helper_fns(map_name, Util.parse_map_name(map_name));
-    esd_script_dict[map_name] = esd_script;
 }
 
 List<WarpInfo> warp_infos = new(warps.Count*2);
@@ -2224,10 +1587,10 @@ while (true)
 
 Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst, Cond cond = Cond.None)
 {
-    FogWall fw_src = new(warp_node_src, map_names[map_name_src]);
-    WarpInfo warpinfo_src = new(map_names[map_name_src], -1, -1, -1, -1, fw_src);
-    FogWall fw_dst = new(warp_node_dst, map_names[map_name_dst]);
-    WarpInfo warpinfo_dst = new(map_names[map_name_dst], -1, -1, -1, -1, fw_dst);
+    FogWall fw_src = new(warp_node_src, MapNames.get[map_name_src]);
+    WarpInfo warpinfo_src = new(MapNames.get[map_name_src], -1, -1, -1, -1, fw_src);
+    FogWall fw_dst = new(warp_node_dst, MapNames.get[map_name_dst]);
+    WarpInfo warpinfo_dst = new(MapNames.get[map_name_dst], -1, -1, -1, -1, fw_dst);
     return new Warp(warpinfo_src, warpinfo_dst, cond: cond);
 }
 
@@ -2530,42 +1893,15 @@ StringBuilder sb = new();
 TreeNode.PrintTree(travel_tree, sb);
 write_string_to_file(sb.ToString(), "./log.txt");
 
-foreach (var warp in selectedPairs)
-{
-    if (has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
-    var scripts = esd_script_fn(warp);
-    esd_script_dict[warp.from.map_name] += scripts[warp.from.map_name];
-    if (warp.from.map_name != warp.to.map_name)
-    {
-        esd_script_dict[warp.to.map_name] += scripts[warp.to.map_name];
-    }
-}
-
-// add bell ringing global event handler to No-Man's Wharf
-esd_script_dict[map_names[MapName.NomansWharf]] += generate_ship_global_event_flag_set_script(map_names[MapName.NomansWharf]);
-// add dlc3 unfreeze event handle to Eleum Loyce
-esd_script_dict[map_names[MapName.FrozenEleumLoyce]] += generate_dlc3_unfreeze_event_script(map_names[MapName.FrozenEleumLoyce]);
-
-foreach (var map_script_kv in esd_script_dict)
-{
-    String script_path = get_esd_script_path(map_script_kv.Key);
-    py_files_list += $" {script_path}";
-    write_string_to_file(map_script_kv.Value, script_path);
-}
-
-// run the esdtool.exe to generate esd files from python files
-String esdtool_path = Path.GetFullPath("./esdtool/esdtool.exe");
-String arguments = $"-ds2s -basedir \"{game_dir}\" -moddir \"{mod_folder}\" -backup -i{py_files_list} -writeloose \"{Path.Join(ezstate_path, "%e.esd")}\"";
-//run_external_command(esdtool_path, arguments);
-
 var editor = new ESDEditor();
 // add bell ringing global event handler to No-Man's Wharf
-var map_n = map_names[MapName.NomansWharf];
+var map_n = MapNames.get[MapName.NomansWharf];
 editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
 editor.add_ship_check_fog_gate_event(map_n, Constants.ship_event_id, Constants.ship_arrival_local_flag, Constants.ship_global_event_flag);
-map_n = map_names[MapName.FrozenEleumLoyce];
+// add unfreeze eleum loyce unfreeze event to its map
+map_n = MapNames.get[MapName.FrozenEleumLoyce];
 editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
-editor.add_dlc3_unfreeze_event_script(map_n, boss_destruction_flags[BossName.BurntIvoryKing]);
+editor.add_dlc3_unfreeze_event_script(map_n, Constants.boss_destruction_flags[BossName.BurntIvoryKing]);
 
 foreach (var warp in selectedPairs)
 {
@@ -2613,7 +1949,7 @@ foreach (var warp in selectedPairs)
     }
 }
 
-foreach (var map_name in map_names.Values)
+foreach (var map_name in MapNames.get.Values)
 {
     editor.save_map(map_name, get_esd_file_path(map_name));
 }

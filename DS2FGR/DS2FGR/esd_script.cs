@@ -267,19 +267,6 @@ namespace FogWallNS
 
 	public static class Event
 	{
-		public static void add_normal_fog_gate_event(ESDL esd, long script_id,
-			int warp_obj_inst_id, int event_loc, int map_id)
-		{
-			ESDState state = new(script_id);
-			long state_id = 1;
-			state.wait_until_interact_with_obj(state_id++, state_id, warp_obj_inst_id);
-			state.disable_obj_key_guide(state_id++, state_id, warp_obj_inst_id);
-			state.disable_movement(state_id++, state_id);
-			state.warp_and_wait_until_warp_is_done(state_id++, state_id, map_id, event_loc);
-			state.restart_machine_state(state_id++);
-			state.register(esd);
-		}
-
 		static void add_fog_wall_event(Dictionary<String, ESDL> esds, WarpInfo from, WarpInfo to)
 		{
 			ESDState state = new(from.script_id);
@@ -372,27 +359,6 @@ namespace FogWallNS
 			state.wait_until_event_flag(state_id++, state_id, ivory_king_dead_flag);
 			state.check_if_flag_is_set(state_id++, state_id + n_states_to_skip, state_id, Constants.alsanna_talk_flag);
 			state.set_event_flag(state_id++, state_id, Constants.alsanna_talk_flag);
-			state.restart_machine_state(state_id++);
-			state.register(esd);
-		}
-
-		public static void add_boss_back_door_event_to_wharf(ESDL esd, long script_id,
-			int warp_obj_inst_id, int event_loc, int map_id, 
-			int boss_destruction_flag, int wharf_bell_global_flag, int msg_id)
-		{
-			ESDState state = new(script_id);
-			long state_id = 1;
-			state.disable_obj_key_guide(state_id++, state_id, warp_obj_inst_id);
-			state.wait_until_boss_is_dead(state_id++, state_id, boss_destruction_flag);
-			state.enable_obj_key_guide(state_id++, state_id, warp_obj_inst_id);
-			state.wait_until_interact_with_obj(state_id++, state_id, warp_obj_inst_id);
-			state.check_if_wharf_bell_has_been_rang(state_id++, state_id+3, state_id, wharf_bell_global_flag);
-			state.disable_obj_key_guide(state_id++, state_id, warp_obj_inst_id);
-			state.display_ring_bell_msg(state_id++, state_id, msg_id);
-			state.wait_until_msg_is_showing(state_id++);
-			state.disable_obj_key_guide(state_id++, state_id, warp_obj_inst_id);
-			state.disable_movement(state_id++, state_id);
-			state.warp_and_wait_until_warp_is_done(state_id++, state_id, map_id, event_loc);
 			state.restart_machine_state(state_id++);
 			state.register(esd);
 		}

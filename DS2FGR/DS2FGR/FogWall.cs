@@ -344,6 +344,7 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int ruin_sentinels_spawn_event_loc_id = 1400000;
 		public const float ruin_sentinels_spawn_event_posy = -4.522f;
 		public const float ruin_sentinels_spawn_event_scaley = 16.0f;
+
         public readonly static Dictionary<WarpNode, List<int>> chasm_enemy_ids = new Dictionary<WarpNode, List<int>>()
         {
             {WarpNode.DarkChasmFromBlackGulchExitFront, new List<int>(){1005, 1006, 1007, 1008, 3200, 3210 } },
@@ -356,6 +357,81 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
             {WarpNode.DarkChasmFromDrangleicCastleExitFront, 403000002},
             {WarpNode.DarkChasmFromBlackGulchExitFront, 403000003},
         };
+
+        public readonly static Dictionary<BossName, int> boss_destruction_flags = new Dictionary<BossName, int>()
+        {
+            {BossName.TheLastGiant,                 110000081},
+            {BossName.ThePursuer,                   110000086},
+            {BossName.Dragonrider,                  131000081},
+            {BossName.OldDragonslayer,              131000086},
+            {BossName.FlexileSentry,                118000081},
+            {BossName.RuinSentinels,                116000081},
+            {BossName.TheLostSinner,                116000086},
+            {BossName.BelfryGargoyles,              116000091},
+            {BossName.SkeletonLords,                123000086},
+            {BossName.ExecutionersChariot,          123000081},
+            {BossName.CovetousDemon,                117000081},
+            {BossName.MythaTheBanefulQueen,         117000091},
+            {BossName.SmelterDemon,                 119000081},
+            {BossName.OldIronKing,                  119000086},
+            {BossName.ScorpionessNajka,             132000081},
+            {BossName.RoyalRatAuthority,            133000081},
+            {BossName.ProwlingMagusAndCongregation, 114000096},
+            {BossName.TheDukesDearFreja,            114000081},
+            {BossName.RoyalRatVanguard,             134000081},
+            {BossName.TheRotten,                    125000081},
+            {BossName.TwinDragonrider,              221000081},
+            {BossName.LookingGlassKnight,           221000086},
+            {BossName.DemonofSong,                  211000081},
+            {BossName.VelstadtTheRoyalAegis,        224000081},
+            {BossName.Vendrick,                     224000086},
+            {BossName.GuardianDragon,               115000081},
+            {BossName.AncientDragon,                127000081},
+            {BossName.GiantLord,                    210000081},
+            {BossName.ThroneWatcherAndDefender,     221000091},
+            {BossName.Nashandra,                    221000096},
+            {BossName.AldiaScholarOfTheFirstSin,    221000006},
+            {BossName.Darklurker,                   403000081},
+            {BossName.ElanaTheSqualidQueen,         535000081},
+            {BossName.SinhTheSlumberingDragon,      535000096},
+            {BossName.Gankfight,                    535000091},
+            {BossName.FumeKnight,                   536000081},
+            {BossName.SirAlonne,                    536000086},
+            {BossName.BlueSmelterDemon,             536000091},
+            {BossName.AavaTheKingsPet,              537000081},
+            {BossName.BurntIvoryKing,               537000086},
+            {BossName.LudAndZallen,                 537000091},
+        };
+
+        // in event param if
+        // 0x8 - 0xa = 0
+        // 0xa = 1
+        // 0xc = 0
+        // 0xd = 5
+        // 0xe - 0xf = 0
+        // the event is for cutscene
+        // for nashandra = 12010
+        // cutscene event id: EventEnded(id)
+        public readonly static Dictionary<BossName, int> boss_event_ids = new Dictionary<BossName, int>()
+        {
+            {BossName.TheLastGiant, 6510 },
+            {BossName.ThePursuer, 6010 },
+            {BossName.TheLostSinner, 15010 },
+            {BossName.ExecutionersChariot, 9010 },
+            {BossName.OldIronKing, 15010 },
+            {BossName.TheDukesDearFreja, 4010 },
+            {BossName.TheRotten, 5010 },
+            {BossName.VelstadtTheRoyalAegis, 4010 },
+            {BossName.ThroneWatcherAndDefender, 12010 },
+        };
+
+        public readonly static Dictionary<BossName, int> boss_spawn_event_loc = new Dictionary<BossName, int>()
+        {
+            {BossName.TheDukesDearFreja, 100000 },
+            {BossName.OldIronKing, 1500000 },
+            {BossName.Darklurker, 200000 },
+        };
+
 
     }
 

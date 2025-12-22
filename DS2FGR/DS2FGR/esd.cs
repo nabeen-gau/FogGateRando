@@ -737,6 +737,10 @@ namespace FogWallNS
 			esds[map_name].StateGroupNames[id] = $"StateGroup{id}";
             esds[map_name].StateGroups[id] = state;
         }
+        public void add_dlc3_unfreeze_event_script(String map_name, int ivory_king_dead_flag)
+        {
+            Event.add_dlc3_unfreeze_event_script(esds[map_name], ivory_king_dead_flag);
+        }
 
         // added to the place that warps to wharf
         public void add_ship_check_from_fog_gate_event(String map_name, long id,

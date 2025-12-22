@@ -29,17 +29,21 @@ namespace FogWallNS
 			this.state[state.ID] = state;
 		}
 
-
-		public void wait_until_boss_is_dead(long state_id, long target_state, int boss_destruction_flag)
+		public void wait_until_event_flag(long state_id, long target_state, int flag_id)
 		{
 			ESDL.Condition condition = new();
 			condition.Evaluator = "ConditionGroup(0)";
 			condition.TargetState = target_state;
 			ESDL.State state = new();
 			state.Conditions.Add(condition);
-			state.EntryScript = $"CompareEventFlag(0, {boss_destruction_flag}, 1);";
+			state.EntryScript = $"CompareEventFlag(0, {flag_id}, 1);";
 			state.ID = state_id;
 			this.state[state.ID] = state;
+		}
+
+		public void wait_until_boss_is_dead(long state_id, long target_state, int boss_destruction_flag)
+		{
+			wait_until_event_flag(state_id, target_state, boss_destruction_flag);
 		}
 
 		public void wait_until_boss_is_aggro(long state_id, long target_state_if_true, long target_state_if_false, int boss_hostility_flag)
@@ -358,6 +362,18 @@ namespace FogWallNS
 		{
 			add_fog_wall_event(esds, warp.from, warp.to);
 			add_fog_wall_event(esds, warp.to, warp.from);
+		}
+
+        public static void add_dlc3_unfreeze_event_script(ESDL esd, int ivory_king_dead_flag)
+		{
+			ESDState state = new(Constants.dlc_unfreeze_event_id);
+			long state_id = 1;
+            int n_states_to_skip = 1;
+			state.wait_until_event_flag(state_id++, state_id, ivory_king_dead_flag);
+			state.check_if_flag_is_set(state_id++, state_id + n_states_to_skip, state_id, Constants.alsanna_talk_flag);
+			state.set_event_flag(state_id++, state_id, Constants.alsanna_talk_flag);
+			state.restart_machine_state(state_id++);
+			state.register(esd);
 		}
 
 		public static void add_boss_back_door_event_to_wharf(ESDL esd, long script_id,

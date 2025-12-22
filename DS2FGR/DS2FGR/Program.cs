@@ -2563,6 +2563,9 @@ var editor = new ESDEditor();
 var map_n = map_names[MapName.NomansWharf];
 editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
 editor.add_ship_check_fog_gate_event(map_n, Constants.ship_event_id, Constants.ship_arrival_local_flag, Constants.ship_global_event_flag);
+map_n = map_names[MapName.FrozenEleumLoyce];
+editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
+editor.add_dlc3_unfreeze_event_script(map_n, boss_destruction_flags[BossName.BurntIvoryKing]);
 
 foreach (var warp in selectedPairs)
 {

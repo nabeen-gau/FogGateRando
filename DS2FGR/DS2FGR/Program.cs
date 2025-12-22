@@ -1,6 +1,5 @@
 ﻿using FogWallNS;
 using SoulsFormats;
-using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 using static SoulsFormats.PARAM;
@@ -41,6 +40,35 @@ PARAMDEF new_paramdef(PARAM param)
     pd.FormatVersion = 104;
     return pd;
 }
+PARAMDEF get_whitedoor_paramdef(PARAM param, Row? row = null)
+{
+    PARAMDEF pd = new_paramdef(param);
+    if (row == null)
+    {
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk00", 5));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "Entry Delay", 1.5f));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk01", 280));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk02", 280));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Key Guide ID [1]", 0));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Key Guide ID [2]", 0));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk04", 102000160));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk05", 0));
+    }
+    else
+    {
+        int count = 0;
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk00", 5)); count++;
+        pd.Fields.Add(new_field(PARAMDEF.DefType.f32, "Entry Delay", (float)row.Cells[count++].Value));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk01", (int)row.Cells[count++].Value));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk02", (int)row.Cells[count++].Value));
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Key Guide ID [1]", 0)); count++;// for disabling the fog gate key guide
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Key Guide ID [2]", 0)); count++;// for disabling the fog gate key guide
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk04", 0)); count++;// to diable boss gates to disappear
+        pd.Fields.Add(new_field(PARAMDEF.DefType.s32, "Unk05", (int)row.Cells[count++].Value));
+    }
+    return pd;
+}
+
 
 PARAMDEF get_obj_inst_def_paramdef_ex(
     PARAM param, int map_obj_inst_type, UInt16 unk04, byte default_state, 
@@ -68,11 +96,6 @@ PARAMDEF get_obj_inst_def_paramdef_ex(
 PARAMDEF get_obj_inst_def_paramdef(PARAM param)
 {
     return get_obj_inst_def_paramdef_ex(param, 100, 0, 255, 50, 255);
-}
-
-PARAMDEF get_obj_inst_def_paramdef_fogwall(PARAM param)
-{
-    return get_obj_inst_def_paramdef_ex(param, 110, 6, 0, 255, 255);
 }
 
 PARAMDEF get_event_param_def_paramdef_ex(PARAM param, int event_id, int flag_id)
@@ -600,6 +623,32 @@ String get_esd_file_path(String map_name)
     return Path.Join(mod_folder, "ezstate", $"event_{map_name}.esd");
 }
 
+// for disabling the fog gates (disable fog gates)
+var enc_reg_path = Path.Join(mod_folder, "enc_regulation.bnd.dcx");
+var enc_reg = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out DCX.Type type));
+for (int i = 0; i < enc_reg.Files.Count; i++)
+{
+    var file = enc_reg.Files[i];
+    if (file.Name == "MapObjectWhiteDoorParam.param")
+    {
+        var white_door_param = PARAM.Read(file.Bytes);
+        white_door_param.ApplyParamdef(get_whitedoor_paramdef(white_door_param));
+        for (int j = 0; j < white_door_param.Rows.Count; j++)
+        {
+            var row = white_door_param.Rows[j];
+                var new_row = new Row(
+                    row.ID, "",
+                    get_whitedoor_paramdef(white_door_param, row)
+                );
+                white_door_param.Rows.Remove(row);
+                white_door_param.Rows.Insert(j, new_row);
+        }
+        file.Bytes = white_door_param.Write();
+    }
+}
+
+File.WriteAllBytes(enc_reg_path, DCX.Compress(enc_reg.Write(), type));
+
 String ezstate_path = Path.Join(mod_folder, "ezstate");
 int warp_obj_idx = -1;
 int warp_obj_inst_idx = -1;
@@ -753,26 +802,6 @@ foreach (var pair in MapNames.get)
         draw_groups.Add(fog_wall.DrawGroups);
     }
 
-    // disable fog gates
-    foreach (var entry in fog_wall_dict[map_name])
-    {
-        for (int i = 0; i < obj_inst_param.Rows.Count; i++)
-        {
-            var row = obj_inst_param.Rows[i];
-            if (row.ID == entry.instance_id)
-            {
-                var new_row = new Row(
-                    row.ID,
-                    $"objinstance_{row.ID}",
-                    get_obj_inst_def_paramdef_fogwall(obj_inst_param)
-                );
-                // TODO: this may cause errors
-                // new_row.DataOffset = row.DataOffset;
-                obj_inst_param.Rows.Remove(row);
-                obj_inst_param.Rows.Insert(i, new_row);
-            }
-        }
-    }
     // calculate warp_point_begin
     int warp_point_begin = -1;
     int n_warp_points = 2 * n_fog_walls;

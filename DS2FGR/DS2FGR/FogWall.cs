@@ -241,77 +241,6 @@ namespace FogWallNS
             }
         }
 
-        public static String get_script_helper_fns(String map_name, int map_num)
-        {
-            String map_id = map_name.Substring(0, 6);
-            return @$"
-def event_{map_id}_x501(warp_obj_inst_id=_, event_loc=_, map_id=_):
-    """"""
-    [Function] wait until interact button is pressed on `warp_obj_inst_id` and warp to `event_loc`
-    """"""
-    assert event_{map_id}_x502(warp_obj_inst_id=warp_obj_inst_id)
-    assert event_{map_id}_x503(event_loc=event_loc, warp_obj_inst_id=warp_obj_inst_id, map_id=map_id)
-    return 0
-
-def event_{map_id}_x502(warp_obj_inst_id=_):
-    """"""
-    [Conditions] Wait until interact button is pressed on `warp_obj_inst_id`
-    """"""
-    IsObjSearched(0, warp_obj_inst_id)
-    assert ConditionGroup(0)
-    return 0
-
-def event_{map_id}_x503(event_loc=_, warp_obj_inst_id=_, map_id=_):
-    """"""
-    [Execution] Warp to the given event_location
-    """"""
-    DisableObjKeyGuide(warp_obj_inst_id, 1)
-    ProhibitInGameMenu(1)
-    ProhibitPlayerOperation(1)
-    SetPlayerInvincible(1)
-    PlayCutsceneAndWarpToMap(0, 0, map_id, event_loc, 0)
-    assert CutsceneWarpEnded() != 0
-    DisableObjKeyGuide(warp_obj_inst_id, 0)
-    ProhibitInGameMenu(0)
-    ProhibitPlayerOperation(0)
-    SetPlayerInvincible(0)
-    return 0
-
-def event_{map_id}_x504(battle_id=_):
-    """"""Wait until the boss of given battle_id is defeated""""""
-    IsEventBossKill(0, battle_id, 0, 1)
-    assert ConditionGroup(0)
-    return 0
-
-def event_{map_id}_x505(flag8=_):
-    """"""[Reproduction] Is boss dead?
-    flag8: Boss destruction flag
-    """"""
-    """"""State 0,1: Are you fighting the boss?""""""
-    if GetEventFlag(flag8) != 0:
-        """"""State 3: the boss is dead""""""
-        return 1
-    else:
-        """"""State 2: the boss is not dead""""""
-        return 0
-
-def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
-    """"""[Preset] check ship condition and warp""""""
-    DisableObjKeyGuide(warp_obj_inst_id, 1)
-    CompareEventFlag(0, {Constants.ship_global_event_flag}, 1)
-    if ConditionGroup(0):
-        # activated warp
-        assert event_{map_id}_x503(warp_obj_inst_id=warp_obj_inst_id, event_loc=event_loc, map_id=map_id)
-    else:
-        # not activated msg
-        DisplayEventMessage({Constants.ship_arrival_msg_id}, 0, 0, 0)
-    assert EventMessageDisplay() != 1
-    DisableObjKeyGuide(warp_obj_inst_id, 0)
-    return 0
-
-";
-        }
-
         public static int parse_map_name(string mapCode)
         {
             // Remove non-numeric characters and concatenate the numbers
@@ -336,7 +265,6 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int nashandra_cutscene_flag = 12010;
 		public const int vendricks_hostility_flag = 224000088;
 		public const int ship_global_event_flag = 102002;
-		public const int ship_arrival_msg_id = 1214;
 		public const int ship_arrival_local_flag = 118000010;
 		public const int ship_event_id = 1007;
 		public const int dlc_unfreeze_event_id = 1075;
@@ -344,6 +272,7 @@ def event_{map_id}_x506(warp_obj_inst_id=_, event_loc=_, map_id=_):
 		public const int ruin_sentinels_spawn_event_loc_id = 1400000;
 		public const float ruin_sentinels_spawn_event_posy = -4.522f;
 		public const float ruin_sentinels_spawn_event_scaley = 16.0f;
+        public const String ship_arrival_msg = "Ghost ship in No Mans Wharf not docked";
 
         public readonly static Dictionary<WarpNode, List<int>> chasm_enemy_ids = new Dictionary<WarpNode, List<int>>()
         {

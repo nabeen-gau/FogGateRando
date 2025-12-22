@@ -196,9 +196,9 @@ namespace FogWallNS
 			esds[map_name].WriteWithContext(writer, ctx);
 		}
 
-        public void add_aio_fog_wall_event(Warp warp)
+        public void add_aio_fog_wall_event(Warp warp, int ship_arrival_msg_id)
         {
-            Event.add_aio_fog_wall_event(esds, warp);
+            Event.add_aio_fog_wall_event(esds, warp, ship_arrival_msg_id);
         }
 	}
 }

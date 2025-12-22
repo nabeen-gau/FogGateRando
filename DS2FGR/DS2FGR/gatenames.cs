@@ -757,9 +757,9 @@ namespace FogWallNS
             new(WarpNode.MajulaToHuntsmanCopseFront, WarpNode.HeidesToMajulaFront, n1: Cond.RotundaLockstone, n2: Cond.OneWay),
 
             new(WarpNode.HeidesToMajulaBack, WarpNode.DragonriderEntryFront),
-            new(WarpNode.HeidesToMajulaBack, WarpNode.OldDragonslayerEntryFront),
+            new(WarpNode.HeidesToMajulaBack, WarpNode.OldDragonslayerEntryFront, n1: Cond.OneWay),
 
-            new(WarpNode.DragonriderEntryFront, WarpNode.OldDragonslayerEntryFront),
+            new(WarpNode.DragonriderEntryFront, WarpNode.OldDragonslayerEntryFront, n1:Cond.OneWay),
 
             new(WarpNode.DragonriderEntryBack, WarpNode.DragonriderExitFront),
 
@@ -1454,7 +1454,16 @@ namespace FogWallNS
         {
             foreach (var be in blocked_edges)
             {
-                if (this.HasKey(visited_ids, be.cond))
+                // TODO: make consumable key work
+                // workaround: don't unlock the consumable keys door, remove them if they are reached
+                if (KeyInfo.consumable_keys.Contains(be.cond))
+                {
+                    if (!visited_ids.Contains(be.node))
+                    {
+                        still_blocked.Add(be);
+                    }
+                }
+                else if (this.HasKey(visited_ids, be.cond))
                 {
                     this.Use(be.cond);
                     if (visited_ids.Contains(be.node)) continue;

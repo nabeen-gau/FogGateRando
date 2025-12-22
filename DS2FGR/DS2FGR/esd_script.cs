@@ -228,12 +228,12 @@ namespace FogWallNS
 			this.state[state.ID] = state;
 		}
 
-		public void wait_until_msg_is_showing(long state_id)
+		public void wait_until_msg_is_showing(long state_id, int obj_inst_id)
 		{ 
 			ESDL.Condition condition = new();
 			condition.Evaluator = "EventMessageDisplay() != 1";
 			ESDL.State state = new();
-			state.ExitScript = "RestartMachine();";
+			state.ExitScript = $"DisableObjKeyGuide({obj_inst_id}, 0);RestartMachine();";
 			state.Conditions.Add(condition);
 			state.ID = state_id;
 			this.state[state.ID] = state;
@@ -267,7 +267,7 @@ namespace FogWallNS
 
 	public static class Event
 	{
-		static void add_fog_wall_event(Dictionary<String, ESDL> esds, WarpInfo from, WarpInfo to)
+		static void add_fog_wall_event(Dictionary<String, ESDL> esds, WarpInfo from, WarpInfo to, int ship_arrival_msg_id)
 		{
 			ESDState state = new(from.script_id);
 			long state_id = 1;
@@ -333,8 +333,8 @@ namespace FogWallNS
 				int n_states_to_skip = 3;
 				state.check_if_wharf_bell_has_been_rang(state_id++, state_id + n_states_to_skip, state_id, Constants.ship_global_event_flag);
 				state.disable_obj_key_guide(state_id++, state_id, from.warp_src_id);
-				state.display_ring_bell_msg(state_id++, state_id, Constants.ship_arrival_msg_id);
-				state.wait_until_msg_is_showing(state_id++);
+				state.display_ring_bell_msg(state_id++, state_id, ship_arrival_msg_id);
+				state.wait_until_msg_is_showing(state_id++, from.warp_src_id);
 			}
 			// start warping
 			state.disable_obj_key_guide(state_id++, state_id, from.warp_src_id);
@@ -345,10 +345,10 @@ namespace FogWallNS
 			state.register(esds[from.map_name]);
 		}
 
-		public static void add_aio_fog_wall_event(Dictionary<String, ESDL> esds, Warp warp)
+		public static void add_aio_fog_wall_event(Dictionary<String, ESDL> esds, Warp warp, int ship_arrival_msg_id)
 		{
-			add_fog_wall_event(esds, warp.from, warp.to);
-			add_fog_wall_event(esds, warp.to, warp.from);
+			add_fog_wall_event(esds, warp.from, warp.to, ship_arrival_msg_id);
+			add_fog_wall_event(esds, warp.to, warp.from, ship_arrival_msg_id);
 		}
 
         public static void add_dlc3_unfreeze_event_script(ESDL esd, int ivory_king_dead_flag)

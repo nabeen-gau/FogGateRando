@@ -237,6 +237,73 @@ void check_connection(Connection item, List<Connection> to_skip)
     }
     recursive_add(to_skip);
 }
+FMG read_fmg(String path)
+{
+    FMG fmg = new();
+    var file = File.ReadAllBytes(path);
+    var br = new BinaryReaderEx(false, file);
+
+    br.AssertByte(0);
+    fmg.BigEndian = br.ReadBoolean();
+    fmg.Version = br.ReadEnum8<FMG.FMGVersion>();
+    br.AssertByte(0);
+
+    br.BigEndian = fmg.BigEndian;
+    bool wide = fmg.Version == FMG.FMGVersion.DarkSouls3;
+
+    int fileSize = br.ReadInt32();
+    br.AssertByte(1);
+    br.AssertByte((byte)(fmg.Version == FMG.FMGVersion.DemonsSouls ? 0xFF : 0x00));
+    br.AssertByte(0);
+    br.AssertByte(0);
+    int groupCount = br.ReadInt32();
+    int stringCount = br.ReadInt32();
+
+    if (wide)
+        br.AssertInt32(0xFF);
+
+    long stringOffsetsOffset;
+    if (wide)
+        stringOffsetsOffset = br.ReadInt64();
+    else
+        stringOffsetsOffset = br.ReadInt32();
+
+    if (wide)
+        br.AssertInt64(0);
+    else
+        br.AssertInt32(0);
+
+    fmg.Entries = new List<FMG.Entry>(groupCount);
+    for (int i = 0; i < groupCount; i++)
+    {
+        int offsetIndex = br.ReadInt32();
+        int firstID = br.ReadInt32();
+        int lastID = br.ReadInt32();
+
+        if (wide)
+            br.AssertInt32(0);
+
+        br.StepIn(stringOffsetsOffset + offsetIndex * (wide ? 8 : 4));
+        {
+            for (int j = 0; j < lastID - firstID + 1; j++)
+            {
+                long stringOffset;
+                if (wide)
+                    stringOffset = br.ReadInt64();
+                else
+                    stringOffset = br.ReadInt32();
+
+                int id = firstID + j;
+                string? text = stringOffset != 0 ? br.GetUTF16(stringOffset) : null;
+                fmg.Entries.Add(new FMG.Entry(id, text));
+            }
+        }
+        br.StepOut();
+    }
+
+    return fmg;
+}
+
 
 // create a list of connection segments
 List<List<Connection>> segments = new();
@@ -269,6 +336,21 @@ String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark 
 String warp_obj_name = "o02_1050_0000";
 String warp_obj_model_name = warp_obj_name.Substring(0, 8);
 int warp_obj_inst_id = 10021101;
+
+// add pirate ship msg to game files
+String map_event_path = Path.Join(mod_folder, @"menu\text\english\mapevent.fmg");
+var map_event_texts = read_fmg(map_event_path + ".bak");
+int ship_arrival_msg_id = 1214;
+foreach (var entry in map_event_texts.Entries)
+{
+    if (entry.Text == null)
+    {
+        entry.Text = Constants.ship_arrival_msg;
+        ship_arrival_msg_id = entry.ID;
+        break;
+    }
+}
+File.WriteAllBytes(map_event_path, map_event_texts.Write());
 
 Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
 fog_wall_dict[MapNames.get[MapName.ThingsBetwixt]] = new List<FogWall> {
@@ -1259,15 +1341,13 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
 // Example the final fight arena connected to outside the exit of rat authority fight
 
 Random rand_gen = new Random();
-int seed = rand_gen.Next(1000, 100000);
-seed = 23704; // boss to wharf
+int seed = rand_gen.Next(1, 100000);
+seed = 46599;
+//seed = 23704; // boss to wharf
 //seed = 2216; // slow example
 //seed = 80528; // fast example
 Console.WriteLine($"Current Seed: {seed}");
 Random rand = new Random(seed);
-//Random rand = new Random(247);
-//Random rand = new Random(9842);
-//Random rand = new Random(83754);
 
 WarpInfo get_warp_info_from_name(WarpNode name)
 {
@@ -1916,7 +1996,7 @@ foreach (var warp in selectedPairs)
     }
 
     // TODO: add the option for chasm exit gates
-    editor.add_aio_fog_wall_event(warp);
+    editor.add_aio_fog_wall_event(warp, ship_arrival_msg_id);
 
     // if the fogdoor has cutscene it must run the cutscene when the player spawns
     if (warp.to.boss.cutscene && warp.to.boss_locked)

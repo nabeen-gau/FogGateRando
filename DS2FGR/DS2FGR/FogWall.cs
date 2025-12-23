@@ -36,6 +36,77 @@ namespace FogWallNS
             { MapName.FrozenEleumLoyce,             "m50_37_00_00"},
             { MapName.MemoryoftheKing,              "m50_38_00_00"}, // disabled (no fog gates)
         };
+
+        public static readonly List<WarpNode> has_predefined_warp = new() 
+        { 
+            WarpNode.GameStartSpawnSrc,
+            WarpNode.GameStartSpawnDst,
+
+            WarpNode.MemoryOfTheKingCryptSrc,
+            WarpNode.MemoryOfTheKingCryptDst,
+            WarpNode.MemoryOfTheKingMemorySrc,
+            WarpNode.MemoryOfTheKingMemoryDst,
+
+            WarpNode.NearPateGiantMemoryExitSrc,
+            WarpNode.NearPursuerGiantMemoryExitSrc,
+            WarpNode.GiantLordMemoryExitSrc,
+            WarpNode.NearPateGiantMemoryExitDst,
+            WarpNode.NearPursuerGiantMemoryExitDst,
+            WarpNode.GiantLordMemoryExitDst,
+
+            WarpNode.NearPursuerGiantMemoryEntrySrc,
+            WarpNode.NearPursuerGiantMemoryEntryDst,
+            WarpNode.NearPateGiantMemoryEntrySrc,
+            WarpNode.NearPateGiantMemoryEntryDst,
+            WarpNode.GiantLordMemoryEntrySrc,
+            WarpNode.GiantLordMemoryEntryDst,
+
+            WarpNode.DragonMemoriesCoveSrc,
+            WarpNode.DragonMemoriesCoveDst,
+            WarpNode.DragonMemoriesMemorySrc,
+            WarpNode.DragonMemoriesMemoryDst,
+
+            WarpNode.ChasmPortalFromCastleDst,
+            WarpNode.ChasmPortalFromBlackGulchDst,
+            WarpNode.ChasmPortalFromShadedWoodsDst,
+            WarpNode.ChasmPortalFromCastleSrc,
+            WarpNode.ChasmPortalFromBlackGulchSrc,
+            WarpNode.ChasmPortalFromShadedWoodsSrc,
+
+            WarpNode.ChasmGulchExitWarpSrc,
+            WarpNode.ChasmCastleExitWarpSrc,
+            WarpNode.ChasmShadedWoodsExitWarpSrc,
+            WarpNode.ChasmDarkLurkerExitWarpSrc,
+            WarpNode.ChasmGulchExitWarpDst,
+            WarpNode.ChasmCastleExitWarpDst,
+            WarpNode.ChasmShadedWoodsExitWarpDst,
+            WarpNode.ChasmDarkLurkerExitWarpDst,
+
+            WarpNode.CoffinWarpSrc,
+            WarpNode.CoffinWarpDst,
+            WarpNode.PirateShipWharf,
+            WarpNode.PirateShipBastille,
+
+            WarpNode.DLC1EntranceBaseGame,
+            WarpNode.DLC1EntranceDLC,
+            WarpNode.DLC2EntranceBaseGame,
+            WarpNode.DLC2EntranceDLC,
+            WarpNode.DLC3EntranceBaseGame,
+            WarpNode.DLC3EntranceDLC,
+
+            WarpNode.SirAlonneMemoryExitSrc,
+            WarpNode.SirAlonneMemoryExitDst,
+            WarpNode.SirAlonneArmorDLCEntrySrc,
+            WarpNode.SirAlonneArmorDLCEntryDst,
+
+            WarpNode.IvoryKingFightEndDst,
+            WarpNode.IvoryKingFightEndSrc,
+            WarpNode.LudAndZallenExitWarpSrc,
+            WarpNode.LudAndZallenExitWarpDst,
+
+            WarpNode.NearPursuerBirdEntry,
+            WarpNode.NearPursuerBirdExit,
+        };
     }
     public class FogWall
 	{

@@ -327,957 +327,876 @@ FMG read_fmg(String path)
     return fmg;
 }
 
-
-// create a list of connection segments
-List<List<Connection>> segments = new();
-List<Connection> to_skip = new();
-List<Connection> to_skip_global = new();
-for (int i = 0; i < GateConnections.items.Count; i++)
+List<List<Connection>> generate_segments()
 {
-    var item = GateConnections.items[i];
-    if(to_skip_global.Contains(item))
+    List<List<Connection>> segments = new();
+    List<Connection> to_skip = new();
+    List<Connection> to_skip_global = new();
+    for (int i = 0; i < GateConnections.items.Count; i++)
     {
-        continue;
-    }
-    to_skip.Clear();
-    check_connection(item, to_skip);
-    to_skip_global.AddRange(to_skip);
-    segments.Add(new(to_skip));
-}
-var flat_connection_list = segments.SelectMany(g => g).ToList();
-var duplicates = flat_connection_list
-    .GroupBy(x => x)
-    .Where(g => g.Count() > 1)
-    .Select(g => g.Key)
-    .ToList();
-if (duplicates.Count != 0) throw new Exception("Got duplicates!!");
-
-// TODO: change these before the final version
-String mod_folder = Path.GetFullPath(@"..\..\..\..\..\mod");
-String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark Souls II");
-
-String warp_obj_name = "o02_1050_0000";
-String warp_obj_model_name = warp_obj_name.Substring(0, 8);
-int warp_obj_inst_id = 10021101;
-
-// add pirate ship msg to game files
-String map_event_path = Path.Join(mod_folder, @"menu\text\english\mapevent.fmg");
-var map_event_texts = read_fmg(map_event_path + ".bak");
-int ship_arrival_msg_id = 1214;
-foreach (var entry in map_event_texts.Entries)
-{
-    if (entry.Text == null)
-    {
-        entry.Text = Constants.ship_arrival_msg;
-        ship_arrival_msg_id = entry.ID;
-        break;
-    }
-}
-File.WriteAllBytes(map_event_path, map_event_texts.Write());
-
-Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
-fog_wall_dict[MapNames.get[MapName.ThingsBetwixt]] = new List<FogWall> {
-    new FogWall(WarpNode.Tutorial1EntryFront, "o00_0500_0001"),
-    new FogWall(WarpNode.Tutorial2EntryFront, "o00_0500_0003"),
-    new FogWall(WarpNode.Tutorial3EntryFront, "o00_0500_0004", front_blocked: true),
-    new FogWall(WarpNode.Tutorial1ExitFront,  "o00_0500_0000"),
-    new FogWall(WarpNode.Tutorial2ExitFront,  "o00_0500_0005"),
-    new FogWall(WarpNode.Tutorial3ExitFront,  "o00_0500_0002"),
-};
-fog_wall_dict[MapNames.get[MapName.Majula]] = new List<FogWall> {
-    //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
-    //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
-    //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
-    new FogWall(WarpNode.MajulaToForestOfFallenGiantsFront, "o00_0501_0100", pvp: true),
-    new FogWall(WarpNode.MajulaToGraveOfSaintsFront, "o00_0501_0101", pvp: true, reverse: true), // y_offset = 43.455 - 42.057
-    new FogWall(WarpNode.MajulaToHuntsmanCopseFront, "o00_0501_0102", pvp: true), // y_offset = 1.390f - 0.413f
-    new FogWall(WarpNode.MajulaToRotundaLockstoneFront, "o00_0501_0103", pvp: true),
-    new FogWall(WarpNode.MajulaToGutterFront, "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
-    new FogWall(WarpNode.MajulaToShadedWoodsFront, "o00_0502_0103", pvp: true),
-};
-fog_wall_dict[MapNames.get[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.Majula]][2].offset = new Vector3(0.0f,  1.390f -  0.413f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
-    new FogWall(WarpNode.LastGiantEntryFront, "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
-    new FogWall(WarpNode.PursuerEntryFront, "o00_0501_0003", boss_name: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
-    new FogWall(WarpNode.PursuerExitFront, "o00_0500_0004", boss_name: BossName.ThePursuer, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.ForestOfFallenGiantsBalconyFront, "o00_0500_0000"),
-    new FogWall(WarpNode.ForestOfFallenGiantsToCaleFront, "o00_0500_0003"),
-    new FogWall(WarpNode.ForestOfFallenGiantsAfterFirstBonfireFront, "o00_0500_0002"),
-    new FogWall(WarpNode.ForestOfFallenGiantsFromMajulaFront, "o00_0501_0002", pvp: true, reverse: true),
-    new FogWall(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, "o00_0500_0005", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
-    new FogWall(WarpNode.CongregationEntryFront, "o00_0500_0000", boss_name: BossName.ProwlingMagusAndCongregation),
-    new FogWall(WarpNode.CongregationExitFront, "o00_0500_0001", boss_name: BossName.ProwlingMagusAndCongregation, boss_exit: true),
-    new FogWall(WarpNode.BrightstoneCoveToDoorsOfPharrosFront, "o00_0500_0002", pvp: true),
-    new FogWall(WarpNode.DukesDearFreyjaExitFront, "o00_0501_0001", boss_name: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
-    new FogWall(WarpNode.DukesDearFreyjaEntryFront, "o00_0502_0000", boss_name: BossName.TheDukesDearFreja, cutscene: true),
-};
-fog_wall_dict[MapNames.get[MapName.AldiasKeep]] = new List<FogWall> {
-    new FogWall(WarpNode.GuardianDragonEntryFront, "o00_0501_0000", boss_name: BossName.GuardianDragon),
-    new FogWall(WarpNode.GuardianDragonExitFront, "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
-    new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
-    new FogWall(WarpNode.GargoylesEntryFront, "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
-    new FogWall(WarpNode.RuinSentinelsExitFront, "o00_0500_0001", boss_name: BossName.RuinSentinels, boss_exit: true, reverse: true),
-    new FogWall(WarpNode.LostBastilleToSinnersRiseFront, "o00_0500_0005"),
-    new FogWall(WarpNode.GargoylesExitFront, "o00_0500_0006", boss_name: BossName.BelfryGargoyles, boss_exit: true),
-    // TODO: add boss fight triggers near hidden fog gates
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor1ExitFront, "o00_0500_0007", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor2ExitFront, "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor3ExitFront, "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
-    new FogWall(WarpNode.RuinSentinelsHiddenDoor4ExitFront, "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
-    new FogWall(WarpNode.RuinSentinesUpperExitBack, "o00_0500_0011", reverse: true), 
-    new FogWall(WarpNode.LostBastilleToShipFromWharfFront, "o00_0500_0012", pvp: true, reverse: true),
-    new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true, reverse: true), // TODO: cannot access when lockstone is not used but can be used from the other side
-    new FogWall(WarpNode.RuinSentinelsEntryFront, "o00_0501_0000", boss_name: BossName.RuinSentinels, back_blocked: true),
-    new FogWall(WarpNode.LostSinnerEntryFront, "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
-    new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003"),
-};
-fog_wall_dict[MapNames.get[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
-    new FogWall(WarpNode.CovetousDemonEntryFront, "o00_0500_0000", boss_name: BossName.CovetousDemon),
-    new FogWall(WarpNode.EarthenPeakNearWindmillBurnLocationFront, "o00_0500_0001"),
-    new FogWall(WarpNode.MythaEntryFront, "o00_0500_0002", boss_name: BossName.MythaTheBanefulQueen),
-    new FogWall(WarpNode.CovetousDemonExitFront, "o00_0500_0003", boss_name: BossName.CovetousDemon, boss_exit: true),
-    new FogWall(WarpNode.MythaExitFront, "o00_0501_0000", boss_name: BossName.MythaTheBanefulQueen, boss_exit: true),
-    new FogWall(WarpNode.HarvestValleyToSkeletonLordsFront, "o00_0501_0001", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.NomansWharf]] = new List<FogWall> {
-    new FogWall(WarpNode.FlexileSentryExitFront,  "o00_0500_0000", boss_name: BossName.FlexileSentry, boss_exit: true),
-    new FogWall(WarpNode.FlexileSentryEntryFront, "o00_0500_0001", boss_name: BossName.FlexileSentry),
-    new FogWall(WarpNode.NoMansWharfToHeidesFront,  "o00_0501_0000", pvp: true),
-};
-fog_wall_dict[MapNames.get[MapName.IronKeepBelfrySol]] = new List<FogWall> {
-    new FogWall(WarpNode.SmeltorDemonEntryFront, "o00_0500_0000", boss_name: BossName.SmelterDemon),
-    new FogWall(WarpNode.IronKeepNearFlameThrowerAndTurtleFront, "o00_0500_0002"),
-    new FogWall(WarpNode.BelfrySolExitFront, "o00_0500_0003"),
-    new FogWall(WarpNode.BelfrySolEntryFront, "o00_0500_0004"),
-    new FogWall(WarpNode.OldIronKingEntryFront, "o00_0500_0005", boss_name: BossName.OldIronKing, cutscene: true),
-    new FogWall(WarpNode.OldIronKingExitFront, "o00_0500_0006", boss_name: BossName.OldIronKing, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.SmeltorDemonExitFront, "o00_0500_0007", boss_name: BossName.SmelterDemon, boss_exit: true),
-    new FogWall(WarpNode.SmeltorDemonToBonfireFront, "o00_0500_0008", pvp: true),
-    new FogWall(WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, "o00_0500_0010", pvp: true, front_blocked: true, reverse: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
-//    new FogWall("IK_belfry_entry", "o00_0500_0011"), // duplicate of another maybe for pvp
-    new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
-    new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords),
-    new FogWall(WarpNode.ChariotEntryFront, "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
-    new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true),
-    new FogWall(WarpNode.ChariotExitFront, "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.TheGutterBlackGulch]] = new List<FogWall> {
-    new FogWall(WarpNode.GutterNearAntQueenFront, "o00_0500_0000"),
-    new FogWall(WarpNode.TheRottenExitFront, "o00_0500_0001", boss_name: BossName.TheRotten, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.BlackGulchEntranceFront, "o00_0501_0000"),
-    new FogWall(WarpNode.TheGutterFromGraveOfSaintsFront, "o00_0501_0001", pvp: true, reverse: true),
-    new FogWall(WarpNode.TheRottenEntryFront, "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
-};
-fog_wall_dict[MapNames.get[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
-    new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0000", reverse: true),
-    new FogWall(WarpNode.AncientDragonFront, "o00_0502_0000", boss_name: BossName.AncientDragon), // TODO: hostile determination
-};
-fog_wall_dict[MapNames.get[MapName.MajulaShadedWoods]] = new List<FogWall> {
-    new FogWall(WarpNode.ShadedWoodsFromMajulaFront, "o00_0500_0100", pvp: true),
-};
-fog_wall_dict[MapNames.get[MapName.HeidesTowerofFlame]] = new List<FogWall> {
-    new FogWall(WarpNode.DragonriderEntryFront, "o00_0500_0000", boss_name: BossName.Dragonrider),
-    new FogWall(WarpNode.DragonriderExitFront, "o00_0500_0001", boss_name: BossName.Dragonrider, boss_exit: true),
-    new FogWall(WarpNode.HeidesToMajulaFront, "o00_0500_0002", pvp: true),
-    new FogWall(WarpNode.HeidesToWharfFront, "o00_0500_0100", pvp: true),
-    new FogWall(WarpNode.OldDragonslayerEntryFront, "o00_0501_0000", boss_name: BossName.OldDragonslayer),
-    new FogWall(WarpNode.OldDragonslayerExitFront, "o00_0501_0001", boss_name: BossName.OldDragonslayer, boss_exit: true),
-};
-fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
-    new FogWall(WarpNode.ScorpionessNajkaExitFront, "o00_0500_0000", boss_name: BossName.ScorpionessNajka, boss_exit: true),
-    new FogWall(WarpNode.ShadedWoodsToMistyAreaFront, "o00_0501_0001", pvp: true, reverse: true),
-    new FogWall(WarpNode.ScorpionessNajkaEntryFront, "o00_0503_0000", boss_name: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
-};
-fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.DoorsofPharros]] = new List<FogWall> {
-    new FogWall(WarpNode.RoyalRatAuthorityExitFront, "o00_0500_0000", boss_name: BossName.RoyalRatAuthority, boss_exit: true),
-    new FogWall(WarpNode.DoorOfPharrosToOrdealEndBonfireFront, "o00_0500_0001", pvp: true),
-    new FogWall(WarpNode.DoorOfPharrosToRatKingDomainFront, "o00_0500_0002", pvp: true),
-    new FogWall(WarpNode.RoyalRatAuthorityEntryFront, "o00_0501_0000", boss_name: BossName.RoyalRatAuthority),
-};
-fog_wall_dict[MapNames.get[MapName.GraveofSaints]] = new List<FogWall> {
-    new FogWall(WarpNode.GraveOfSaintsFromPitFront, "o00_0500_0000", pvp: true, reverse: true),
-    new FogWall(WarpNode.GraveOfSaintsNearUpperBonfireFront, "o00_0501_0000", pvp: true),
-    new FogWall(WarpNode.RoyalRatVanguardEntryFront, "o00_0501_0001", boss_name: BossName.RoyalRatVanguard),
-    new FogWall(WarpNode.RoyalRatVanguardExitFront, "o00_0501_0002", boss_name: BossName.RoyalRatVanguard, boss_exit: true),
-};
-fog_wall_dict[MapNames.get[MapName.MemoryofVammarOrroandJeigh]] = new List<FogWall> {
-    new FogWall(WarpNode.GiantLordEntryFront, "o00_0500_0000", boss_name: BossName.GiantLord),
-    new FogWall(WarpNode.GiantLordExitFront, "o00_0500_0001", boss_name: BossName.GiantLord, boss_exit: true),
-};
-fog_wall_dict[MapNames.get[MapName.ShrineofAmana]] = new List<FogWall> {
-    new FogWall(WarpNode.DemonOfSongEntryFront, "o00_0501_0000", boss_name: BossName.DemonofSong),
-    new FogWall(WarpNode.ShrineOfAmanaTo2ndBonfireFront, "o00_0501_0001"),
-    new FogWall(WarpNode.ShrineOfAmanaTo3rdBonfireFront, "o00_0501_0005"),
-    new FogWall(WarpNode.DemonOfSongExitFront, "o00_0501_0006", boss_name: BossName.DemonofSong, boss_exit: true), // y_offset = 32.121f - 31.336f
-    new FogWall(WarpNode.ShrineOfAmanaToDrangleicCastleFront, "o00_0501_0007", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
-    new FogWall(WarpNode.LookingGlassKnightEntryFront, "o00_0501_0000", boss_name: BossName.LookingGlassKnight),
-    new FogWall(WarpNode.TwinDragonridersEntryFront, "o00_0501_0001", boss_name: BossName.TwinDragonrider),
-    new FogWall(WarpNode.TwinDragonridersExitFront, "o00_0501_0004", boss_name: BossName.TwinDragonrider, boss_exit: true),
-    new FogWall(WarpNode.LookingGlassKnightExitFront, "o00_0501_0005", boss_name: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
-    new FogWall(WarpNode.FinalFightArenaFront, "o00_0501_0006", boss_name: BossName.ThroneWatcherAndDefender, cutscene: true),
-    new FogWall(WarpNode.DrangleicCastleToChasmPortalFront, "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
-    new FogWall(WarpNode.DrangleicCastleToShadedWoodsFront, "o00_0504_0000", pvp: true, reverse: true),
-};
-fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.UndeadCrypt]] = new List<FogWall> {
-    new FogWall(WarpNode.UndeadCryptFromAgdayneToBonfireFront, "o00_0500_0000"),
-    new FogWall(WarpNode.VelsdatEntryFront, "o00_0501_0000", boss_name: BossName.VelstadtTheRoyalAegis, cutscene: true),
-    new FogWall(WarpNode.VelsdatExitFront, "o00_0501_0001", boss_name: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
-    new FogWall(WarpNode.UndeadCryptToShrineOfAmanaFront, "o00_0502_0000", pvp: true),
-    new FogWall(WarpNode.VendrickFront, "o00_0505_0000", boss_name: BossName.Vendrick),
-};
-fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]] = new List<FogWall> {
-    new FogWall(WarpNode.DarkChasmFromBlackGulchExitFront, "o00_0501_0000"),
-    new FogWall(WarpNode.DarkChasmFromDrangleicCastleExitFront, "o00_0501_0001"),
-    new FogWall(WarpNode.DarkChasmFromShadedWoodsExitFront, "o00_0501_0002"),
-    new FogWall(WarpNode.DarkLurkerExitBack, "o00_0501_0003", boss_name: BossName.Darklurker, reverse: true), // y_offset = 13.792f - 11.966f
-};
-fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]] = new List<FogWall> {
-    new FogWall(WarpNode.SihnTheSlumberingDragonEntryFront, "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
-    new FogWall(WarpNode.ElanaTheSqualidQueenEntryFront, "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
-    new FogWall(WarpNode.GankSquadBossEntryFront, "o00_0501_0002", boss_name: BossName.Gankfight),
-    new FogWall(WarpNode.GankSquadBossExitFront, "o00_0501_0003", boss_name: BossName.Gankfight, boss_exit: true),
-    new FogWall(WarpNode.ShulvaToGankFight1Front, "o00_0501_0005", pvp: true),
-    new FogWall(WarpNode.ShulvaEntranceFront, "o00_0501_0007", pvp: true),
-    //new FogWall("Shulva_between_sihn_elana", "o00_0501_0008"), //disabled (duplicate)
-    new FogWall(WarpNode.BetweenElanaAndSihnFront, "o00_0501_0010"), // y_offset = 74.743797f - 73.291435f
-    new FogWall(WarpNode.ShulvaToGankFight2Front, "o00_0501_0011"),
-    new FogWall(WarpNode.NearJesterThomasFront, "o00_0501_0012"), //y_offset = 41.540f - 41.289f
-};
-fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f); // this is weird because of the inclined slope
-fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.BrumeTower]] = new List<FogWall> {
-    new FogWall(WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomFront, "o00_0500_0000"),
-    new FogWall(WarpNode.BrumeTowerToFoyerBonfireFromOutsideFront, "o00_0500_0001"),
-    new FogWall(WarpNode.BrumeTowerToScorchingIronSceptorKeyFront, "o00_0500_0002"),
-    new FogWall(WarpNode.SirAlonneEntryFront, "o00_0500_0003", boss_name: BossName.SirAlonne),
-    new FogWall(WarpNode.SirAlonneExitFront, "o00_0500_0004", boss_name: BossName.SirAlonne, boss_exit: true),
-    new FogWall(WarpNode.FumeKnightEntryFront, "o00_0501_0000", boss_name: BossName.FumeKnight), // y_offset = 59.822f - 59.297f
-    new FogWall(WarpNode.FumeKnightExitFront, "o00_0501_0001", boss_name: BossName.FumeKnight, boss_exit: true, reverse: true), //y_offset = 61.497f - 60.998f
-    new FogWall(WarpNode.BlueSmeltorDemonEntryFront, "o00_0501_0002", boss_name: BossName.BlueSmelterDemon), //y_offset = 26.875f - 26.556f
-    new FogWall(WarpNode.BlueSmeltorDemonExitFront, "o00_0501_0003", boss_name: BossName.BlueSmelterDemon, boss_exit: true),
-    new FogWall(WarpNode.BrumeTowerEntranceFromLiftFront, "o00_0501_0006"),
-    new FogWall(WarpNode.BrumeTowerToBlueSmelterDungeonFront, "o00_0501_0007"),
-    //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
-};
-fog_wall_dict[MapNames.get[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
-fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]] = new List<FogWall> {
-    new FogWall(WarpNode.AavaTheKingsPetExitFront, "o00_0500_0001", boss_name: BossName.AavaTheKingsPet, boss_exit: true),
-    new FogWall(WarpNode.EleumLoyceAfterGettingEyeToSeeGhostsFront, "o00_0500_0002"),
-    new FogWall(WarpNode.IvoryKingFront, "o00_0500_0003", boss_name: BossName.BurntIvoryKing, back_blocked: true),
-    new FogWall(WarpNode.LudAndZallenEntryFront, "o00_0501_0003", boss_name: BossName.LudAndZallen),
-    new FogWall(WarpNode.AavaTheKingsPetEntryFront, "o00_0501_0005", boss_name: BossName.AavaTheKingsPet),
-    new FogWall(WarpNode.LudAndZallenExitFront, "o00_0501_0006", boss_name: BossName.LudAndZallen, boss_exit: true),
-    new FogWall(WarpNode.EleumLoyceCathedraEntranceFront, "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
-};
-fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
-
-foreach (var kvp in fog_wall_dict)
-{
-    string map_name = kvp.Key;
-    List<FogWall> fog_walls = kvp.Value;
-
-    for (int i = 0; i < fog_walls.Count; i++)
-    {
-        var fog_wall = fog_walls[i];
-
-        if (fog_wall.boss_name != BossName.None)
+        var item = GateConnections.items[i];
+        if(to_skip_global.Contains(item))
         {
-            if (fog_wall.cutscene)
-            {
-                fog_wall.event_id = Constants.boss_event_ids[fog_wall.boss_name];
-            }
-            fog_wall.destruction_flag = Constants.boss_destruction_flags[fog_wall.boss_name];
+            continue;
+        }
+        to_skip.Clear();
+        check_connection(item, to_skip);
+        to_skip_global.AddRange(to_skip);
+        segments.Add(new(to_skip));
+    }
+    var flat_connection_list = segments.SelectMany(g => g).ToList();
+    var duplicates = flat_connection_list
+        .GroupBy(x => x)
+        .Where(g => g.Count() > 1)
+        .Select(g => g.Key)
+        .ToList();
+    if (duplicates.Count != 0) throw new Exception("Got duplicates!!");
+    return segments;
+}
+
+int add_pirate_ship_msg_to_game_files(String mod_folder)
+{
+    String map_event_path = Path.Join(mod_folder, @"menu\text\english\mapevent.fmg");
+    var map_event_texts = read_fmg(map_event_path + ".bak");
+    int ship_arrival_msg_id = 1214;
+    foreach (var entry in map_event_texts.Entries)
+    {
+        if (entry.Text == null)
+        {
+            entry.Text = Constants.ship_arrival_msg;
+            ship_arrival_msg_id = entry.ID;
+            break;
         }
     }
+    File.WriteAllBytes(map_event_path, map_event_texts.Write());
+    return ship_arrival_msg_id;
 }
 
-Dictionary<string, int> warp_map_id = new Dictionary<string, int>();
-foreach(var mn in MapNames.get)
+Dictionary<String, List<FogWall>> generate_fog_wall_dict()
 {
-    warp_map_id[mn.Value] = Util.parse_map_name(mn.Value);
+    Dictionary<String, List<FogWall>> fog_wall_dict = new Dictionary<string, List<FogWall>>();
+    fog_wall_dict[MapNames.get[MapName.ThingsBetwixt]] = new List<FogWall> {
+        new FogWall(WarpNode.Tutorial1EntryFront, "o00_0500_0001"),
+        new FogWall(WarpNode.Tutorial2EntryFront, "o00_0500_0003"),
+        new FogWall(WarpNode.Tutorial3EntryFront, "o00_0500_0004", front_blocked: true),
+        new FogWall(WarpNode.Tutorial1ExitFront,  "o00_0500_0000"),
+        new FogWall(WarpNode.Tutorial2ExitFront,  "o00_0500_0005"),
+        new FogWall(WarpNode.Tutorial3ExitFront,  "o00_0500_0002"),
+    };
+    fog_wall_dict[MapNames.get[MapName.Majula]] = new List<FogWall> {
+        //new FogWall("Ma_limbo_1",    "o00_0501_0000", pvp: true), //disabled
+        //new FogWall("Ma_limbo_2",    "o00_0501_0001", pvp: true), //disabled
+        //new FogWall("Ma_limbo_3",    "o00_0501_0002", pvp: true), //disabled
+        new FogWall(WarpNode.MajulaToForestOfFallenGiantsFront, "o00_0501_0100", pvp: true),
+        new FogWall(WarpNode.MajulaToGraveOfSaintsFront, "o00_0501_0101", pvp: true, reverse: true), // y_offset = 43.455 - 42.057
+        new FogWall(WarpNode.MajulaToHuntsmanCopseFront, "o00_0501_0102", pvp: true), // y_offset = 1.390f - 0.413f
+        new FogWall(WarpNode.MajulaToRotundaLockstoneFront, "o00_0501_0103", pvp: true),
+        new FogWall(WarpNode.MajulaToGutterFront, "o00_0501_0104", pvp: true), // y_offset = 71.218 - 69.941
+        new FogWall(WarpNode.MajulaToShadedWoodsFront, "o00_0502_0103", pvp: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.Majula]][1].offset = new Vector3(0.0f, 43.455f - 42.057f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.Majula]][2].offset = new Vector3(0.0f,  1.390f -  0.413f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.Majula]][4].offset = new Vector3(0.0f, 71.218f - 69.941f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]] = new List<FogWall> {
+        new FogWall(WarpNode.LastGiantEntryFront, "o00_0501_0001", boss_name: BossName.TheLastGiant, cutscene: true),
+        new FogWall(WarpNode.PursuerEntryFront, "o00_0501_0003", boss_name: BossName.ThePursuer, cutscene: true), // y_offset = 10.090f - 6.001f
+        new FogWall(WarpNode.PursuerExitFront, "o00_0500_0004", boss_name: BossName.ThePursuer, boss_exit: true, cutscene: true),
+        new FogWall(WarpNode.ForestOfFallenGiantsBalconyFront, "o00_0500_0000"),
+        new FogWall(WarpNode.ForestOfFallenGiantsToCaleFront, "o00_0500_0003"),
+        new FogWall(WarpNode.ForestOfFallenGiantsAfterFirstBonfireFront, "o00_0500_0002"),
+        new FogWall(WarpNode.ForestOfFallenGiantsFromMajulaFront, "o00_0501_0002", pvp: true, reverse: true),
+        new FogWall(WarpNode.ForestOfFallenGiantsToPursuerArenaFront, "o00_0500_0005", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.ForestOfTheFallenGiants]][1].offset = new Vector3(0.0f, 10.090f - 6.001f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.BrightstoneCoveTseldora]] = new List<FogWall> {
+        new FogWall(WarpNode.CongregationEntryFront, "o00_0500_0000", boss_name: BossName.ProwlingMagusAndCongregation),
+        new FogWall(WarpNode.CongregationExitFront, "o00_0500_0001", boss_name: BossName.ProwlingMagusAndCongregation, boss_exit: true),
+        new FogWall(WarpNode.BrightstoneCoveToDoorsOfPharrosFront, "o00_0500_0002", pvp: true),
+        new FogWall(WarpNode.DukesDearFreyjaExitFront, "o00_0501_0001", boss_name: BossName.TheDukesDearFreja, boss_exit: true, cutscene: true, reverse: true),
+        new FogWall(WarpNode.DukesDearFreyjaEntryFront, "o00_0502_0000", boss_name: BossName.TheDukesDearFreja, cutscene: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.AldiasKeep]] = new List<FogWall> {
+        new FogWall(WarpNode.GuardianDragonEntryFront, "o00_0501_0000", boss_name: BossName.GuardianDragon),
+        new FogWall(WarpNode.GuardianDragonExitFront, "o00_0501_0001", boss_name: BossName.GuardianDragon, boss_exit: true),
+        new FogWall(WarpNode.AldiasKeepEntranceFront, "o00_0501_0002", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.TheLostBastilleBelfryLuna]] = new List<FogWall> {
+        new FogWall(WarpNode.GargoylesEntryFront, "o00_0500_0000", boss_name: BossName.BelfryGargoyles),
+        new FogWall(WarpNode.RuinSentinelsExitFront, "o00_0500_0001", boss_name: BossName.RuinSentinels, boss_exit: true, reverse: true),
+        new FogWall(WarpNode.LostBastilleToSinnersRiseFront, "o00_0500_0005"),
+        new FogWall(WarpNode.GargoylesExitFront, "o00_0500_0006", boss_name: BossName.BelfryGargoyles, boss_exit: true),
+        // TODO: add boss fight triggers near hidden fog gates
+        new FogWall(WarpNode.RuinSentinelsHiddenDoor1ExitFront, "o00_0500_0007", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+        new FogWall(WarpNode.RuinSentinelsHiddenDoor2ExitFront, "o00_0500_0008", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+        new FogWall(WarpNode.RuinSentinelsHiddenDoor3ExitFront, "o00_0500_0009", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true),
+        new FogWall(WarpNode.RuinSentinelsHiddenDoor4ExitFront, "o00_0500_0010", boss_name: BossName.RuinSentinels, boss_exit: true, front_blocked: true), // one with ladder
+        new FogWall(WarpNode.RuinSentinesUpperExitBack, "o00_0500_0011", reverse: true), 
+        new FogWall(WarpNode.LostBastilleToShipFromWharfFront, "o00_0500_0012", pvp: true, reverse: true),
+        new FogWall(WarpNode.LostBastilleToBelfryLunaFront, "o00_0500_0013", pvp: true, front_blocked: true, reverse: true), // TODO: cannot access when lockstone is not used but can be used from the other side
+        new FogWall(WarpNode.RuinSentinelsEntryFront, "o00_0501_0000", boss_name: BossName.RuinSentinels, back_blocked: true),
+        new FogWall(WarpNode.LostSinnerEntryFront, "o00_0501_0002", boss_name: BossName.TheLostSinner, cutscene: true),
+        new FogWall(WarpNode.LostSinnerExitFront, "o00_0501_0003"),
+    };
+    fog_wall_dict[MapNames.get[MapName.HarvestValleyEarthenPeak]] = new List<FogWall> {
+        new FogWall(WarpNode.CovetousDemonEntryFront, "o00_0500_0000", boss_name: BossName.CovetousDemon),
+        new FogWall(WarpNode.EarthenPeakNearWindmillBurnLocationFront, "o00_0500_0001"),
+        new FogWall(WarpNode.MythaEntryFront, "o00_0500_0002", boss_name: BossName.MythaTheBanefulQueen),
+        new FogWall(WarpNode.CovetousDemonExitFront, "o00_0500_0003", boss_name: BossName.CovetousDemon, boss_exit: true),
+        new FogWall(WarpNode.MythaExitFront, "o00_0501_0000", boss_name: BossName.MythaTheBanefulQueen, boss_exit: true),
+        new FogWall(WarpNode.HarvestValleyToSkeletonLordsFront, "o00_0501_0001", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.NomansWharf]] = new List<FogWall> {
+        new FogWall(WarpNode.FlexileSentryExitFront,  "o00_0500_0000", boss_name: BossName.FlexileSentry, boss_exit: true),
+        new FogWall(WarpNode.FlexileSentryEntryFront, "o00_0500_0001", boss_name: BossName.FlexileSentry),
+        new FogWall(WarpNode.NoMansWharfToHeidesFront,  "o00_0501_0000", pvp: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.IronKeepBelfrySol]] = new List<FogWall> {
+        new FogWall(WarpNode.SmeltorDemonEntryFront, "o00_0500_0000", boss_name: BossName.SmelterDemon),
+        new FogWall(WarpNode.IronKeepNearFlameThrowerAndTurtleFront, "o00_0500_0002"),
+        new FogWall(WarpNode.BelfrySolExitFront, "o00_0500_0003"),
+        new FogWall(WarpNode.BelfrySolEntryFront, "o00_0500_0004"),
+        new FogWall(WarpNode.OldIronKingEntryFront, "o00_0500_0005", boss_name: BossName.OldIronKing, cutscene: true),
+        new FogWall(WarpNode.OldIronKingExitFront, "o00_0500_0006", boss_name: BossName.OldIronKing, boss_exit: true, cutscene: true),
+        new FogWall(WarpNode.SmeltorDemonExitFront, "o00_0500_0007", boss_name: BossName.SmelterDemon, boss_exit: true),
+        new FogWall(WarpNode.SmeltorDemonToBonfireFront, "o00_0500_0008", pvp: true),
+        new FogWall(WarpNode.IronKeepToBelfryAtPharrosLockstoneFront, "o00_0500_0010", pvp: true, front_blocked: true, reverse: true), // TODO: can access from behind the lockstone door but cannot from the lockstone side
+    //    new FogWall("IK_belfry_entry", "o00_0500_0011"), // duplicate of another maybe for pvp
+        new FogWall(WarpNode.IronKeepToEarthenPeakFront, "o00_0501_0000", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.HuntsmanCopseUndeadPurgatory]] = new List<FogWall> {
+        new FogWall(WarpNode.SkeletonLordsEntryFront, "o00_0501_0000", boss_name: BossName.SkeletonLords),
+        new FogWall(WarpNode.ChariotEntryFront, "o00_0501_0001", boss_name: BossName.ExecutionersChariot, cutscene: true),
+        new FogWall(WarpNode.SkeletonLordsExitFront, "o00_0501_0004", boss_name: BossName.SkeletonLords, boss_exit: true),
+        new FogWall(WarpNode.ChariotExitFront, "o00_0501_0006", boss_name: BossName.ExecutionersChariot, boss_exit: true, cutscene: true),
+        new FogWall(WarpNode.HuntsmanCopseToMajulaFront, "o00_0501_0007", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.TheGutterBlackGulch]] = new List<FogWall> {
+        new FogWall(WarpNode.GutterNearAntQueenFront, "o00_0500_0000"),
+        new FogWall(WarpNode.TheRottenExitFront, "o00_0500_0001", boss_name: BossName.TheRotten, boss_exit: true, cutscene: true),
+        new FogWall(WarpNode.BlackGulchEntranceFront, "o00_0501_0000"),
+        new FogWall(WarpNode.TheGutterFromGraveOfSaintsFront, "o00_0501_0001", pvp: true, reverse: true),
+        new FogWall(WarpNode.TheRottenEntryFront, "o00_0503_0100", boss_name: BossName.TheRotten, cutscene: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.DragonAerieDragonShrine]] = new List<FogWall> {
+        new FogWall(WarpNode.DragonAerieToAldiasKeepFront, "o00_0501_0000", reverse: true),
+        new FogWall(WarpNode.AncientDragonFront, "o00_0502_0000", boss_name: BossName.AncientDragon), // TODO: hostile determination
+    };
+    fog_wall_dict[MapNames.get[MapName.MajulaShadedWoods]] = new List<FogWall> {
+        new FogWall(WarpNode.ShadedWoodsFromMajulaFront, "o00_0500_0100", pvp: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.HeidesTowerofFlame]] = new List<FogWall> {
+        new FogWall(WarpNode.DragonriderEntryFront, "o00_0500_0000", boss_name: BossName.Dragonrider),
+        new FogWall(WarpNode.DragonriderExitFront, "o00_0500_0001", boss_name: BossName.Dragonrider, boss_exit: true),
+        new FogWall(WarpNode.HeidesToMajulaFront, "o00_0500_0002", pvp: true),
+        new FogWall(WarpNode.HeidesToWharfFront, "o00_0500_0100", pvp: true),
+        new FogWall(WarpNode.OldDragonslayerEntryFront, "o00_0501_0000", boss_name: BossName.OldDragonslayer),
+        new FogWall(WarpNode.OldDragonslayerExitFront, "o00_0501_0001", boss_name: BossName.OldDragonslayer, boss_exit: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]] = new List<FogWall> {
+        new FogWall(WarpNode.ScorpionessNajkaExitFront, "o00_0500_0000", boss_name: BossName.ScorpionessNajka, boss_exit: true),
+        new FogWall(WarpNode.ShadedWoodsToMistyAreaFront, "o00_0501_0001", pvp: true, reverse: true),
+        new FogWall(WarpNode.ScorpionessNajkaEntryFront, "o00_0503_0000", boss_name: BossName.ScorpionessNajka), // y_offset = 85.080-85.672
+    };
+    fog_wall_dict[MapNames.get[MapName.ShadedWoodsShrineofWinter]][2].offset = new Vector3(0.0f, -85.080f + 85.672f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.DoorsofPharros]] = new List<FogWall> {
+        new FogWall(WarpNode.RoyalRatAuthorityExitFront, "o00_0500_0000", boss_name: BossName.RoyalRatAuthority, boss_exit: true),
+        new FogWall(WarpNode.DoorOfPharrosToOrdealEndBonfireFront, "o00_0500_0001", pvp: true),
+        new FogWall(WarpNode.DoorOfPharrosToRatKingDomainFront, "o00_0500_0002", pvp: true),
+        new FogWall(WarpNode.RoyalRatAuthorityEntryFront, "o00_0501_0000", boss_name: BossName.RoyalRatAuthority),
+    };
+    fog_wall_dict[MapNames.get[MapName.GraveofSaints]] = new List<FogWall> {
+        new FogWall(WarpNode.GraveOfSaintsFromPitFront, "o00_0500_0000", pvp: true, reverse: true),
+        new FogWall(WarpNode.GraveOfSaintsNearUpperBonfireFront, "o00_0501_0000", pvp: true),
+        new FogWall(WarpNode.RoyalRatVanguardEntryFront, "o00_0501_0001", boss_name: BossName.RoyalRatVanguard),
+        new FogWall(WarpNode.RoyalRatVanguardExitFront, "o00_0501_0002", boss_name: BossName.RoyalRatVanguard, boss_exit: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.MemoryofVammarOrroandJeigh]] = new List<FogWall> {
+        new FogWall(WarpNode.GiantLordEntryFront, "o00_0500_0000", boss_name: BossName.GiantLord),
+        new FogWall(WarpNode.GiantLordExitFront, "o00_0500_0001", boss_name: BossName.GiantLord, boss_exit: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.ShrineofAmana]] = new List<FogWall> {
+        new FogWall(WarpNode.DemonOfSongEntryFront, "o00_0501_0000", boss_name: BossName.DemonofSong),
+        new FogWall(WarpNode.ShrineOfAmanaTo2ndBonfireFront, "o00_0501_0001"),
+        new FogWall(WarpNode.ShrineOfAmanaTo3rdBonfireFront, "o00_0501_0005"),
+        new FogWall(WarpNode.DemonOfSongExitFront, "o00_0501_0006", boss_name: BossName.DemonofSong, boss_exit: true), // y_offset = 32.121f - 31.336f
+        new FogWall(WarpNode.ShrineOfAmanaToDrangleicCastleFront, "o00_0501_0007", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.ShrineofAmana]][3].offset = new Vector3(0.0f, 32.121f - 31.336f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]] = new List<FogWall> {
+        new FogWall(WarpNode.LookingGlassKnightEntryFront, "o00_0501_0000", boss_name: BossName.LookingGlassKnight),
+        new FogWall(WarpNode.TwinDragonridersEntryFront, "o00_0501_0001", boss_name: BossName.TwinDragonrider),
+        new FogWall(WarpNode.TwinDragonridersExitFront, "o00_0501_0004", boss_name: BossName.TwinDragonrider, boss_exit: true),
+        new FogWall(WarpNode.LookingGlassKnightExitFront, "o00_0501_0005", boss_name: BossName.LookingGlassKnight, boss_exit: true), // y_offset = 75.655434f - 75.142822f
+        new FogWall(WarpNode.FinalFightArenaFront, "o00_0501_0006", boss_name: BossName.ThroneWatcherAndDefender, cutscene: true),
+        new FogWall(WarpNode.DrangleicCastleToChasmPortalFront, "o00_0501_0008", pvp: true), // y_offset = 70.787-72.757 // x_offset = -437.288 + 436.508
+        new FogWall(WarpNode.DrangleicCastleToShadedWoodsFront, "o00_0504_0000", pvp: true, reverse: true),
+    };
+    fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][3].offset = new Vector3(0.0f, 75.655434f - 75.142822f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.DrangleicCastleThroneofWant]][5].offset = new Vector3(-437.288f + 436.508f, -70.787f + 72.757f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.UndeadCrypt]] = new List<FogWall> {
+        new FogWall(WarpNode.UndeadCryptFromAgdayneToBonfireFront, "o00_0500_0000"),
+        new FogWall(WarpNode.VelsdatEntryFront, "o00_0501_0000", boss_name: BossName.VelstadtTheRoyalAegis, cutscene: true),
+        new FogWall(WarpNode.VelsdatExitFront, "o00_0501_0001", boss_name: BossName.VelstadtTheRoyalAegis, boss_exit: true, cutscene: true),
+        new FogWall(WarpNode.UndeadCryptToShrineOfAmanaFront, "o00_0502_0000", pvp: true),
+        new FogWall(WarpNode.VendrickFront, "o00_0505_0000", boss_name: BossName.Vendrick),
+    };
+    fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]] = new List<FogWall> {
+        new FogWall(WarpNode.DarkChasmFromBlackGulchExitFront, "o00_0501_0000"),
+        new FogWall(WarpNode.DarkChasmFromDrangleicCastleExitFront, "o00_0501_0001"),
+        new FogWall(WarpNode.DarkChasmFromShadedWoodsExitFront, "o00_0501_0002"),
+        new FogWall(WarpNode.DarkLurkerExitBack, "o00_0501_0003", boss_name: BossName.Darklurker, reverse: true), // y_offset = 13.792f - 11.966f
+    };
+    fog_wall_dict[MapNames.get[MapName.DarkChasmofOld]][3].offset = new Vector3(0.0f, 13.792f - 11.966f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]] = new List<FogWall> {
+        new FogWall(WarpNode.SihnTheSlumberingDragonEntryFront, "o00_0500_0001", boss_name: BossName.SinhTheSlumberingDragon), // y_offset = 79.928f - 79.436f
+        new FogWall(WarpNode.ElanaTheSqualidQueenEntryFront, "o00_0501_0000", boss_name: BossName.ElanaTheSqualidQueen), // y_offset = 71.928f - 71.637f
+        new FogWall(WarpNode.GankSquadBossEntryFront, "o00_0501_0002", boss_name: BossName.Gankfight),
+        new FogWall(WarpNode.GankSquadBossExitFront, "o00_0501_0003", boss_name: BossName.Gankfight, boss_exit: true),
+        new FogWall(WarpNode.ShulvaToGankFight1Front, "o00_0501_0005", pvp: true),
+        new FogWall(WarpNode.ShulvaEntranceFront, "o00_0501_0007", pvp: true),
+        //new FogWall("Shulva_between_sihn_elana", "o00_0501_0008"), //disabled (duplicate)
+        new FogWall(WarpNode.BetweenElanaAndSihnFront, "o00_0501_0010"), // y_offset = 74.743797f - 73.291435f
+        new FogWall(WarpNode.ShulvaToGankFight2Front, "o00_0501_0011"),
+        new FogWall(WarpNode.NearJesterThomasFront, "o00_0501_0012"), //y_offset = 41.540f - 41.289f
+    };
+    fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][0].offset = new Vector3(0.0f, 79.928f - 79.436f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][1].offset = new Vector3(0.0f, 71.928f - 71.637f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][6].offset = new Vector3(0.0f, 5.0f * (74.744f - 73.291f) / 12.0f, 0.0f); // this is weird because of the inclined slope
+    fog_wall_dict[MapNames.get[MapName.ShulvaSanctumCity]][8].offset = new Vector3(0.0f, 41.540f - 41.289f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.BrumeTower]] = new List<FogWall> {
+        new FogWall(WarpNode.BrumeTowerFrom2ndBonfireToCentralRoomFront, "o00_0500_0000"),
+        new FogWall(WarpNode.BrumeTowerToFoyerBonfireFromOutsideFront, "o00_0500_0001"),
+        new FogWall(WarpNode.BrumeTowerToScorchingIronSceptorKeyFront, "o00_0500_0002"),
+        new FogWall(WarpNode.SirAlonneEntryFront, "o00_0500_0003", boss_name: BossName.SirAlonne),
+        new FogWall(WarpNode.SirAlonneExitFront, "o00_0500_0004", boss_name: BossName.SirAlonne, boss_exit: true),
+        new FogWall(WarpNode.FumeKnightEntryFront, "o00_0501_0000", boss_name: BossName.FumeKnight), // y_offset = 59.822f - 59.297f
+        new FogWall(WarpNode.FumeKnightExitFront, "o00_0501_0001", boss_name: BossName.FumeKnight, boss_exit: true, reverse: true), //y_offset = 61.497f - 60.998f
+        new FogWall(WarpNode.BlueSmeltorDemonEntryFront, "o00_0501_0002", boss_name: BossName.BlueSmelterDemon), //y_offset = 26.875f - 26.556f
+        new FogWall(WarpNode.BlueSmeltorDemonExitFront, "o00_0501_0003", boss_name: BossName.BlueSmelterDemon, boss_exit: true),
+        new FogWall(WarpNode.BrumeTowerEntranceFromLiftFront, "o00_0501_0006"),
+        new FogWall(WarpNode.BrumeTowerToBlueSmelterDungeonFront, "o00_0501_0007"),
+        //new FogWall("DLC2_entrance",                            "o00_0501_0008"), // disabled (duplicate)
+    };
+    fog_wall_dict[MapNames.get[MapName.BrumeTower]][5].offset = new Vector3(0.0f, 59.822f - 59.297f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.BrumeTower]][6].offset = new Vector3(0.0f, 61.497f - 60.998f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.BrumeTower]][7].offset = new Vector3(0.0f, 26.875f - 26.556f, 0.0f);
+    fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]] = new List<FogWall> {
+        new FogWall(WarpNode.AavaTheKingsPetExitFront, "o00_0500_0001", boss_name: BossName.AavaTheKingsPet, boss_exit: true),
+        new FogWall(WarpNode.EleumLoyceAfterGettingEyeToSeeGhostsFront, "o00_0500_0002"),
+        new FogWall(WarpNode.IvoryKingFront, "o00_0500_0003", boss_name: BossName.BurntIvoryKing, back_blocked: true),
+        new FogWall(WarpNode.LudAndZallenEntryFront, "o00_0501_0003", boss_name: BossName.LudAndZallen),
+        new FogWall(WarpNode.AavaTheKingsPetEntryFront, "o00_0501_0005", boss_name: BossName.AavaTheKingsPet),
+        new FogWall(WarpNode.LudAndZallenExitFront, "o00_0501_0006", boss_name: BossName.LudAndZallen, boss_exit: true),
+        new FogWall(WarpNode.EleumLoyceCathedraEntranceFront, "o00_0501_0007", pvp: true), // y_offset = 25.841f - 23.046f
+    };
+    fog_wall_dict[MapNames.get[MapName.FrozenEleumLoyce]][6].offset = new Vector3(0.0f, 25.841f - 23.046f, 0.0f);
+
+    foreach (var kvp in fog_wall_dict)
+    {
+        string map_name = kvp.Key;
+        List<FogWall> fog_walls = kvp.Value;
+        for (int i = 0; i < fog_walls.Count; i++)
+        {
+            var fog_wall = fog_walls[i];
+            if (fog_wall.boss_name != BossName.None)
+            {
+                if (fog_wall.cutscene)
+                {
+                    fog_wall.event_id = Constants.boss_event_ids[fog_wall.boss_name];
+                }
+                fog_wall.destruction_flag = Constants.boss_destruction_flags[fog_wall.boss_name];
+            }
+        }
+    }
+    return fog_wall_dict;
 }
 
-String get_esd_file_path(String map_name)
+String get_esd_file_path(String mod_folder, String map_name)
 {
     return Path.Join(mod_folder, "ezstate", $"event_{map_name}.esd");
 }
 
-// for disabling the fog gates (disable fog gates)
-var enc_reg_path = Path.Join(mod_folder, "enc_regulation.bnd.dcx");
-var enc_reg = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out DCX.Type type));
-for (int i = 0; i < enc_reg.Files.Count; i++)
+void disable_fog_gates(String mod_folder)
 {
-    var file = enc_reg.Files[i];
-    if (file.Name == "MapObjectWhiteDoorParam.param")
+    var enc_reg_path = Path.Join(mod_folder, "enc_regulation.bnd.dcx");
+    var enc_reg = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out DCX.Type type));
+    for (int i = 0; i < enc_reg.Files.Count; i++)
     {
-        var white_door_param = PARAM.Read(file.Bytes);
-        white_door_param.ApplyParamdef(get_whitedoor_paramdef(white_door_param));
-        for (int j = 0; j < white_door_param.Rows.Count; j++)
+        var file = enc_reg.Files[i];
+        if (file.Name == "MapObjectWhiteDoorParam.param")
         {
-            var row = white_door_param.Rows[j];
-                var new_row = new Row(
-                    row.ID, "",
-                    get_whitedoor_paramdef(white_door_param, row)
-                );
-                white_door_param.Rows.Remove(row);
-                white_door_param.Rows.Insert(j, new_row);
+            var white_door_param = PARAM.Read(file.Bytes);
+            white_door_param.ApplyParamdef(get_whitedoor_paramdef(white_door_param));
+            for (int j = 0; j < white_door_param.Rows.Count; j++)
+            {
+                var row = white_door_param.Rows[j];
+                    var new_row = new Row(
+                        row.ID, "",
+                        get_whitedoor_paramdef(white_door_param, row)
+                    );
+                    white_door_param.Rows.Remove(row);
+                    white_door_param.Rows.Insert(j, new_row);
+            }
+            file.Bytes = white_door_param.Write();
         }
-        file.Bytes = white_door_param.Write();
     }
+    File.WriteAllBytes(enc_reg_path, DCX.Compress(enc_reg.Write(), type));
 }
 
-File.WriteAllBytes(enc_reg_path, DCX.Compress(enc_reg.Write(), type));
-
-String ezstate_path = Path.Join(mod_folder, "ezstate");
-int warp_obj_idx = -1;
-int warp_obj_inst_idx = -1;
-MSB2.Part.Object? warp_obj = null;
-MSB2.Model? warp_model = null;
-PARAM.Row? warp_obj_inst = null;
-List<Warp> warps = new();
-foreach (var pair in MapNames.get)
+(List<Warp>, List<WarpInfo>) generate_map_objects(Dictionary<String, List<FogWall>> fog_wall_dict, String mod_folder)
 {
-    String map_name = pair.Value;
+    String warp_obj_name = "o02_1050_0000";
+    String warp_obj_model_name = warp_obj_name.Substring(0, 8);
+    int warp_obj_inst_id = 10021101;
 
-    // hardcoded to 1000
-    //int warp_obj_begin = warp_object_begin_list[map_name];
-    int warp_obj_begin = 1000;
-
-    // skip dragon memories and memory of the king
-    if (pair.Key == MapName.MemoryoftheKing || pair.Key == MapName.DragonMemories) continue;
-
-    int n_fog_walls = fog_wall_dict[map_name].Count;
-
-    String map_path               = Path.Join(mod_folder, "map", map_name, map_name + ".msb");
-    String param_event_loc_path   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
-    String param_event_path       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
-    String obj_inst_param_path    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
-
-    MSB2  map               = load_map(map_path);
-    PARAM param_event_loc   = load_map_param(param_event_loc_path);
-    PARAM param_event       = load_map_param(param_event_path);
-    PARAM obj_inst_param    = load_map_param(obj_inst_param_path);
-
-    obj_inst_param.ApplyParamdef(get_obj_inst_def_paramdef(obj_inst_param));
-    param_event.ApplyParamdef(get_event_param_def_paramdef(param_event));
-    param_event_loc.ApplyParamdef(get_event_loc_def_paramdef(param_event_loc));
-
-    // get the instance id from map name
-    for (int i=0; i<map.Parts.Objects.Count; i++)
+    int warp_obj_idx = -1;
+    int warp_obj_inst_idx = -1;
+    MSB2.Part.Object? warp_obj = null;
+    MSB2.Model? warp_model = null;
+    PARAM.Row? warp_obj_inst = null;
+    List<Warp> warps = new();
+    foreach (var pair in MapNames.get)
     {
-        var obj = map.Parts.Objects[i];
-        for (int j=0; j < fog_wall_dict[map_name].Count; j++)
-        {
-            if (obj.Name == fog_wall_dict[map_name][j].map_name)
-            {
-                fog_wall_dict[map_name][j].instance_id = obj.MapObjectInstanceParamID;
-                break;
-            }
-        }
-    }
+        String map_name = pair.Value;
 
-    // if the fog gate is exit fog gate get the fog gate instance id of its main fog gate
-    // and store in the twin_gate_id
-    for (int i=0; i < fog_wall_dict[map_name].Count; i++)
-    {
-        var fog_wall = fog_wall_dict[map_name][i];
-        if (fog_wall.boss_exit && fog_wall.cutscene)
+        // hardcoded to 1000
+        //int warp_obj_begin = warp_object_begin_list[map_name];
+        int warp_obj_begin = 1000;
+
+        // skip dragon memories and memory of the king
+        if (pair.Key == MapName.MemoryoftheKing || pair.Key == MapName.DragonMemories) continue;
+
+        int n_fog_walls = fog_wall_dict[map_name].Count;
+
+        String map_path               = Path.Join(mod_folder, "map", map_name, map_name + ".msb");
+        String param_event_loc_path   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
+        String param_event_path       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
+        String obj_inst_param_path    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
+
+        MSB2  map               = load_map(map_path);
+        PARAM param_event_loc   = load_map_param(param_event_loc_path);
+        PARAM param_event       = load_map_param(param_event_path);
+        PARAM obj_inst_param    = load_map_param(obj_inst_param_path);
+
+        obj_inst_param.ApplyParamdef(get_obj_inst_def_paramdef(obj_inst_param));
+        param_event.ApplyParamdef(get_event_param_def_paramdef(param_event));
+        param_event_loc.ApplyParamdef(get_event_loc_def_paramdef(param_event_loc));
+
+        // get the instance id from map name
+        for (int i=0; i<map.Parts.Objects.Count; i++)
         {
-            for (int j = 0; j < fog_wall_dict[map_name].Count; j++)
+            var obj = map.Parts.Objects[i];
+            for (int j=0; j < fog_wall_dict[map_name].Count; j++)
             {
-                if (i == j) continue;
-                var twin_fog_wall = fog_wall_dict[map_name][j];
-                if (twin_fog_wall.boss_name == fog_wall.boss_name)
+                if (obj.Name == fog_wall_dict[map_name][j].map_name)
                 {
-                    fog_wall.twin_gate_id = twin_fog_wall.instance_id;
+                    fog_wall_dict[map_name][j].instance_id = obj.MapObjectInstanceParamID;
                     break;
                 }
             }
         }
-    }
 
-    // do this only for things betwixt: m10_02_00_00
-    if (map_name == MapNames.get[MapName.ThingsBetwixt])
-    {
-        // get the model out of the map
-        for (int i=0; i<map.Models.Objects.Count; i++)
+        // if the fog gate is exit fog gate get the fog gate instance id of its main fog gate
+        // and store in the twin_gate_id
+        for (int i=0; i < fog_wall_dict[map_name].Count; i++)
         {
-            var model = map.Models.Objects[i];
-            if (model.Name == warp_obj_model_name)
+            var fog_wall = fog_wall_dict[map_name][i];
+            if (fog_wall.boss_exit && fog_wall.cutscene)
             {
-                warp_model = model.DeepCopy();
-                break;
+                for (int j = 0; j < fog_wall_dict[map_name].Count; j++)
+                {
+                    if (i == j) continue;
+                    var twin_fog_wall = fog_wall_dict[map_name][j];
+                    if (twin_fog_wall.boss_name == fog_wall.boss_name)
+                    {
+                        fog_wall.twin_gate_id = twin_fog_wall.instance_id;
+                        break;
+                    }
+                }
             }
         }
 
-        // get the object to be used for warping
-        for (int i = 0; i < map.Parts.Objects.Count; i++)
+        // do this only for things betwixt: m10_02_00_00
+        if (map_name == MapNames.get[MapName.ThingsBetwixt])
         {
-            warp_obj = map.Parts.Objects[i];
-            if (warp_obj.Name == warp_obj_name)
+            // get the model out of the map
+            for (int i=0; i<map.Models.Objects.Count; i++)
             {
-                warp_obj_idx = i;
-                break;
+                var model = map.Models.Objects[i];
+                if (model.Name == warp_obj_model_name)
+                {
+                    warp_model = model.DeepCopy();
+                    break;
+                }
             }
-        }
 
-        // get the object instance to be used for warping
-        for (int i = 0; i < obj_inst_param.Rows.Count; i++)
-        {
-            warp_obj_inst = obj_inst_param.Rows[i];
-            if (warp_obj_inst.ID == warp_obj_inst_id)
+            // get the object to be used for warping
+            for (int i = 0; i < map.Parts.Objects.Count; i++)
             {
-                warp_obj_inst_idx = i;
-                break;
+                warp_obj = map.Parts.Objects[i];
+                if (warp_obj.Name == warp_obj_name)
+                {
+                    warp_obj_idx = i;
+                    break;
+                }
             }
-        }
-    } 
-    else // for maps other than Things Betwixt
-    {
-        // add warp_model to the map model list
-        if (warp_model == null) throw new Exception("Warp Model not found");
-        map.Models.Add(warp_model);
-    }
 
-    // check if the object was found
-    if ((warp_model == null) ||
-        (warp_obj_idx < 0) ||
-        (warp_obj_inst_idx < 0) ||
-        (warp_obj == null) ||
-        (warp_obj_inst == null)) 
-    {
-        throw new Exception("Warp Model not valid");
-    }
-
-    // get all the fog walls in the map and create a list of their
-    // postion, rotation and draw groups
-    List<Vector3> pos_fog_walls  = new List<Vector3>();
-    List<Vector3> rot_fog_walls  = new List<Vector3>();
-    List<uint[]> draw_groups = new List<uint[]>();
-    foreach (var fw in fog_wall_dict[map_name])
-    {
-        MSB2.Part.Object? fog_wall = null;
-        for (int j = 0; j < map.Parts.Objects.Count; j++)
-        {
-            MSB2.Part.Object obj = map.Parts.Objects[j];
-            if (obj.Name == fw.map_name)
+            // get the object instance to be used for warping
+            for (int i = 0; i < obj_inst_param.Rows.Count; i++)
             {
-                fog_wall = obj;
-                break;
+                warp_obj_inst = obj_inst_param.Rows[i];
+                if (warp_obj_inst.ID == warp_obj_inst_id)
+                {
+                    warp_obj_inst_idx = i;
+                    break;
+                }
             }
-        }
-        if (fog_wall == null)
+        } 
+        else // for maps other than Things Betwixt
         {
-            throw new Exception($"[ERROR] failed to find fog_wall_id: {fw.name}");
+            // add warp_model to the map model list
+            if (warp_model == null) throw new Exception("Warp Model not found");
+            map.Models.Add(warp_model);
         }
-        if (fw.offset != null)
-        {
-            pos_fog_walls.Add(fog_wall.Position + (Vector3)fw.offset);
-        } else
-        {
-            pos_fog_walls.Add(fog_wall.Position);
-        }
-        rot_fog_walls.Add(fog_wall.Rotation);
-        draw_groups.Add(fog_wall.DrawGroups);
-    }
 
-    // calculate warp_point_begin
-    int warp_point_begin = -1;
-    int n_warp_points = 2 * n_fog_walls;
-
-    for (int i=0; i<param_event_loc.Rows.Count; i++)
-    {
-        var row = param_event_loc.Rows[i];
-        if (i+1 < param_event_loc.Rows.Count)
+        // check if the object was found
+        if ((warp_model == null) ||
+            (warp_obj_idx < 0) ||
+            (warp_obj_inst_idx < 0) ||
+            (warp_obj == null) ||
+            (warp_obj_inst == null)) 
         {
-            var next_row = param_event_loc.Rows[i+1];
-            if (next_row.ID - row.ID > n_warp_points)
+            throw new Exception("Warp Model not valid");
+        }
+
+        // get all the fog walls in the map and create a list of their
+        // postion, rotation and draw groups
+        List<Vector3> pos_fog_walls  = new List<Vector3>();
+        List<Vector3> rot_fog_walls  = new List<Vector3>();
+        List<uint[]> draw_groups = new List<uint[]>();
+        foreach (var fw in fog_wall_dict[map_name])
+        {
+            MSB2.Part.Object? fog_wall = null;
+            for (int j = 0; j < map.Parts.Objects.Count; j++)
+            {
+                MSB2.Part.Object obj = map.Parts.Objects[j];
+                if (obj.Name == fw.map_name)
+                {
+                    fog_wall = obj;
+                    break;
+                }
+            }
+            if (fog_wall == null)
+            {
+                throw new Exception($"[ERROR] failed to find fog_wall_id: {fw.name}");
+            }
+            if (fw.offset != null)
+            {
+                pos_fog_walls.Add(fog_wall.Position + (Vector3)fw.offset);
+            } else
+            {
+                pos_fog_walls.Add(fog_wall.Position);
+            }
+            rot_fog_walls.Add(fog_wall.Rotation);
+            draw_groups.Add(fog_wall.DrawGroups);
+        }
+
+        // calculate warp_point_begin
+        int warp_point_begin = -1;
+        int n_warp_points = 2 * n_fog_walls;
+
+        for (int i=0; i<param_event_loc.Rows.Count; i++)
+        {
+            var row = param_event_loc.Rows[i];
+            if (i+1 < param_event_loc.Rows.Count)
+            {
+                var next_row = param_event_loc.Rows[i+1];
+                if (next_row.ID - row.ID > n_warp_points)
+                {
+                    warp_point_begin = row.ID + 1;
+                    break;
+                }
+            }
+            else if (param_event_loc.Rows.Count == 1)
             {
                 warp_point_begin = row.ID + 1;
-                break;
+            }
+            else if (param_event_loc.Rows.Count == i+1)
+            {
+                warp_point_begin = row.ID + 1;
+            }
+            else
+            {
+                throw new Exception("Unreachable");
             }
         }
-        else if (param_event_loc.Rows.Count == 1)
-        {
-            warp_point_begin = row.ID + 1;
-        }
-        else if (param_event_loc.Rows.Count == i+1)
-        {
-            warp_point_begin = row.ID + 1;
-        }
-        else
-        {
-            throw new Exception("Unreachable");
-        }
-    }
-    if (warp_point_begin < 0) throw new Exception("Failed to find warp_point");
+        if (warp_point_begin < 0) throw new Exception("Failed to find warp_point");
 
-    // calculate warp_obj_inst_begin and
-    // calculate the obj instance insert location
-    int warp_obj_inst_begin = -1;
-    int obj_inst_insert_loc = -1;
-    for (int i = 0; i < obj_inst_param.Rows.Count; i++)
-    {
-        var row = obj_inst_param.Rows[i];
-        if (obj_inst_param.Rows.Count == 0 || i+1 == obj_inst_param.Rows.Count)
+        // calculate warp_obj_inst_begin and
+        // calculate the obj instance insert location
+        int warp_obj_inst_begin = -1;
+        int obj_inst_insert_loc = -1;
+        for (int i = 0; i < obj_inst_param.Rows.Count; i++)
         {
-            warp_obj_inst_begin = row.ID + 1;
-            obj_inst_insert_loc = i + 1;
-        }
-        else if (i+1 < obj_inst_param.Rows.Count)
-        {
-            var next_row = obj_inst_param.Rows[i+1];
-            if (next_row.ID - row.ID > n_warp_points)
+            var row = obj_inst_param.Rows[i];
+            if (obj_inst_param.Rows.Count == 0 || i+1 == obj_inst_param.Rows.Count)
             {
                 warp_obj_inst_begin = row.ID + 1;
                 obj_inst_insert_loc = i + 1;
-                break;
             }
-        }
-        else
-        {
-            throw new Exception("Unreachable");
-        }
-    }
-    if ((warp_obj_inst_begin < 0) ||
-        (obj_inst_insert_loc < 0))
-    {
-        throw new Exception("Failed to get warp_obj_ist");
-    }
-
-    // calculate event_loc_insert_loc
-    int event_loc_insert_loc = -1;
-    for (int i=0; i<param_event_loc.Rows.Count; i++)
-    {
-        var row = param_event_loc.Rows[i];
-        if (row.ID == warp_point_begin - 1)
-        {
-            event_loc_insert_loc = i + 1;
-            break;
-        }
-    }
-    if (event_loc_insert_loc < 0) throw new Exception("Failed to get event_loc");
-
-    // calculate the no. of boss cutscenes in a map
-    int n_cutscenes = 0;
-    foreach (var fg in fog_wall_dict[map_name])
-    {
-        if (fg.cutscene) n_cutscenes += 1;
-    }
-
-    // cacluate esd_script_begin
-    int esd_script_begin = -1;
-    for (int i=0; i<param_event.Rows.Count; i++)
-    {
-        var row = param_event.Rows[i];
-        if (param_event.Rows.Count == 0) esd_script_begin = row.ID + 1;
-        else if (i + 1 == param_event.Rows.Count) esd_script_begin = row.ID + 1;
-        else if (i + 1 < param_event.Rows.Count)
-        {
-            var next_row = param_event.Rows[i + 1];
-            if (next_row.ID - row.ID > n_warp_points + n_cutscenes)
+            else if (i+1 < obj_inst_param.Rows.Count)
             {
-                esd_script_begin = row.ID + 1;
-                break;
-            }
-        }
-        else throw new Exception("Unreachable");
-    }
-    if (esd_script_begin < 0) throw new Exception("Failed to get esd_script_begin");
-    int event_param_begin = esd_script_begin;
-
-    Vector3 pos_offs_event_loc;
-    if (map.Events.MapOffsets.Count > 0)
-    {
-        pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
-    } else
-    {
-        pos_offs_event_loc = new Vector3(0.0f);
-    }
-
-    // create and add event for checking ringing of bell
-    if (map_name == MapNames.get[MapName.NomansWharf])
-    {
-        var warp_event_row = new Row(
-            Constants.ship_event_id,
-            $"event_{Constants.ship_event_id}",
-            get_event_param_def_paramdef_ex(
-                param_event,
-                Constants.ship_event_id,
-                0
-            )
-        );
-        param_event.Rows.Add(warp_event_row);
-    }
-    // create and add event for unfreezing the dlc3
-    else if (map_name == MapNames.get[MapName.FrozenEleumLoyce])
-    {
-        var warp_event_row = new Row(
-            Constants.dlc_unfreeze_event_id,
-            $"event_{Constants.dlc_unfreeze_event_id}",
-            get_event_param_def_paramdef_ex(
-                param_event,
-                Constants.dlc_unfreeze_event_id,
-                0
-            )
-        );
-        param_event.Rows.Add(warp_event_row);
-    }
-
-    // adjust the ruin sentinels boss spawn event loc
-    if (map_name == MapNames.get[MapName.TheLostBastilleBelfryLuna])
-    {
-        for (int j = 0; j < param_event_loc.Rows.Count; j++)
-        {
-            var row = param_event_loc.Rows[j];
-            if (row.ID == Constants.ruin_sentinels_spawn_event_loc_id)
-            {
-                Vector3 position = new( 
-                    (float)row.Cells[0].Value,
-                    Constants.ruin_sentinels_spawn_event_posy,
-                    (float)row.Cells[2].Value
-                );
-                Vector3 rotation = new( 
-                    (float)row.Cells[3].Value,
-                    (float)row.Cells[4].Value,
-                    (float)row.Cells[5].Value
-                );
-                UInt16 unk2a = (ushort)row.Cells[14].Value;
-                var new_row = new Row(
-                    row.ID,
-                    $"eventloc_{row.ID}",
-                    get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
-                        position,
-                        rotation,
-                        unk2a: unk2a,
-                        sx: (float)row.Cells[10].Value,
-                        sy: Constants.ruin_sentinels_spawn_event_scaley,
-                        sz: (float)row.Cells[12].Value
-                    )
-                );
-                param_event_loc.Rows.Remove(row);
-                param_event_loc.Rows.Insert(j, new_row);
-                break;
-            }
-        }
-
-    }
-
-    // generate the objects and events for all the fog walls in the map
-    for (int i=0; i< pos_fog_walls.Count; i++)
-    {
-        FogWall fw = fog_wall_dict[map_name][i];
-        FogGateInfo fgi = new(map_name, fw);
-
-        if (fw.reverse)
-        {
-            rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
-        }
-        // create and add new map peice in front of the fog door
-        var obj = (MSB2.Part.Object)warp_obj.DeepCopy();
-        if (obj == null) throw new Exception("Null object");
-        obj.Position = pos_fog_walls[i];
-        obj.Rotation = rot_fog_walls[i];
-        obj.Name = "o02_1050_" + format_int_to_str(warp_obj_begin, 4);
-        obj.MapObjectInstanceParamID = warp_obj_inst_begin;
-        for (int j=0; j<obj.DrawGroups.Length; j++)
-        {
-            obj.DrawGroups[j] = 0;
-            //obj.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
-        }
-        for (int j=0; j<obj.DispGroups.Length; j++)
-        {
-            obj.DispGroups[j] = draw_groups[i][j];
-        }
-        map.Parts.Objects.Add(obj);
-
-        // create and add new map peice in behind of the fog door
-        var obj2 = (MSB2.Part.Object)warp_obj.DeepCopy();
-        if (obj2 == null) throw new Exception("Null object");
-        obj2.Position = pos_fog_walls[i];
-        obj2.Rotation = vector3_flip_y(rot_fog_walls[i]);
-        obj2.Name = "o02_1050_" + format_int_to_str(warp_obj_begin+1, 4);
-        obj2.MapObjectInstanceParamID = warp_obj_inst_begin + 1;
-        for (int j = 0; j < obj.DrawGroups.Length; j++)
-        {
-            obj2.DrawGroups[j] = 0;
-            //obj2.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
-        }
-        for (int j = 0; j < obj2.DispGroups.Length; j++)
-        {
-            obj2.DispGroups[j] = draw_groups[i][j];
-        }
-        map.Parts.Objects.Add(obj2);
-
-
-        // create and add new object instance param for piece in front of fog door
-        var warp_obj_inst_row = new Row(
-            warp_obj_inst_begin,
-            $"objinstance_{warp_obj_inst_begin}",
-            get_obj_inst_def_paramdef(obj_inst_param)
-        );
-        // it is necessay to insert in between or else it does not work
-        obj_inst_param.Rows.Insert(obj_inst_insert_loc, warp_obj_inst_row);
-
-        // create and add new object instance param for piece behind of fog door
-        var warp_obj_inst_row2 = new Row(
-            warp_obj_inst_begin + 1,
-            $"objinstance_{warp_obj_inst_begin + 1}",
-            get_obj_inst_def_paramdef(obj_inst_param)
-        );
-        // it is necessay to insert in between or else it does not work
-        obj_inst_param.Rows.Insert(obj_inst_insert_loc + 1, warp_obj_inst_row2);
-
-        // create and add new event param for infront of fog door
-        var warp_event_row = new Row(
-            event_param_begin,
-            $"event_{event_param_begin}",
-            get_event_param_def_paramdef_ex(
-                param_event,
-                event_param_begin,
-                warp_obj_inst_begin
-            )
-        );
-        param_event.Rows.Add(warp_event_row);
-
-        // create and add new event param for behind of fog door
-        var warp_event_row2 = new Row(
-            event_param_begin + 1,
-            $"event_{event_param_begin + 1}",
-            get_event_param_def_paramdef_ex(
-                param_event,
-                event_param_begin + 1,
-                warp_obj_inst_begin + 1
-            )
-        );
-        param_event.Rows.Add(warp_event_row2);
-
-        // create and add the new warp points behind the fog door
-        var warp_point_row = new Row(
-            warp_point_begin,
-            $"eventloc_{warp_point_begin}",
-            get_event_loc_def_paramdef_ex(
-                param_event_loc,
-                vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], -1), 
-                rot_fog_walls[i]
-            )
-        );
-        param_event_loc.Rows.Insert(event_loc_insert_loc, warp_point_row);
-
-        // adjust the boss spawn event loc to the warp point if the boss should spawn
-        if (fw.boss_name != BossName.None) // if the fog door contains the boss
-        {
-            if (Constants.boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
-            {
-                if (!fw.boss_exit || fw.boss_name == BossName.Darklurker) // if it is the entry gate or Darklurker gate
+                var next_row = obj_inst_param.Rows[i+1];
+                if (next_row.ID - row.ID > n_warp_points)
                 {
-                    for (int j = 0; j < param_event_loc.Rows.Count; j++)
-                    {
-                        var row = param_event_loc.Rows[j];
-                        if (row.ID == Constants.boss_spawn_event_loc[fw.boss_name])
-                        {
-                            UInt16 unk2a = (ushort)row.Cells[14].Value;
-                            var sy = (float)row.Cells[11].Value;
-                            var py = new Vector3(
-                                pos_fog_walls[i].X - pos_offs_event_loc.X,
-                                (float)row.Cells[1].Value,
-                                pos_fog_walls[i].Z - pos_offs_event_loc.Z
-                            );
-                            var new_row = new Row(
-                                row.ID,
-                                $"eventloc_{row.ID}",
-                                get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
-                                    vector3_move(py, rot_fog_walls[i], -1),
-                                    rot_fog_walls[i],
-                                    unk2a: unk2a,
-                                    sy: sy
-                                )
-                            );
-                            param_event_loc.Rows.Remove(row);
-                            param_event_loc.Rows.Insert(j, new_row);
-                            break;
-                        }
-                    }
+                    warp_obj_inst_begin = row.ID + 1;
+                    obj_inst_insert_loc = i + 1;
+                    break;
+                }
+            }
+            else
+            {
+                throw new Exception("Unreachable");
+            }
+        }
+        if ((warp_obj_inst_begin < 0) ||
+            (obj_inst_insert_loc < 0))
+        {
+            throw new Exception("Failed to get warp_obj_ist");
+        }
+
+        // calculate event_loc_insert_loc
+        int event_loc_insert_loc = -1;
+        for (int i=0; i<param_event_loc.Rows.Count; i++)
+        {
+            var row = param_event_loc.Rows[i];
+            if (row.ID == warp_point_begin - 1)
+            {
+                event_loc_insert_loc = i + 1;
+                break;
+            }
+        }
+        if (event_loc_insert_loc < 0) throw new Exception("Failed to get event_loc");
+
+        // calculate the no. of boss cutscenes in a map
+        int n_cutscenes = 0;
+        foreach (var fg in fog_wall_dict[map_name])
+        {
+            if (fg.cutscene) n_cutscenes += 1;
+        }
+
+        // cacluate esd_script_begin
+        int esd_script_begin = -1;
+        for (int i=0; i<param_event.Rows.Count; i++)
+        {
+            var row = param_event.Rows[i];
+            if (param_event.Rows.Count == 0) esd_script_begin = row.ID + 1;
+            else if (i + 1 == param_event.Rows.Count) esd_script_begin = row.ID + 1;
+            else if (i + 1 < param_event.Rows.Count)
+            {
+                var next_row = param_event.Rows[i + 1];
+                if (next_row.ID - row.ID > n_warp_points + n_cutscenes)
+                {
+                    esd_script_begin = row.ID + 1;
+                    break;
+                }
+            }
+            else throw new Exception("Unreachable");
+        }
+        if (esd_script_begin < 0) throw new Exception("Failed to get esd_script_begin");
+        int event_param_begin = esd_script_begin;
+
+        Vector3 pos_offs_event_loc;
+        if (map.Events.MapOffsets.Count > 0)
+        {
+            pos_offs_event_loc = map.Events.MapOffsets[0].Translation;
+        } else
+        {
+            pos_offs_event_loc = new Vector3(0.0f);
+        }
+
+        // create and add event for checking ringing of bell
+        if (map_name == MapNames.get[MapName.NomansWharf])
+        {
+            var warp_event_row = new Row(
+                Constants.ship_event_id,
+                $"event_{Constants.ship_event_id}",
+                get_event_param_def_paramdef_ex(
+                    param_event,
+                    Constants.ship_event_id,
+                    0
+                )
+            );
+            param_event.Rows.Add(warp_event_row);
+        }
+        // create and add event for unfreezing the dlc3
+        else if (map_name == MapNames.get[MapName.FrozenEleumLoyce])
+        {
+            var warp_event_row = new Row(
+                Constants.dlc_unfreeze_event_id,
+                $"event_{Constants.dlc_unfreeze_event_id}",
+                get_event_param_def_paramdef_ex(
+                    param_event,
+                    Constants.dlc_unfreeze_event_id,
+                    0
+                )
+            );
+            param_event.Rows.Add(warp_event_row);
+        }
+
+        // adjust the ruin sentinels boss spawn event loc
+        if (map_name == MapNames.get[MapName.TheLostBastilleBelfryLuna])
+        {
+            for (int j = 0; j < param_event_loc.Rows.Count; j++)
+            {
+                var row = param_event_loc.Rows[j];
+                if (row.ID == Constants.ruin_sentinels_spawn_event_loc_id)
+                {
+                    Vector3 position = new( 
+                        (float)row.Cells[0].Value,
+                        Constants.ruin_sentinels_spawn_event_posy,
+                        (float)row.Cells[2].Value
+                    );
+                    Vector3 rotation = new( 
+                        (float)row.Cells[3].Value,
+                        (float)row.Cells[4].Value,
+                        (float)row.Cells[5].Value
+                    );
+                    UInt16 unk2a = (ushort)row.Cells[14].Value;
+                    var new_row = new Row(
+                        row.ID,
+                        $"eventloc_{row.ID}",
+                        get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
+                            position,
+                            rotation,
+                            unk2a: unk2a,
+                            sx: (float)row.Cells[10].Value,
+                            sy: Constants.ruin_sentinels_spawn_event_scaley,
+                            sz: (float)row.Cells[12].Value
+                        )
+                    );
+                    param_event_loc.Rows.Remove(row);
+                    param_event_loc.Rows.Insert(j, new_row);
+                    break;
                 }
             }
 
         }
 
-        // create and add the new warp points infront the fog door
-        var warp_point_row2 = new Row(
-            warp_point_begin + 1,
-            $"eventloc_{warp_point_begin + 1}",
-            get_event_loc_def_paramdef_ex(
-                param_event_loc,
-                vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], 1),
-                vector3_flip_y(rot_fog_walls[i])
-            )
-        );
-        param_event_loc.Rows.Insert(event_loc_insert_loc + 1, warp_point_row2);
-
-        fgi.type = new(esd_script_begin, warp_obj_inst_begin, warp_point_begin, Util.parse_map_name(map_name));
-
-        // if the fog door contains the boss with a cutscene create an event that triggers the cutscene
-        if (fw.boss_name != BossName.None && fw.cutscene)
+        // generate the objects and events for all the fog walls in the map
+        for (int i=0; i< pos_fog_walls.Count; i++)
         {
-            var row = new Row(event_param_begin + 2, 
-                $"event_{event_param_begin+2}", 
+            FogWall fw = fog_wall_dict[map_name][i];
+            FogGateInfo fgi = new(map_name, fw);
+
+            if (fw.reverse)
+            {
+                rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);
+            }
+            // create and add new map peice in front of the fog door
+            var obj = (MSB2.Part.Object)warp_obj.DeepCopy();
+            if (obj == null) throw new Exception("Null object");
+            obj.Position = pos_fog_walls[i];
+            obj.Rotation = rot_fog_walls[i];
+            obj.Name = "o02_1050_" + format_int_to_str(warp_obj_begin, 4);
+            obj.MapObjectInstanceParamID = warp_obj_inst_begin;
+            for (int j=0; j<obj.DrawGroups.Length; j++)
+            {
+                obj.DrawGroups[j] = 0;
+                //obj.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+            }
+            for (int j=0; j<obj.DispGroups.Length; j++)
+            {
+                obj.DispGroups[j] = draw_groups[i][j];
+            }
+            map.Parts.Objects.Add(obj);
+
+            // create and add new map peice in behind of the fog door
+            var obj2 = (MSB2.Part.Object)warp_obj.DeepCopy();
+            if (obj2 == null) throw new Exception("Null object");
+            obj2.Position = pos_fog_walls[i];
+            obj2.Rotation = vector3_flip_y(rot_fog_walls[i]);
+            obj2.Name = "o02_1050_" + format_int_to_str(warp_obj_begin+1, 4);
+            obj2.MapObjectInstanceParamID = warp_obj_inst_begin + 1;
+            for (int j = 0; j < obj.DrawGroups.Length; j++)
+            {
+                obj2.DrawGroups[j] = 0;
+                //obj2.DrawGroups[j] = draw_groups[i][j]; // this makes the dummy object visible
+            }
+            for (int j = 0; j < obj2.DispGroups.Length; j++)
+            {
+                obj2.DispGroups[j] = draw_groups[i][j];
+            }
+            map.Parts.Objects.Add(obj2);
+
+
+            // create and add new object instance param for piece in front of fog door
+            var warp_obj_inst_row = new Row(
+                warp_obj_inst_begin,
+                $"objinstance_{warp_obj_inst_begin}",
+                get_obj_inst_def_paramdef(obj_inst_param)
+            );
+            // it is necessay to insert in between or else it does not work
+            obj_inst_param.Rows.Insert(obj_inst_insert_loc, warp_obj_inst_row);
+
+            // create and add new object instance param for piece behind of fog door
+            var warp_obj_inst_row2 = new Row(
+                warp_obj_inst_begin + 1,
+                $"objinstance_{warp_obj_inst_begin + 1}",
+                get_obj_inst_def_paramdef(obj_inst_param)
+            );
+            // it is necessay to insert in between or else it does not work
+            obj_inst_param.Rows.Insert(obj_inst_insert_loc + 1, warp_obj_inst_row2);
+
+            // create and add new event param for infront of fog door
+            var warp_event_row = new Row(
+                event_param_begin,
+                $"event_{event_param_begin}",
                 get_event_param_def_paramdef_ex(
                     param_event,
-                    event_param_begin + 2,
-                    0
+                    event_param_begin,
+                    warp_obj_inst_begin
                 )
             );
-            param_event.Rows.Add(row);
-            event_param_begin++;
-            esd_script_begin++;
+            param_event.Rows.Add(warp_event_row);
+
+            // create and add new event param for behind of fog door
+            var warp_event_row2 = new Row(
+                event_param_begin + 1,
+                $"event_{event_param_begin + 1}",
+                get_event_param_def_paramdef_ex(
+                    param_event,
+                    event_param_begin + 1,
+                    warp_obj_inst_begin + 1
+                )
+            );
+            param_event.Rows.Add(warp_event_row2);
+
+            // create and add the new warp points behind the fog door
+            var warp_point_row = new Row(
+                warp_point_begin,
+                $"eventloc_{warp_point_begin}",
+                get_event_loc_def_paramdef_ex(
+                    param_event_loc,
+                    vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], -1), 
+                    rot_fog_walls[i]
+                )
+            );
+            param_event_loc.Rows.Insert(event_loc_insert_loc, warp_point_row);
+
+            // adjust the boss spawn event loc to the warp point if the boss should spawn
+            if (fw.boss_name != BossName.None) // if the fog door contains the boss
+            {
+                if (Constants.boss_spawn_event_loc.Keys.Contains(fw.boss_name)) // if the spawn event loc is populated
+                {
+                    if (!fw.boss_exit || fw.boss_name == BossName.Darklurker) // if it is the entry gate or Darklurker gate
+                    {
+                        for (int j = 0; j < param_event_loc.Rows.Count; j++)
+                        {
+                            var row = param_event_loc.Rows[j];
+                            if (row.ID == Constants.boss_spawn_event_loc[fw.boss_name])
+                            {
+                                UInt16 unk2a = (ushort)row.Cells[14].Value;
+                                var sy = (float)row.Cells[11].Value;
+                                var py = new Vector3(
+                                    pos_fog_walls[i].X - pos_offs_event_loc.X,
+                                    (float)row.Cells[1].Value,
+                                    pos_fog_walls[i].Z - pos_offs_event_loc.Z
+                                );
+                                var new_row = new Row(
+                                    row.ID,
+                                    $"eventloc_{row.ID}",
+                                    get_event_loc_def_paramdef_boss_spawn_point(param_event_loc, 
+                                        vector3_move(py, rot_fog_walls[i], -1),
+                                        rot_fog_walls[i],
+                                        unk2a: unk2a,
+                                        sy: sy
+                                    )
+                                );
+                                param_event_loc.Rows.Remove(row);
+                                param_event_loc.Rows.Insert(j, new_row);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            // create and add the new warp points infront the fog door
+            var warp_point_row2 = new Row(
+                warp_point_begin + 1,
+                $"eventloc_{warp_point_begin + 1}",
+                get_event_loc_def_paramdef_ex(
+                    param_event_loc,
+                    vector3_move(pos_fog_walls[i] - pos_offs_event_loc, rot_fog_walls[i], 1),
+                    vector3_flip_y(rot_fog_walls[i])
+                )
+            );
+            param_event_loc.Rows.Insert(event_loc_insert_loc + 1, warp_point_row2);
+
+            fgi.type = new(esd_script_begin, warp_obj_inst_begin, warp_point_begin, Util.parse_map_name(map_name));
+
+            // if the fog door contains the boss with a cutscene create an event that triggers the cutscene
+            if (fw.boss_name != BossName.None && fw.cutscene)
+            {
+                var row = new Row(event_param_begin + 2, 
+                    $"event_{event_param_begin+2}", 
+                    get_event_param_def_paramdef_ex(
+                        param_event,
+                        event_param_begin + 2,
+                        0
+                    )
+                );
+                param_event.Rows.Add(row);
+                event_param_begin++;
+                esd_script_begin++;
+            }
+
+
+            // update the variables for next object
+            warp_obj_inst_begin += 2;
+            warp_obj_begin += 2;
+            esd_script_begin += 2;
+            event_param_begin += 2;
+            obj_inst_insert_loc += 2;
+            warp_point_begin += 2;
+            event_loc_insert_loc += 2;
+
+            warps.Add(new Warp(fgi));
         }
 
-
-        // update the variables for next object
-        warp_obj_inst_begin += 2;
-        warp_obj_begin += 2;
-        esd_script_begin += 2;
-        event_param_begin += 2;
-        obj_inst_insert_loc += 2;
-        warp_point_begin += 2;
-        event_loc_insert_loc += 2;
-
-        warps.Add(new Warp(fgi));
+        // write the modded files
+        byte[] map_bin = map.Write();
+        byte[] obj_inst_param_bin = obj_inst_param.Write();
+        byte[] event_param_bin = param_event.Write();
+        byte[] event_loc_bin = param_event_loc.Write();
+        try
+        {
+            File.WriteAllBytes(map_path, map_bin);
+            File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
+            File.WriteAllBytes(param_event_path, event_param_bin);
+            File.WriteAllBytes(param_event_loc_path, event_loc_bin);
+            Console.WriteLine($"[SUCCESS] {map_name} done!\n");
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"[ERROR] {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"[ERROR] Access denied. {ex.Message}");
+        }
     }
 
-    // write the modded files
-    byte[] map_bin = map.Write();
-    byte[] obj_inst_param_bin = obj_inst_param.Write();
-    byte[] event_param_bin = param_event.Write();
-    byte[] event_loc_bin = param_event_loc.Write();
-    try
+    List<WarpInfo> warp_infos = new(warps.Count*2);
+    foreach (var warp in warps)
     {
-        File.WriteAllBytes(map_path, map_bin);
-        File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
-        File.WriteAllBytes(param_event_path, event_param_bin);
-        File.WriteAllBytes(param_event_loc_path, event_loc_bin);
-        Console.WriteLine($"[SUCCESS] {map_name} done!\n");
+        warp_infos.Add(warp.from);
+        warp_infos.Add(warp.to);
     }
-    catch (IOException ex)
-    {
-        Console.WriteLine($"[ERROR] {ex.Message}");
-    }
-    catch (UnauthorizedAccessException ex)
-    {
-        Console.WriteLine($"[ERROR] Access denied. {ex.Message}");
-    }
+    return (warps, warp_infos);
 }
-
-List<WarpInfo> warp_infos = new(warps.Count*2);
-foreach (var warp in warps)
-{
-    warp_infos.Add(warp.from);
-    warp_infos.Add(warp.to);
-}
-
-List<WarpNode> boss_nodes = new();
-foreach (var wi in warp_infos)
-{
-    if (wi.boss.name != BossName.None 
-        && (wi.fog_wall_name.ToString().Contains("EntryBack")
-            || wi.fog_wall_name.ToString().Contains("ExitFront")))
-    {
-        boss_nodes.Add(wi.fog_wall_name);
-    }
-}
-
-List<WarpNode> has_predefined_warp = new() 
-{ 
-    WarpNode.GameStartSpawnSrc,
-    WarpNode.GameStartSpawnDst,
-
-    WarpNode.MemoryOfTheKingCryptSrc,
-    WarpNode.MemoryOfTheKingCryptDst,
-    WarpNode.MemoryOfTheKingMemorySrc,
-    WarpNode.MemoryOfTheKingMemoryDst,
-
-    WarpNode.NearPateGiantMemoryExitSrc,
-    WarpNode.NearPursuerGiantMemoryExitSrc,
-    WarpNode.GiantLordMemoryExitSrc,
-    WarpNode.NearPateGiantMemoryExitDst,
-    WarpNode.NearPursuerGiantMemoryExitDst,
-    WarpNode.GiantLordMemoryExitDst,
-
-    WarpNode.NearPursuerGiantMemoryEntrySrc,
-    WarpNode.NearPursuerGiantMemoryEntryDst,
-    WarpNode.NearPateGiantMemoryEntrySrc,
-    WarpNode.NearPateGiantMemoryEntryDst,
-    WarpNode.GiantLordMemoryEntrySrc,
-    WarpNode.GiantLordMemoryEntryDst,
-
-    WarpNode.DragonMemoriesCoveSrc,
-    WarpNode.DragonMemoriesCoveDst,
-    WarpNode.DragonMemoriesMemorySrc,
-    WarpNode.DragonMemoriesMemoryDst,
-
-    WarpNode.ChasmPortalFromCastleDst,
-    WarpNode.ChasmPortalFromBlackGulchDst,
-    WarpNode.ChasmPortalFromShadedWoodsDst,
-    WarpNode.ChasmPortalFromCastleSrc,
-    WarpNode.ChasmPortalFromBlackGulchSrc,
-    WarpNode.ChasmPortalFromShadedWoodsSrc,
-
-    WarpNode.ChasmGulchExitWarpSrc,
-    WarpNode.ChasmCastleExitWarpSrc,
-    WarpNode.ChasmShadedWoodsExitWarpSrc,
-    WarpNode.ChasmDarkLurkerExitWarpSrc,
-    WarpNode.ChasmGulchExitWarpDst,
-    WarpNode.ChasmCastleExitWarpDst,
-    WarpNode.ChasmShadedWoodsExitWarpDst,
-    WarpNode.ChasmDarkLurkerExitWarpDst,
-
-    WarpNode.CoffinWarpSrc,
-    WarpNode.CoffinWarpDst,
-    WarpNode.PirateShipWharf,
-    WarpNode.PirateShipBastille,
-
-    WarpNode.DLC1EntranceBaseGame,
-    WarpNode.DLC1EntranceDLC,
-    WarpNode.DLC2EntranceBaseGame,
-    WarpNode.DLC2EntranceDLC,
-    WarpNode.DLC3EntranceBaseGame,
-    WarpNode.DLC3EntranceDLC,
-
-    WarpNode.SirAlonneMemoryExitSrc,
-    WarpNode.SirAlonneMemoryExitDst,
-    WarpNode.SirAlonneArmorDLCEntrySrc,
-    WarpNode.SirAlonneArmorDLCEntryDst,
-
-    WarpNode.IvoryKingFightEndDst,
-    WarpNode.IvoryKingFightEndSrc,
-    WarpNode.LudAndZallenExitWarpSrc,
-    WarpNode.LudAndZallenExitWarpDst,
-
-    WarpNode.NearPursuerBirdEntry,
-    WarpNode.NearPursuerBirdExit,
-};
 
 Connection get_connection_from_name(WarpNode name)
 {
@@ -1289,18 +1208,6 @@ Connection get_connection_from_name(WarpNode name)
     throw new Exception("Failed to get_connection_from_name");
 }
 
-List<WarpNode> starting_gates = new() 
-{ 
-    WarpNode.Tutorial1EntryFront,
-    WarpNode.Tutorial2EntryFront,
-    WarpNode.MajulaToForestOfFallenGiantsFront,
-    WarpNode.MajulaToRotundaLockstoneFront,
-    WarpNode.MajulaToGraveOfSaintsFront,
-    WarpNode.MajulaToGutterFront,
-    WarpNode.Tutorial3EntryFront,
-};
-
-// from's pair is lone
 bool check_lone_to_lone_connection(WarpNode to, List<WarpNode> stack)
 {
     if (stack.Contains(to)) return false;
@@ -1324,18 +1231,18 @@ bool check_lone_to_lone_connection(WarpNode to, List<WarpNode> stack)
             continue;
         }
         var (pair_dst, cond) = get_warp_pair(pair_src);
-        if (starting_gates.Contains(pair_dst)) return true;
+        if (GateConnections.starting_gates.Contains(pair_dst)) return true;
         if (pair_dst == WarpNode.Lone) continue;
         if (!check_lone_to_lone_connection(pair_dst, stack)) fail_count++;
     }
     if (fail_count == total_count) return false;
     return true;
 }
-List<WarpNode> stack = new();
-bool is_this_warp_allowed(WarpNode from, WarpNode to)
+
+bool is_this_warp_allowed(WarpNode from, WarpNode to, List<WarpNode> stack)
 {
     if (from == WarpNode.Lone || to == WarpNode.Lone) return false;
-    if (has_predefined_warp.Contains(from) || has_predefined_warp.Contains(to)) return false;
+    if (MapNames.has_predefined_warp.Contains(from) || MapNames.has_predefined_warp.Contains(to)) return false;
     if (from == to) return false;
     if (GateConnections.cannot_warp_from.Contains(from))
     {
@@ -1366,8 +1273,204 @@ bool is_this_warp_allowed(WarpNode from, WarpNode to)
     return true;
 }
 
-// TODO: add prevention for connection gates that dont lead to any where
-// Example the final fight arena connected to outside the exit of rat authority fight
+WarpInfo get_warp_info_from_name(List<WarpInfo> warp_infos, WarpNode name)
+{
+    foreach (var wi in warp_infos)
+    {
+        if (wi.fog_wall_name == name) return wi;
+    }
+    throw new Exception("Failed to get_warp_info_from_name");
+}
+
+Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst, Cond cond = Cond.None)
+{
+    FogWall fw_src = new(warp_node_src, MapNames.get[map_name_src]);
+    WarpInfo warpinfo_src = new(MapNames.get[map_name_src], -1, -1, -1, -1, fw_src);
+    FogWall fw_dst = new(warp_node_dst, MapNames.get[map_name_dst]);
+    WarpInfo warpinfo_dst = new(MapNames.get[map_name_dst], -1, -1, -1, -1, fw_dst);
+    return new Warp(warpinfo_src, warpinfo_dst, cond: cond);
+}
+
+
+List<Warp> get_fixed_warps(int size)
+{
+    List<Warp> selectedPairs = new(size);
+
+    // add the fixed warps to the selectedPairs
+    selectedPairs.Add(get_default_warp(
+        MapName.ThingsBetwixt, MapName.ThingsBetwixt,
+        WarpNode.GameStartSpawnSrc, WarpNode.GameStartSpawnDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ForestOfTheFallenGiants, MapName.TheLostBastilleBelfryLuna,
+        WarpNode.NearPursuerBirdEntry, WarpNode.NearPursuerBirdExit
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+        WarpNode.LudAndZallenExitWarpSrc, WarpNode.LudAndZallenExitWarpDst,
+        cond: Cond.LudAndZallenDead
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+        WarpNode.IvoryKingFightEndSrc, WarpNode.IvoryKingFightEndDst,
+        cond: Cond.DLC3Unfreezed
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DarkChasmofOld, MapName.ShadedWoodsShrineofWinter,
+        WarpNode.ChasmShadedWoodsExitWarpSrc, WarpNode.ChasmShadedWoodsExitWarpDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DarkChasmofOld, MapName.TheGutterBlackGulch,
+        WarpNode.ChasmGulchExitWarpSrc, WarpNode.ChasmGulchExitWarpDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
+        WarpNode.ChasmCastleExitWarpSrc, WarpNode.ChasmCastleExitWarpDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.TheGutterBlackGulch, MapName.DarkChasmofOld,
+        WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.ChasmPortalFromBlackGulchDst,
+        cond: Cond.DarkCovenentJoined
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DrangleicCastleThroneofWant, MapName.DarkChasmofOld,
+        WarpNode.ChasmPortalFromCastleSrc, WarpNode.ChasmPortalFromCastleDst,
+        cond: Cond.DarkCovenentJoined
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ShadedWoodsShrineofWinter, MapName.DarkChasmofOld,
+        WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ChasmPortalFromShadedWoodsDst,
+        cond: Cond.DarkCovenentJoined
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
+        WarpNode.ChasmDarkLurkerExitWarpSrc, WarpNode.ChasmDarkLurkerExitWarpDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+        WarpNode.NearPateGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+        WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPursuerGiantMemoryEntryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
+        WarpNode.GiantLordMemoryEntrySrc, WarpNode.GiantLordMemoryEntryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
+        WarpNode.NearPateGiantMemoryExitSrc, WarpNode.NearPateGiantMemoryExitDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
+        WarpNode.NearPursuerGiantMemoryExitSrc, WarpNode.NearPursuerGiantMemoryExitDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
+        WarpNode.GiantLordMemoryExitSrc, WarpNode.GiantLordMemoryExitDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.BrightstoneCoveTseldora, MapName.DragonMemories,
+        WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.DragonMemories, MapName.BrightstoneCoveTseldora,
+        WarpNode.DragonMemoriesMemorySrc, WarpNode.DragonMemoriesCoveDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.BrumeTower, MapName.BrumeTower,
+        WarpNode.SirAlonneArmorDLCEntrySrc, WarpNode.SirAlonneArmorDLCEntryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.BrumeTower, MapName.BrumeTower,
+        WarpNode.SirAlonneMemoryExitSrc, WarpNode.SirAlonneMemoryExitDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.NomansWharf, MapName.TheLostBastilleBelfryLuna,
+        WarpNode.PirateShipWharf, WarpNode.PirateShipBastille
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.TheGutterBlackGulch, MapName.ShulvaSanctumCity,
+        WarpNode.DLC1EntranceBaseGame, WarpNode.DLC1EntranceDLC
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.IronKeepBelfrySol, MapName.BrumeTower,
+        WarpNode.DLC2EntranceBaseGame, WarpNode.DLC2EntranceDLC
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.ShadedWoodsShrineofWinter, MapName.FrozenEleumLoyce,
+        WarpNode.DLC3EntranceBaseGame, WarpNode.DLC3EntranceDLC
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.UndeadCrypt, MapName.MemoryoftheKing,
+        WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst,
+        cond: Cond.AshenMistHeart
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.MemoryoftheKing, MapName.UndeadCrypt,
+        WarpNode.MemoryOfTheKingMemorySrc, WarpNode.MemoryOfTheKingCryptDst
+    ));
+
+    selectedPairs.Add(get_default_warp(
+        MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
+        WarpNode.CoffinWarpSrc, WarpNode.CoffinWarpDst
+    ));
+
+    return selectedPairs;
+}
+
+// create a list of connection segments
+var segments = generate_segments();
+
+// TODO: change these before the final version
+String mod_folder = Path.GetFullPath(@"..\..\..\..\..\mod");
+String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark Souls II");
+
+var ship_arrival_msg_id = add_pirate_ship_msg_to_game_files(mod_folder);
+Dictionary<String, List<FogWall>> fog_wall_dict = generate_fog_wall_dict();
+disable_fog_gates(mod_folder);
+var (warps, warp_infos) = generate_map_objects(fog_wall_dict, mod_folder);
+var selectedPairs = get_fixed_warps(warps.Count);
+int fix_warps_count = selectedPairs.Count;
+List<List<WarpNode>> segments_flat = new();
+foreach (var i in segments)
+{
+    var elem = i.SelectMany(x => new[] { x.n1, x.n2 }).Distinct().ToList();
+    segments_flat.Add(new(elem));
+}
 
 Random rand_gen = new Random();
 int seed = rand_gen.Next(1, 100000);
@@ -1378,184 +1481,10 @@ seed = 46599;
 Console.WriteLine($"Current Seed: {seed}");
 Random rand = new Random(seed);
 
-WarpInfo get_warp_info_from_name(WarpNode name)
-{
-    foreach (var wi in warp_infos)
-    {
-        if (wi.fog_wall_name == name) return wi;
-    }
-    throw new Exception("Failed to get_warp_info_from_name");
-}
-
-List<Warp> selectedPairs = new(warps.Count);
-
-// add the fixed warps to the selectedPairs
-selectedPairs.Add(get_default_warp(
-    MapName.ThingsBetwixt, MapName.ThingsBetwixt,
-    WarpNode.GameStartSpawnSrc, WarpNode.GameStartSpawnDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ForestOfTheFallenGiants, MapName.TheLostBastilleBelfryLuna,
-    WarpNode.NearPursuerBirdEntry, WarpNode.NearPursuerBirdExit
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
-    WarpNode.LudAndZallenExitWarpSrc, WarpNode.LudAndZallenExitWarpDst,
-    cond: Cond.LudAndZallenDead
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
-    WarpNode.IvoryKingFightEndSrc, WarpNode.IvoryKingFightEndDst,
-    cond: Cond.DLC3Unfreezed
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DarkChasmofOld, MapName.ShadedWoodsShrineofWinter,
-    WarpNode.ChasmShadedWoodsExitWarpSrc, WarpNode.ChasmShadedWoodsExitWarpDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DarkChasmofOld, MapName.TheGutterBlackGulch,
-    WarpNode.ChasmGulchExitWarpSrc, WarpNode.ChasmGulchExitWarpDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
-    WarpNode.ChasmCastleExitWarpSrc, WarpNode.ChasmCastleExitWarpDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.TheGutterBlackGulch, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromBlackGulchSrc, WarpNode.ChasmPortalFromBlackGulchDst,
-    cond: Cond.DarkCovenentJoined
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DrangleicCastleThroneofWant, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromCastleSrc, WarpNode.ChasmPortalFromCastleDst,
-    cond: Cond.DarkCovenentJoined
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ShadedWoodsShrineofWinter, MapName.DarkChasmofOld,
-    WarpNode.ChasmPortalFromShadedWoodsSrc, WarpNode.ChasmPortalFromShadedWoodsDst,
-    cond: Cond.DarkCovenentJoined
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DarkChasmofOld, MapName.DrangleicCastleThroneofWant,
-    WarpNode.ChasmDarkLurkerExitWarpSrc, WarpNode.ChasmDarkLurkerExitWarpDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.NearPateGiantMemoryEntrySrc, WarpNode.NearPateGiantMemoryEntryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.NearPursuerGiantMemoryEntrySrc, WarpNode.NearPursuerGiantMemoryEntryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ForestOfTheFallenGiants, MapName.MemoryofVammarOrroandJeigh,
-    WarpNode.GiantLordMemoryEntrySrc, WarpNode.GiantLordMemoryEntryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
-    WarpNode.NearPateGiantMemoryExitSrc, WarpNode.NearPateGiantMemoryExitDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
-    WarpNode.NearPursuerGiantMemoryExitSrc, WarpNode.NearPursuerGiantMemoryExitDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.MemoryofVammarOrroandJeigh, MapName.ForestOfTheFallenGiants,
-    WarpNode.GiantLordMemoryExitSrc, WarpNode.GiantLordMemoryExitDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.BrightstoneCoveTseldora, MapName.DragonMemories,
-    WarpNode.DragonMemoriesCoveSrc, WarpNode.DragonMemoriesMemoryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.DragonMemories, MapName.BrightstoneCoveTseldora,
-    WarpNode.DragonMemoriesMemorySrc, WarpNode.DragonMemoriesCoveDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.BrumeTower, MapName.BrumeTower,
-    WarpNode.SirAlonneArmorDLCEntrySrc, WarpNode.SirAlonneArmorDLCEntryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.BrumeTower, MapName.BrumeTower,
-    WarpNode.SirAlonneMemoryExitSrc, WarpNode.SirAlonneMemoryExitDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.NomansWharf, MapName.TheLostBastilleBelfryLuna,
-    WarpNode.PirateShipWharf, WarpNode.PirateShipBastille
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.TheGutterBlackGulch, MapName.ShulvaSanctumCity,
-    WarpNode.DLC1EntranceBaseGame, WarpNode.DLC1EntranceDLC
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.IronKeepBelfrySol, MapName.BrumeTower,
-    WarpNode.DLC2EntranceBaseGame, WarpNode.DLC2EntranceDLC
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.ShadedWoodsShrineofWinter, MapName.FrozenEleumLoyce,
-    WarpNode.DLC3EntranceBaseGame, WarpNode.DLC3EntranceDLC
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.UndeadCrypt, MapName.MemoryoftheKing,
-    WarpNode.MemoryOfTheKingCryptSrc, WarpNode.MemoryOfTheKingMemoryDst,
-    cond: Cond.AshenMistHeart
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.MemoryoftheKing, MapName.UndeadCrypt,
-    WarpNode.MemoryOfTheKingMemorySrc, WarpNode.MemoryOfTheKingCryptDst
-));
-
-selectedPairs.Add(get_default_warp(
-    MapName.FrozenEleumLoyce, MapName.FrozenEleumLoyce,
-    WarpNode.CoffinWarpSrc, WarpNode.CoffinWarpDst
-));
-
-List<WarpNode> fix_warps_list = selectedPairs
-    .SelectMany(x => new[] { x.from.fog_wall_name, x.to.fog_wall_name })
-    .ToList();
-int fix_warps_count = selectedPairs.Count;
 
 List<WarpNode> skip_list = new();
 List<int> not_selected_idx = new();
-List<List<WarpNode>> segments_flat = new();
-foreach (var i in segments)
-{
-    var elem = i.SelectMany(x => new[] { x.n1, x.n2 }).Distinct().ToList();
-    segments_flat.Add(new(elem));
-}
-
+List<WarpNode> stack = new();
 // randomize all the lone gates
 int count = 0;
 foreach (var segment in segments)
@@ -1572,7 +1501,7 @@ foreach (var segment in segments)
         var to = segments[i1][i2];
         if (to.n1 == WarpNode.Lone || to.n2 == WarpNode.Lone) goto Top;
 
-        if (is_this_warp_allowed(node, to.n1))
+        if (is_this_warp_allowed(node, to.n1, stack))
         {
             if (!segments_flat[i1].Contains(to.n1)) continue;
             if (to.condition_n1 == Cond.OneWay) goto Top;
@@ -1583,8 +1512,8 @@ foreach (var segment in segments)
                 cond = Cond.ShipBellRang;
             }
             selectedPairs.Add(new(
-                get_warp_info_from_name(node),
-                get_warp_info_from_name(to.n1),
+                get_warp_info_from_name(warp_infos, node),
+                get_warp_info_from_name(warp_infos, to.n1),
                 cond: cond
             ));
             skip_list.Add(node);
@@ -1592,7 +1521,7 @@ foreach (var segment in segments)
             if (!segments_flat[count].Remove(node)) throw new Exception("Failed to remove node");
             if (!segments_flat[i1].Remove(to.n1)) throw new Exception("Failed to remove node");
         }
-        else if (is_this_warp_allowed(node, to.n2))
+        else if (is_this_warp_allowed(node, to.n2, stack))
         {
             if (!segments_flat[i1].Contains(to.n2)) continue;
             if (to.condition_n2 == Cond.OneWay) goto Top;
@@ -1603,8 +1532,8 @@ foreach (var segment in segments)
                 cond = Cond.ShipBellRang;
             }
             selectedPairs.Add(new(
-                get_warp_info_from_name(node),
-                get_warp_info_from_name(to.n2),
+                get_warp_info_from_name(warp_infos, node),
+                get_warp_info_from_name(warp_infos, to.n2),
                 cond: cond
             ));
             skip_list.Add(node);
@@ -1657,18 +1586,18 @@ while (true)
     var to_s = to_seg[to_seg_idx];
     if (skip_list.Contains(to_s)) continue;
 
-    if (has_predefined_warp.Contains(frm_s) || frm_s == WarpNode.Lone)
+    if (MapNames.has_predefined_warp.Contains(frm_s) || frm_s == WarpNode.Lone)
     {
         frm_seg.RemoveAt(frm_seg_idx);
         continue;
     }
-    else if (has_predefined_warp.Contains(to_s) || to_s == WarpNode.Lone)
+    else if (MapNames.has_predefined_warp.Contains(to_s) || to_s == WarpNode.Lone)
     {
         to_seg.RemoveAt(to_seg_idx);
         continue;
     }
 
-    if (!is_this_warp_allowed(frm_s, to_s)) continue;
+    if (!is_this_warp_allowed(frm_s, to_s, stack)) continue;
 
     skip_list.Add(frm_s);
     skip_list.Add(to_s);
@@ -1683,8 +1612,8 @@ while (true)
         cond = Cond.ShipBellRang;
     }
     selectedPairs.Add(new(
-        get_warp_info_from_name(frm_s), 
-        get_warp_info_from_name(to_s),
+        get_warp_info_from_name(warp_infos, frm_s), 
+        get_warp_info_from_name(warp_infos, to_s),
         cond: cond
     ));
 
@@ -1692,15 +1621,6 @@ while (true)
     idx++;
     if (idx >= segments_flat.Count && selectedPairs.Count - fix_warps_count  < warp_infos.Count / 2) idx = 0;
     else if (selectedPairs.Count - fix_warps_count  == warp_infos.Count / 2) break;
-}
-
-Warp get_default_warp(MapName map_name_src, MapName map_name_dst, WarpNode warp_node_src, WarpNode warp_node_dst, Cond cond = Cond.None)
-{
-    FogWall fw_src = new(warp_node_src, MapNames.get[map_name_src]);
-    WarpInfo warpinfo_src = new(MapNames.get[map_name_src], -1, -1, -1, -1, fw_src);
-    FogWall fw_dst = new(warp_node_dst, MapNames.get[map_name_dst]);
-    WarpInfo warpinfo_dst = new(MapNames.get[map_name_dst], -1, -1, -1, -1, fw_dst);
-    return new Warp(warpinfo_src, warpinfo_dst, cond: cond);
 }
 
 List<WarpInfo> flattened_list = selectedPairs
@@ -1738,6 +1658,7 @@ if (duplicates2.Count != 0) throw new Exception("Got duplicates!!");
     }
     return (WarpNode.Lone, Cond.None);
 }
+
 List<Connection> get_segment(WarpNode point)
 {
     if (point == WarpNode.GameStartSpawnSrc) point = WarpNode.GameStartSpawnDst;
@@ -1764,12 +1685,6 @@ void swap_warp(Edge w1, Edge w2, Dictionary<Node, List<CondNode>> cache)
     (cache[w2.n2][0], cache[w1.n1][0]) = (cache[w1.n1][0], cache[w2.n2][0]);
     (cache[w1.n2][0], cache[w2.n1][0]) = (cache[w2.n1][0], cache[w1.n2][0]);
 }
-
-List<WarpNode> recursive_travelled_list = new();
-List<WarpNode> looped_gates = new();
-List<WarpNode> visited_nodes = new();
-
-Dictionary<WarpNode, List<WarpNode>> tree_copy = new();
 
 List<Cond> get_node_items(WarpNode node)
 {
@@ -1815,7 +1730,6 @@ bool blocked_edges_contain(List<CondNode> blocked_edges, CondNode node)
     }
     return false;
 }
-
 
 Dictionary<Node, List<CondNode>> adjacency_cache = new();
 
@@ -1870,8 +1784,8 @@ Edge find_valid_warp(List<Edge> warp_edges, HashSet<Node> node_set)
     List<Edge> candidates = new();
     foreach (var edge in warp_edges)
     {
-        if (has_predefined_warp.Contains(edge.n1.name) 
-            || has_predefined_warp.Contains(edge.n2.name)) continue;
+        if (MapNames.has_predefined_warp.Contains(edge.n1.name) 
+            || MapNames.has_predefined_warp.Contains(edge.n2.name)) continue;
         if (node_set.Contains(edge.n1) && node_set.Contains(edge.n2)) candidates.Add(edge);
     }
     return candidates[rand.Next(candidates.Count)];
@@ -1882,8 +1796,8 @@ Edge find_valid_unreachable_warp(List<Edge> warp_edges, List<Node> node_set)
     List<Edge> candidates = new();
     foreach (var edge in warp_edges)
     {
-        if (has_predefined_warp.Contains(edge.n1.name) 
-            || has_predefined_warp.Contains(edge.n2.name)) continue;
+        if (MapNames.has_predefined_warp.Contains(edge.n1.name) 
+            || MapNames.has_predefined_warp.Contains(edge.n2.name)) continue;
         if (node_set.Contains(edge.n1) || node_set.Contains(edge.n2)) candidates.Add(edge);
     }
     return candidates[rand.Next(candidates.Count)];
@@ -1892,7 +1806,7 @@ Edge find_valid_unreachable_warp(List<Edge> warp_edges, List<Node> node_set)
 List<WarpNode> all_warp_nodes = warp_infos
     .Select(x => x.fog_wall_name)
     .Distinct()
-    .Concat(has_predefined_warp)
+    .Concat(MapNames.has_predefined_warp)
     .ToList();
 List<Node> all_nodes = new(all_warp_nodes.Count + 1);
 all_nodes.Add(new(WarpNode.Lone, new()));
@@ -1965,10 +1879,10 @@ Console.WriteLine($"Routing (Completed) in {cnt} iterations..              ");
 selectedPairs.Clear();
 foreach (var edge in warp_edges)
 {
-    if (has_predefined_warp.Contains(edge.n1.name)) continue;
+    if (MapNames.has_predefined_warp.Contains(edge.n1.name)) continue;
     selectedPairs.Add(new(
-        get_warp_info_from_name(edge.n1.name),
-        get_warp_info_from_name(edge.n2.name),
+        get_warp_info_from_name(warp_infos, edge.n1.name),
+        get_warp_info_from_name(warp_infos, edge.n2.name),
         cond: edge.cn2
     ));
 }
@@ -2005,23 +1919,23 @@ write_string_to_file(sb.ToString(), "./log.txt");
 var editor = new ESDEditor();
 // add bell ringing global event handler to No-Man's Wharf
 var map_n = MapNames.get[MapName.NomansWharf];
-editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
+editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
 editor.add_ship_check_fog_gate_event(map_n, Constants.ship_event_id, Constants.ship_arrival_local_flag, Constants.ship_global_event_flag);
 // add unfreeze eleum loyce unfreeze event to its map
 map_n = MapNames.get[MapName.FrozenEleumLoyce];
-editor.load_map(map_n, $"{get_esd_file_path(map_n)}.bak");
+editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
 editor.add_dlc3_unfreeze_event_script(map_n, Constants.boss_destruction_flags[BossName.BurntIvoryKing]);
 
 foreach (var warp in selectedPairs)
 {
-    if (has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
+    if (MapNames.has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
     if (!editor.is_map_loaded(warp.from.map_name))
     {
-        editor.load_map(warp.from.map_name, $"{get_esd_file_path(warp.from.map_name)}.bak");
+        editor.load_map(warp.from.map_name, $"{get_esd_file_path(mod_folder, warp.from.map_name)}.bak");
     }
     if (!editor.is_map_loaded(warp.to.map_name))
     {
-        editor.load_map(warp.to.map_name, $"{get_esd_file_path(warp.to.map_name)}.bak");
+        editor.load_map(warp.to.map_name, $"{get_esd_file_path(mod_folder, warp.to.map_name)}.bak");
     }
 
     // TODO: add the option for chasm exit gates
@@ -2060,6 +1974,6 @@ foreach (var warp in selectedPairs)
 
 foreach (var map_name in MapNames.get.Values)
 {
-    editor.save_map(map_name, get_esd_file_path(map_name));
+    editor.save_map(map_name, get_esd_file_path(mod_folder, map_name));
 }
 Console.WriteLine("Done");

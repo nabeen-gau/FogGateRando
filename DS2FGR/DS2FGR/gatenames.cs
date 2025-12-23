@@ -1179,6 +1179,18 @@ namespace FogWallNS
             WarpNode.FlexileSentryExitFront,
             WarpNode.FlexileSentryExitBack,
         };
+
+        public static List<WarpNode> starting_gates = new() 
+        { 
+            WarpNode.Tutorial1EntryFront,
+            WarpNode.Tutorial2EntryFront,
+            WarpNode.MajulaToForestOfFallenGiantsFront,
+            WarpNode.MajulaToRotundaLockstoneFront,
+            WarpNode.MajulaToGraveOfSaintsFront,
+            WarpNode.MajulaToGutterFront,
+            WarpNode.Tutorial3EntryFront,
+        };
+
     }
 
     class TreeNode

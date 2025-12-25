@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release</Configurations>
+    <ApplicationIcon>res\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -16,6 +17,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="res\icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Raylib-cs" Version="7.0.2" />
@@ -29,8 +34,18 @@
 	<Target Name="CopyResFolder" AfterTargets="Build">
 		<ItemGroup>
 			<ResFiles Include="$(ProjectDir)res\**\*" />
+			<EzstateFiles Include="$(ProjectDir)ezstate\**\*" />
+			<ParamFiles Include="$(ProjectDir)Param\**\*" />
+			<MenuFiles Include="$(ProjectDir)menu\**\*" />
+			<MapFiles Include="$(ProjectDir)map\**\*" />
+			<EncReg Include="$(ProjectDir)enc_regulation.bnd.dcx.bak" />
 		</ItemGroup>
 		<Copy SourceFiles="@(ResFiles)" DestinationFiles="@(ResFiles->'$(TargetDir)res\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(EzstateFiles)" DestinationFiles="@(EzstateFiles->'$(TargetDir)ezstate\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(ParamFiles)" DestinationFiles="@(ParamFiles->'$(TargetDir)Param\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(MenuFiles)" DestinationFiles="@(MenuFiles->'$(TargetDir)menu\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(MapFiles)" DestinationFiles="@(MapFiles->'$(TargetDir)map\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(EncReg)" DestinationFiles="@(EncReg->'$(TargetDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

@@ -680,7 +680,7 @@ namespace FogWallNS
 				String param_event_path       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
 				String obj_inst_param_path    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
 
-				MSB2  map               = load_map(map_path);
+				MSB2  map               = load_map(map_path+".bak");
 				PARAM param_event_loc   = load_map_param(param_event_loc_path);
 				PARAM param_event       = load_map_param(param_event_path);
 				PARAM obj_inst_param    = load_map_param(obj_inst_param_path);
@@ -1505,8 +1505,8 @@ namespace FogWallNS
 			segments = generate_segments();
 
 			// TODO: change these before the final version
-			mod_folder = Path.GetFullPath(@"..\..\..\..\..\mod");
-			String game_dir = Path.GetFullPath("..\\..\\..\\..\\..\\..\\Dark Souls II\\Dark Souls II");
+			mod_folder = Path.GetFullPath(@".");
+			String game_dir = Path.GetFullPath("..");
 
 			ship_arrival_msg_id = add_pirate_ship_msg_to_game_files(mod_folder);
 			Dictionary<String, List<FogWall>> fog_wall_dict = generate_fog_wall_dict();

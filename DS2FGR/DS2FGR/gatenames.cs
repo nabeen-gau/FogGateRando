@@ -1232,23 +1232,19 @@ namespace FogWallNS
 
         public static void PrintTree(TreeNode node, StringBuilder sb, string indent = "", bool isLast = true)
         {
-            Console.Write(indent);
             sb.Append(indent);
 
             if (isLast)
             {
-                Console.Write("└── ");
                 sb.Append("└── ");
                 indent += "    ";
             }
             else
             {
-                Console.Write("├── ");
                 sb.Append("├── ");
                 indent += "│   ";
             }
 
-            Console.WriteLine(node.Value);
             sb.Append(node.Value.ToString());
             sb.AppendLine();
 

@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Raylib-cs" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\ESDLang\ESDLang\ESDLang.csproj" />
     <ProjectReference Include="..\..\SoulsFormatsNEXT\SoulsFormats\SoulsFormats.csproj" />
   </ItemGroup>
@@ -26,10 +30,7 @@
 		<ItemGroup>
 			<ResFiles Include="$(ProjectDir)res\**\*" />
 		</ItemGroup>
-		<Copy
-			SourceFiles="@(ResFiles)"
-			DestinationFiles="@(ResFiles->'$(TargetDir)res\%(RecursiveDir)%(Filename)%(Extension)')"
-			SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(ResFiles)" DestinationFiles="@(ResFiles->'$(TargetDir)res\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

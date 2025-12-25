@@ -39,6 +39,7 @@
 			<MenuFiles Include="$(ProjectDir)menu\**\*" />
 			<MapFiles Include="$(ProjectDir)map\**\*" />
 			<EncReg Include="$(ProjectDir)enc_regulation.bnd.dcx.bak" />
+			<Readme Include="$(ProjectDir)..\..\Readme.md" />
 		</ItemGroup>
 		<Copy SourceFiles="@(ResFiles)" DestinationFiles="@(ResFiles->'$(TargetDir)res\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 		<Copy SourceFiles="@(EzstateFiles)" DestinationFiles="@(EzstateFiles->'$(TargetDir)ezstate\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
@@ -46,6 +47,7 @@
 		<Copy SourceFiles="@(MenuFiles)" DestinationFiles="@(MenuFiles->'$(TargetDir)menu\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 		<Copy SourceFiles="@(MapFiles)" DestinationFiles="@(MapFiles->'$(TargetDir)map\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 		<Copy SourceFiles="@(EncReg)" DestinationFiles="@(EncReg->'$(TargetDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(Readme)" DestinationFiles="@(Readme->'$(TargetDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

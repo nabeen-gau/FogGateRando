@@ -191,9 +191,11 @@ namespace FogWallNS
 		{
 			if (map_name == "m20_26_00_00" || map_name == "m50_38_00_00") return;
 			if (!esds.ContainsKey(map_name)) throw new Exception($"ERROR: {map_name} has not been loaded");
-			var file = File.Create(path);
-			BinaryWriterEx writer = new(false, file);
-			esds[map_name].WriteWithContext(writer, ctx);
+            using (var file = File.Create(path))
+            {
+                var writer = new BinaryWriterEx(false, file);
+                esds[map_name].WriteWithContext(writer, ctx);
+            }
 		}
 
         public void add_aio_fog_wall_event(Warp warp, int ship_arrival_msg_id)

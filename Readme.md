@@ -24,6 +24,10 @@ A simple program that randomizes fog gate destinations in *Dark Souls II: Schola
 
 - Run the application (GameFolder)/mod/DS2FGR.exe
 
+## Contact and Support
+
+Email: nabeengau@gmail.com
+
 ## Credits
 
 This project makes use of and builds upon the work of others. Huge thanks to the respective authors and contributors:

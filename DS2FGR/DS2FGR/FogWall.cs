@@ -113,7 +113,7 @@ namespace FogWallNS
 		public WarpNode name;
 		public String map_name;
 		public int instance_id;
-		bool pvp;
+		public bool pvp;
 		public bool cutscene;
 		public bool boss_exit;
 		public Vector3? offset;

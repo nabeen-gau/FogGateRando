@@ -996,6 +996,20 @@ namespace FogWallNS
 					FogWall fw = fog_wall_dict[map_name][i];
 					FogGateInfo fgi = new(map_name, fw);
 
+                    // if it is a pvp gate set its param id to 100250 and 0x18 Unk04 to 6;
+					if (fw.pvp)
+					{
+						foreach(var oip in obj_inst_param.Rows)
+						{
+							if (oip.ID == fw.instance_id)
+							{
+								oip.Cells[0].Value = 100450;
+								oip.Cells[6].Value = 6;
+								break;
+							}
+						}
+					}
+
 					if (fw.reverse)
 					{
 						rot_fog_walls[i] = vector3_flip_y(rot_fog_walls[i]);

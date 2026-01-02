@@ -10,20 +10,37 @@ namespace FogWallNS
 	{
 		List<List<Connection>> segments;
 		List<Warp> selectedPairs;
+		public bool load_item_rando = false;
 
-		MSB2 load_map(String path)
+		MSB2 load_map(String path, bool load_bak = true)
 		{
-			String new_path = Util.check_backup(path);
-			MSB2 msb2 = MSB2.Read(new_path);
-			Console.WriteLine($"[SUCCESS] Map: {path} loaded");
+			MSB2 msb2;
+			if (load_bak)
+			{
+                String new_path = Util.check_backup(path);
+                msb2 = MSB2.Read(new_path);
+			}
+			else
+			{
+                msb2 = MSB2.Read(path);
+			}
+            Console.WriteLine($"[SUCCESS] Map: {path} loaded");
 			return msb2;
 		}
 
-		PARAM load_map_param(String path)
+		PARAM load_map_param(String path, bool load_bak = true)
 		{
-			String new_path = Util.check_backup(path);
-			PARAM p = PARAM.Read(new_path);
-			Console.WriteLine($"[SUCCESS] Param: {path} loaded");
+			PARAM p;
+			if (load_bak)
+			{
+                String new_path = Util.check_backup(path);
+                p = PARAM.Read(new_path);
+			}
+			else
+			{
+				p = PARAM.Read(path);
+			}
+            Console.WriteLine($"[SUCCESS] Param: {path} loaded");
 			return p;
 		}
 
@@ -623,34 +640,83 @@ namespace FogWallNS
 			return Path.Join(mod_folder, "ezstate", $"event_{map_name}.esd");
 		}
 
+		void load_esd(ESDEditor editor, String map_n)
+		{
+			if (load_item_rando)
+			{
+				var ir_path = Path.Join(mod_folder, "../randomizer");
+				var path = get_esd_file_path(ir_path, map_n);
+                if (File.Exists(path)) 
+                {
+                    editor.load_map(map_n, path);
+				}
+				else
+				{
+                    editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
+				}
+			}
+			else
+			{
+                editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
+			}
+
+		}
+
+		void add_name_to_bnd4(BND4 dst, BND4 src, String name)
+		{
+			for (int i=0; i<src.Files.Count; i++)
+			{
+				if (src.Files[i].Name == name)
+				{
+					dst.Files.Add(src.Files[i]);
+					break;
+				}
+			}
+        }
+
 		void disable_fog_gates(String mod_folder)
 		{
-			var enc_reg_path = Path.Join(mod_folder, "enc_regulation.bnd.dcx");
-			var enc_reg = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out DCX.Type type));
+			var name = "enc_regulation.bnd.dcx";
+			var enc_reg_path = Path.Join(mod_folder, name);
+			BND4 enc_reg;
+			DCX.Type type;
+			var reg_name = "MapObjectWhiteDoorParam.param";
+			if (load_item_rando)
+			{
+				var path = Path.Join(mod_folder, "../randomizer", name);
+                enc_reg = BND4.Read(DCX.Decompress(path, out type));
+				var enc_reg_all = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out type));
+				add_name_to_bnd4(enc_reg, enc_reg_all, reg_name);
+			}
+			else
+			{
+				enc_reg = BND4.Read(DCX.Decompress(enc_reg_path + ".bak", out type));
+			}
 			for (int i = 0; i < enc_reg.Files.Count; i++)
 			{
 				var file = enc_reg.Files[i];
-				if (file.Name == "MapObjectWhiteDoorParam.param")
+				if (file.Name == reg_name)
 				{
 					var white_door_param = PARAM.Read(file.Bytes);
 					white_door_param.ApplyParamdef(get_whitedoor_paramdef(white_door_param));
 					for (int j = 0; j < white_door_param.Rows.Count; j++)
 					{
 						var row = white_door_param.Rows[j];
-							var new_row = new Row(
-								row.ID, "",
-								get_whitedoor_paramdef(white_door_param, row)
-							);
-							white_door_param.Rows.Remove(row);
-							white_door_param.Rows.Insert(j, new_row);
+                        var new_row = new Row(
+                            row.ID, "",
+                            get_whitedoor_paramdef(white_door_param, row)
+                        );
+                        white_door_param.Rows.Remove(row);
+                        white_door_param.Rows.Insert(j, new_row);
 					}
 					file.Bytes = white_door_param.Write();
 				}
 			}
 			File.WriteAllBytes(enc_reg_path, DCX.Compress(enc_reg.Write(), type));
+			Console.WriteLine($"INFO: {enc_reg_path} generated");
 		}
 
-		(List<Warp>, List<WarpInfo>) generate_map_objects(Dictionary<String, List<FogWall>> fog_wall_dict, String mod_folder)
+		(List<Warp>, List<WarpInfo>) generate_map_objects(String mod_folder)
 		{
 			String warp_obj_name = "o02_1050_0000";
 			String warp_obj_model_name = warp_obj_name.Substring(0, 8);
@@ -662,6 +728,8 @@ namespace FogWallNS
 			MSB2.Model? warp_model = null;
 			PARAM.Row? warp_obj_inst = null;
 			List<Warp> warps = new();
+			String alt_path = mod_folder;
+			if (load_item_rando) alt_path = Path.Join(mod_folder, "../randomizer");
 			foreach (var pair in MapNames.get)
 			{
 				String map_name = pair.Value;
@@ -675,15 +743,18 @@ namespace FogWallNS
 
 				int n_fog_walls = fog_wall_dict[map_name].Count;
 
-				String map_path               = Path.Join(mod_folder, "map", map_name, map_name + ".msb");
-				String param_event_loc_path   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
-				String param_event_path       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
-				String obj_inst_param_path    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
+				String map_path                   = Path.Join(mod_folder, "map", map_name, map_name + ".msb");
+				String param_event_loc_path_src   = Path.Join(alt_path, "Param", "eventlocation_" + map_name + ".param");
+				String param_event_path_src       = Path.Join(alt_path, "Param", "eventparam_" + map_name + ".param");
+				String obj_inst_param_path_src    = Path.Join(alt_path, "Param", "mapobjectinstanceparam_" + map_name + ".param");
+				String param_event_loc_path_dst   = Path.Join(mod_folder, "Param", "eventlocation_" + map_name + ".param");
+				String param_event_path_dst       = Path.Join(mod_folder, "Param", "eventparam_" + map_name + ".param");
+				String obj_inst_param_path_dst    = Path.Join(mod_folder, "Param", "mapobjectinstanceparam_" + map_name + ".param");
 
-				MSB2  map               = load_map(map_path+".bak");
-				PARAM param_event_loc   = load_map_param(param_event_loc_path);
-				PARAM param_event       = load_map_param(param_event_path);
-				PARAM obj_inst_param    = load_map_param(obj_inst_param_path);
+				MSB2  map               = load_map(map_path);
+				PARAM param_event_loc   = load_map_param(param_event_loc_path_src, load_bak: !load_item_rando);
+				PARAM param_event       = load_map_param(param_event_path_src, load_bak: !load_item_rando);
+				PARAM obj_inst_param    = load_map_param(obj_inst_param_path_src, load_bak: !load_item_rando);
 
 				obj_inst_param.ApplyParamdef(get_obj_inst_def_paramdef(obj_inst_param));
 				param_event.ApplyParamdef(get_event_param_def_paramdef(param_event));
@@ -1195,9 +1266,13 @@ namespace FogWallNS
 				try
 				{
 					File.WriteAllBytes(map_path, map_bin);
-					File.WriteAllBytes(obj_inst_param_path, obj_inst_param_bin);
-					File.WriteAllBytes(param_event_path, event_param_bin);
-					File.WriteAllBytes(param_event_loc_path, event_loc_bin);
+					Console.WriteLine($"INFO: {map_path} saved");
+					File.WriteAllBytes(obj_inst_param_path_dst, obj_inst_param_bin);
+					Console.WriteLine($"INFO: {obj_inst_param_path_dst} saved");
+					File.WriteAllBytes(param_event_path_dst, event_param_bin);
+					Console.WriteLine($"INFO: {param_event_path_dst} saved");
+					File.WriteAllBytes(param_event_loc_path_dst, event_loc_bin);
+					Console.WriteLine($"INFO: {param_event_loc_path_dst} saved");
 					Console.WriteLine($"[SUCCESS] {map_name} done!\n");
 				}
 				catch (IOException ex)
@@ -1513,6 +1588,7 @@ namespace FogWallNS
 		int fix_warps_count;
 		String mod_folder;
 		int ship_arrival_msg_id;
+		Dictionary<String, List<FogWall>> fog_wall_dict;
 		public Randomizer()
 		{
 			// create a list of connection segments
@@ -1523,9 +1599,9 @@ namespace FogWallNS
 			String game_dir = Path.GetFullPath("..");
 
 			ship_arrival_msg_id = add_pirate_ship_msg_to_game_files(mod_folder);
-			Dictionary<String, List<FogWall>> fog_wall_dict = generate_fog_wall_dict();
+			fog_wall_dict = generate_fog_wall_dict();
 			disable_fog_gates(mod_folder);
-			(warps, warp_infos) = generate_map_objects(fog_wall_dict, mod_folder);
+			(warps, warp_infos) = generate_map_objects(mod_folder);
 			selectedPairs = get_fixed_warps(warps.Count);
 			fix_warps_count = selectedPairs.Count;
 			segments_flat = new();
@@ -1548,8 +1624,30 @@ namespace FogWallNS
 			}
 		}
 
-		public async Task randomize(int seed)
+        void copy_folder(string src_dir, string dst_dir)
+        {
+            Directory.CreateDirectory(dst_dir);
+
+            foreach (string file in Directory.GetFiles(src_dir, "*", SearchOption.AllDirectories))
+            {
+                string rel_path = Path.GetRelativePath(src_dir, file);
+                string dst_file = Path.Combine(dst_dir, rel_path);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(dst_file)!);
+                File.Copy(file, dst_file, overwrite: true);
+            }
+        }
+
+        public async Task randomize(int seed)
 		{
+			if (load_item_rando)
+			{
+				Console.WriteLine("Loading files from item rando.");
+				// adding this is unnecessary as item rando does not touch menu\
+				// ship_arrival_msg_id = add_pirate_ship_msg_to_game_files(mod_folder);
+				disable_fog_gates(mod_folder);
+                (warps, warp_infos) = generate_map_objects(mod_folder);
+			}
 			reload_states();
 			Console.WriteLine($"Current Seed: {seed}");
 			Random rand = new Random(seed);
@@ -1971,11 +2069,11 @@ INFO: suffix Front and Back below specify either side of the fog gate
 			var editor = new ESDEditor();
 			// add bell ringing global event handler to No-Man's Wharf
 			var map_n = MapNames.get[MapName.NomansWharf];
-			editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
+			load_esd(editor, map_n);
 			editor.add_ship_check_fog_gate_event(map_n, Constants.ship_event_id, Constants.ship_arrival_local_flag, Constants.ship_global_event_flag);
 			// add unfreeze eleum loyce unfreeze event to its map
 			map_n = MapNames.get[MapName.FrozenEleumLoyce];
-			editor.load_map(map_n, $"{get_esd_file_path(mod_folder, map_n)}.bak");
+			load_esd(editor, map_n);
 			editor.add_dlc3_unfreeze_event_script(map_n, Constants.boss_destruction_flags[BossName.BurntIvoryKing]);
 
 			foreach (var warp in selectedPairs)
@@ -1983,11 +2081,11 @@ INFO: suffix Front and Back below specify either side of the fog gate
 				if (MapNames.has_predefined_warp.Contains(warp.from.fog_wall_name)) continue;
 				if (!editor.is_map_loaded(warp.from.map_name))
 				{
-					editor.load_map(warp.from.map_name, $"{get_esd_file_path(mod_folder, warp.from.map_name)}.bak");
+					load_esd(editor, warp.from.map_name);
 				}
 				if (!editor.is_map_loaded(warp.to.map_name))
 				{
-					editor.load_map(warp.to.map_name, $"{get_esd_file_path(mod_folder, warp.to.map_name)}.bak");
+					load_esd(editor, warp.to.map_name);
 				}
 
 				// TODO: add the option for chasm exit gates
@@ -2030,6 +2128,75 @@ INFO: suffix Front and Back below specify either side of the fog gate
 				editor.save_map(map_name, get_esd_file_path(mod_folder, map_name));
 				Console.WriteLine("Done.");
 			}
+			// remove item rando files if they exist
+            var sfx_src_path = Path.Join(mod_folder, "../randomizer/sfx");
+            var sfx_dst_path = Path.Join(mod_folder, "sfx");
+            if (Directory.Exists(sfx_dst_path)) Directory.Delete(sfx_dst_path, recursive: true);
+
+            var sound_src_path = Path.Join(mod_folder, "../randomizer/sound");
+            var sound_dst_path = Path.Join(mod_folder, "sound");
+            if (Directory.Exists(sound_dst_path)) Directory.Delete(sound_dst_path, recursive: true);
+
+            var ezstate_src_path = Path.Join(mod_folder, "../randomizer/ezstate");
+            var ezstate_dst_path = Path.Join(mod_folder, "ezstate");
+            foreach (string src_file in Directory.GetFiles(ezstate_src_path, "*", SearchOption.AllDirectories))
+            {
+                string rel_path = Path.GetRelativePath(ezstate_src_path, src_file);
+                string dst_file = Path.Combine(ezstate_dst_path, rel_path);
+                if (src_file.Contains("ai"))
+                {
+                    if (File.Exists(dst_file)) File.Delete(dst_file);
+                }
+            }
+
+            var param_src_path = Path.Join(mod_folder, "../randomizer/Param");
+            var param_dst_path = Path.Join(mod_folder, "Param");
+            foreach (string src_file in Directory.GetFiles(param_src_path, "*", SearchOption.AllDirectories))
+            {
+                string rel_path = Path.GetRelativePath(param_src_path, src_file);
+                string dst_file = Path.Combine(param_dst_path, rel_path);
+                if (!src_file.Contains("eventlocation") 
+					&& !src_file.Contains("eventparam")
+                    && !src_file.Contains("mapobjectinstanceparam"))
+                {
+                    if (File.Exists(dst_file)) File.Delete(dst_file);
+                }
+            }
+
+			if (load_item_rando)
+			{
+				// copy files from item rando that this mod does not modify
+				// copy the sfx and sound folder fully
+				copy_folder(sfx_src_path, sfx_dst_path);
+				Console.WriteLine("Copied sfx from item rando");
+				copy_folder(sound_src_path, sound_dst_path);
+				Console.WriteLine("Copied sound from item rando");
+                // load diff from Param folder and ezstate folder
+                // ezstate folder
+                foreach (string src_file in Directory.GetFiles(ezstate_src_path, "*", SearchOption.AllDirectories))
+                {
+                    string rel_path = Path.GetRelativePath(ezstate_src_path, src_file);
+                    string dst_file = Path.Combine(ezstate_dst_path, rel_path);
+					if (src_file.Contains("ai"))
+					{
+                        File.Copy(src_file, dst_file);
+						Console.WriteLine($"Copied {src_file} from item rando");
+					}
+                }
+				// Param folder
+                foreach (string src_file in Directory.GetFiles(param_src_path, "*", SearchOption.AllDirectories))
+                {
+                    string rel_path = Path.GetRelativePath(param_src_path, src_file);
+                    string dst_file = Path.Combine(param_dst_path, rel_path);
+					if (!src_file.Contains("eventlocation") 
+						&& !src_file.Contains("eventparam")
+						&& !src_file.Contains("mapobjectinstanceparam"))
+					{
+                        File.Copy(src_file, dst_file);
+						Console.WriteLine($"Copied {src_file} from item rando");
+					}
+                }
+            }
 			Console.WriteLine("Randomization Complete.");
 		}
 	}

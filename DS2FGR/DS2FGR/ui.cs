@@ -61,13 +61,13 @@ namespace FogGateUI
 	public class Button: Rect
 	{
 		public Text text;
-        private readonly Action? on_click;
+        private readonly Func<Task<bool>>? on_click;
 		public bool task_running = false;
 		public bool task_complete = false;
 		public Button(Rectangle rec, Color normal, Color hovered, Color clicked,
 			int window_width, int window_height,
 			String text, int text_width, int text_height,
-			Action? on_click = null
+			Func<Task<bool>>? on_click = null
 			)
             : base(rec, normal, hovered, clicked) 
 		{
@@ -83,11 +83,10 @@ namespace FogGateUI
 		{
 			if (task_running) return;
 			if (on_click == null) return;
-			var task = Task.Run(() => {
+			var task = Task.Run(async () => {
 				task_complete = false;
 				task_running = true;
-				on_click();
-				task_complete = true;
+				if (await on_click!()) task_complete = true;
 				task_running = false;
 			});
 		}
@@ -226,7 +225,7 @@ namespace FogGateUI
 		public Text text;
 		public bool show = false;
 		float show_time = 0.0f;
-		float max_show_time = 1.5f;
+		float max_show_time = 2.5f;
 		int text_height;
 		int window_width;
 		int window_height;
@@ -292,6 +291,74 @@ namespace FogGateUI
 			this.text = new Text(posx + padx, posy + pady, text, text_height, text_color);
 			this.text.text = text;
 			show = true;
+		}
+	}
+
+
+	public class App(int fontsize, int window_width, int window_height)
+	{
+        public int fontsize = fontsize;
+		public int window_width = window_width;
+		public int window_height = window_height;
+	}
+
+	public class CheckButton 
+	{
+		String text;
+		public bool state;
+		int posx;
+		int posy;
+		Color text_color;
+		int text_width;
+
+		Color click_color;
+
+		public CheckButton(String text, int posx, int posy, Color text_color, int font_size,
+			bool state = false)
+		{
+			this.text = text;
+			this.posx = posx;
+			this.posy = posy;
+			this.state = state;
+			this.text_color = text_color;
+			text_width = Raylib.MeasureText(text, font_size);
+
+			click_color = new(255, 0, 0, 100);
+		}
+
+		public void draw(App app, Vector2 mouse_pos)
+		{
+			int padx = app.fontsize;
+			int pady = app.fontsize;
+			int x = posx + padx;
+			int y = posy + pady;
+			int box_width = app.fontsize;
+			int box_height = app.fontsize;
+
+			Rectangle box_rect = new(x-padx/2, y-pady/2, box_width + text_width + padx + 2*padx/2, box_height+pady/2*2);
+			Raylib.DrawRectangle(x, y, box_width, box_height, Color.White);
+
+			if (Raylib.CheckCollisionPointRec(mouse_pos, box_rect))
+			{
+                if (Raylib.IsMouseButtonDown(MouseButton.Left))
+                {
+                    Raylib.DrawRectangleRec(box_rect, click_color);
+                }
+				if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+				{
+					state = !state;
+				}
+			}
+
+			if (state)
+			{
+                int ip = 4;
+                Rectangle select_rect = new(x + ip, y + ip, box_width - 2 * ip, box_height - 2 * ip);
+				Raylib.DrawRectangleRec(select_rect, Color.Black);
+			}
+
+			x += box_width + padx;
+			Raylib.DrawText(text, x, y, app.fontsize, text_color);
 		}
 	}
 }

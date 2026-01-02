@@ -44,6 +44,9 @@ String info_text = "This is information";
 Information info = new(info_text, Raylib.MeasureText(info_text, text_height), text_height,
     window_width, window_height, Color.Beige, Color.White);
 
+App app = new(text_height, window_width, window_height);
+CheckButton item_rando_check_button = new("Load Item Rando", 0, 0, Color.White, text_height);
+
 
 int button_width = window_width / 5;
 int button_height = window_height / 10;
@@ -86,11 +89,21 @@ Button randomize_button = new(button_rect,
         else
         {
             info.display("Invalid seed");
-            return;
+            return false;
+        }
+        randomizer.load_item_rando = item_rando_check_button.state;
+        if (item_rando_check_button.state)
+        {
+            if (!Path.Exists("../randomizer/DS2SRandomizer.exe")) 
+            {
+                info.display($"Item Rando not installed. Uncheck the top option to proceed.");
+                return false;
+            }
         }
         info.display($"Randomization with seed: {seed}");
         await randomizer.randomize(seed);
         randomized_seed = seed;
+        return true;
     });
 
 
@@ -112,6 +125,7 @@ Button random_seed_button = new(random_seed_button_rec,
         seed = rand.Next(1, max_random_num);
         seed_str = seed.ToString();
         text_box.text.text = seed_str;
+        return true;
     }
 );
 
@@ -154,9 +168,10 @@ Button copy_button = new(copy_button_rec,
     Color.Beige, Color.Green, Color.Blue,
     window_width, window_height, copy_btn_txt,
     Raylib.MeasureText(copy_btn_txt, text_height), text_height,
-    () => {
+    async () => {
         Raylib.SetClipboardText(text_box.get());
-        info.display($"Copied `{text_box.get()}` to clipboard"); 
+        info.display($"Copied `{text_box.get()}` to clipboard");
+        return true;
     }
 );
 
@@ -175,17 +190,19 @@ Button paste_button = new(paste_button_rec,
     Color.Beige, Color.Green, Color.Blue,
     window_width, window_height, paste_btn_txt,
     Raylib.MeasureText(paste_btn_txt, text_height), text_height,
-    () => {
+    async () => {
         String text = Raylib.GetClipboardText_();
         if (int.TryParse(text, out int result))
         {
             seed = result;
             text_box.text.text = seed.ToString();
-            info.display($"Set seed to `{seed}`"); 
+            info.display($"Set seed to `{seed}`");
+            return true;
         }
         else
         {
             info.display($"Invalid seed `{text}`");
+            return false;
         }
     }
 );
@@ -196,6 +213,7 @@ String randomizing_text = "Randomizing.";
 int randomizing_text_width = Raylib.MeasureText(randomizing_text, text_height);
 int posx = (window_width - randomizing_text_width) / 2;
 int posy = (window_height - text_height) / 2;
+
 while (!Raylib.WindowShouldClose())
 {
     var mouse_pos = Raylib.GetMousePosition();
@@ -217,6 +235,7 @@ while (!Raylib.WindowShouldClose())
 
         randomize_button.draw(mouse_pos);
         random_seed_button.draw(mouse_pos);
+        item_rando_check_button.draw(app, mouse_pos);
 
         info.draw(mouse_pos);
 

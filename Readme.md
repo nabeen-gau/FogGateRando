@@ -5,7 +5,7 @@ A simple program that randomizes fog gate destinations in *Dark Souls II: Schola
 ## Features
 
 - Randomizes all the fog gate destinations.
-- Not tested with any other mods.
+- Not tested with any other mods ***(see below for compatibility with item and enemy rando)***.
 - Randomizes only the fog gates and not the warps in the game like Giant Memories.
 
 ## Some Thing to Note
@@ -27,6 +27,54 @@ A simple program that randomizes fog gate destinations in *Dark Souls II: Schola
 ## Contact and Support
 
 Email: nabeengau@gmail.com
+
+## Soft Compatibility with Item & Enemy Randomizer (by Chainsboyo)
+
+This mod has **soft compatibility** with **Item & Enemy Randomizer** by **Chainsboyo**:
+
+- Item & Enemy Randomizer:  
+  https://www.nexusmods.com/darksouls2/mods/1317  
+- Author profile:  
+  https://www.nexusmods.com/profile/Chainsboyo  
+
+### Important Limitations (Read Carefully)
+
+- **Key items must NOT be randomized (yet).**  
+  This is **extremely important**. If key items are randomized, progression may become impossible due to fog gate destination changes.
+
+- **Fog Gate Randomizer does not account for enemy or boss scaling** applied by the Item & Enemy Randomizer.  
+  As a result, some fog gate destinations may lead to encounters that are significantly harder or easier than intended.
+
+- Compatibility is considered *soft* because the two mods do not directly integrate with each other like reading key items randomized locations.
+
+---
+
+### Installation (with Item & Enemy Randomizer)
+
+If you want to use this mod **together with Item & Enemy Randomizer**, follow these steps **exactly and in order**:
+
+1. **Install Item & Enemy Randomizer first**  
+   - Configure it so that **key items are NOT randomized**.
+
+2. **Install Fog Gate Randomizer**  
+   - Copy its files into the game folder.  
+   - **Replace files if prompted**.
+
+3. Open `modengine.ini` and **uncomment** the following line by removing the semicolon:
+   ```ini
+   ;chainDInput8DLLPath="/ds2s_heap_x.dll"
+   ```
+4. Run the Item & Enemy Randomizer first.
+
+5. Run the Fog Gate Randomizer afterward.
+
+### Notes on Load Order
+
+- Item & Enemy Randomizer must be installed before Fog Gate Randomizer.
+
+- Item & Enemy Randomizer must be run before Fog Gate Randomizer.
+
+- Reversing this order will not randomize enemy and item.
 
 ## Credits
 

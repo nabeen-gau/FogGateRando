@@ -89,6 +89,7 @@ namespace FogGateUI
 				if (await on_click!()) task_complete = true;
 				task_running = false;
 			});
+			await task;
 		}
 
 		public async new void draw(Vector2 mouse_pos)
